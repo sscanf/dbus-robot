@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=com.robot.roengines
+Exec=/usr/bin/roengines
+User=root

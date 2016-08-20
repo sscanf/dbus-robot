@@ -1,0 +1,3 @@
+<ROBOT>
+        <Plugin name="engines" description="Engines controller" active="true" file="libpiccontroller-plugin.so" />
+</ROBOT>

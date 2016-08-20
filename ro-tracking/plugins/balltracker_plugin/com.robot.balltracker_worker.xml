@@ -1,0 +1,30 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="com.robot.tracker">
+    <signal name="error">
+      <arg name="bError" type="b" direction="out"/>
+    </signal>
+    <method name="getName">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="getAddress">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="getPluginType">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="getDescription">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="isEnabled">
+      <arg type="b" direction="out"/>
+    </method>
+    <method name="setEnabled">
+      <arg name="bEnabled" type="b" direction="in"/>
+    </method>
+    <method name="startStreaming">
+    </method>
+    <method name="startStreamingSock">
+    </method>
+  </interface>
+</node>

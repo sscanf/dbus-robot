@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=com.robot.rotracking
+Exec=/usr/bin/rotracking
+User=root

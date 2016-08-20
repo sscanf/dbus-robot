@@ -1,0 +1,45 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="com.zitro.zone.zoaudio">
+    <signal name="error">
+      <arg name="bError" type="b" direction="out"/>
+    </signal>
+    <method name="getName">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="getAddress">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="getPluginType">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="getDescription">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="isEnabled">
+      <arg type="b" direction="out"/>
+    </method>
+    <method name="setEnabled">
+      <arg name="bEnabled" type="b" direction="in"/>
+    </method>
+    <method name="getSpeed">
+      <arg type="i" direction="out"/>
+    </method>
+    <method name="getEncoder1">
+      <arg type="i" direction="out"/>
+    </method>
+    <method name="getEncoder2">
+      <arg type="i" direction="out"/>
+    </method>
+    <method name="setSpeed">
+      <arg name="speed" type="i" direction="in"/>
+    </method>
+    <method name="setTurn">
+      <arg name="turn" type="i" direction="in"/>
+    </method>
+    <method name="setDualSpeed">
+      <arg name="left" type="i" direction="in"/>
+      <arg name="right" type="i" direction="in"/>
+    </method>
+  </interface>
+</node>
