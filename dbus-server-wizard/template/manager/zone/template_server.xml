@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Configuracion Audio Manager-->
+<@@NAME@@>
+     <Plugin active="true" description="enter the plugin description" name="enter the plugin name" file="enter the plugin flename">
+        <!-- Insert here the plugin parameters -->
+     </Plugin>
+</@@NAME@@>
