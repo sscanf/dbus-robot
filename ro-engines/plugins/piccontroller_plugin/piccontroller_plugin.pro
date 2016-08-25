@@ -10,6 +10,7 @@ isEmpty (_INSTALL_ROOT){
 }
 
 system ($$PWD/../tools/mkinterface.sh piccontroller_worker)
+system ($$quote(cp -r $${PWD}/proxy/* $$(QT_SYSROOT)/usr/include/robot/$$escape_expand(\\n\\t)))
 
 LIBS        += -lusb-1.0
 INCLUDEPATH += ../../common
@@ -22,23 +23,18 @@ CONFIG      += plugin debug
 TARGET       = $$qtLibraryTarget(piccontroller-plugin)
 DESTDIR      = plugins
 
-dbus_proxy_files.path   = /usr/include/robot/
-dbus_proxy_files.files  = $$PWD/proxy
-config_files.path       = /etc/
-config_files.files      = $$PWD/robot/
-
 HEADERS = piccontroller_worker_interface.h   \
           piccontroller_factory.h            \
           piccontroller_worker.h \
-    qlibusb.h
+          qlibusb.h
 
 SOURCES  = piccontroller_worker_interface.cpp\
            piccontroller_worker.cpp          \
            piccontroller_factory.cpp \
-    qlibusb.cpp
+           qlibusb.cpp
 
 target.path = /usr/lib/
-INSTALLS += target dbus_proxy_files
+INSTALLS += target
 
 QMAKE_CLEAN += $$PWD/piccontroller_worker_interface.cpp       \
                $$PWD/piccontroller_worker_interface.h         \

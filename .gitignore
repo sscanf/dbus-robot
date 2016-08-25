@@ -36,3 +36,11 @@ Makefile*
 # QtCtreator CMake
 CMakeLists.txt.user
 
+com.robot.roengines.xml
+*_interface.*
+com.robot.rotracking_manager.xml
+com.robot.balltracker_worker.xml
+*proxy/
+rotracking
+robot
+rostream

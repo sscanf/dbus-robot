@@ -4,13 +4,8 @@ QT += gui
 VERSION = \\\"'01.00.00'\\\"
 DEFINES += APP_VERSION=$${VERSION}
 
-_INSTALL_ROOT=$$(INSTALL_ROOT)
-isEmpty (_INSTALL_ROOT){
-    message ("not defined");
-    _INSTALL_ROOT=/
-}
-
 system ($$PWD/../tools/mkinterface.sh balltracker_worker)
+system ($$quote(cp -r $${PWD}/proxy/* $$(QT_SYSROOT)/usr/include/robot/$$escape_expand(\\n\\t)))
 
 INCLUDEPATH += ../../common
 INCLUDEPATH += ./plugins/common/
@@ -21,12 +16,18 @@ TEMPLATE     = lib
 CONFIG      += plugin debug
 TARGET       = $$qtLibraryTarget(balltracker-plugin)
 DESTDIR      = plugins
-LIBS        += -lopencv_core -lopencv_video -lopencv_highgui -lopencv_imgproc -lvlc
+LIBS        += -lopencv_core -lopencv_video -lopencv_highgui -lopencv_imgproc
 
-dbus_proxy_files.path   = /usr/lib/zone/zoaudio
-dbus_proxy_files.files  = $$PWD/proxy
-config_files.path       = /etc/
-config_files.files      = $$PWD/zone/
+sysroot_files.path       = $$(QT_SYSROOT)/etc/
+sysroot_files.files      = $$PWD/zone/
+sysroot_files.commands   = cp $$config.files.files $$config_files.path
+
+dbus_files.path         = /etc/dbus-1/
+dbus_files.files        = $$PWD/system.d
+
+dbus_services.path      = /usr/share/dbus-1/
+dbus_services.files     = $$PWD/system-services \
+                          $$PWD/services
 
 HEADERS = balltracker_worker_interface.h \
           balltracker_factory.h          \
@@ -37,7 +38,8 @@ SOURCES  = balltracker_worker_interface.cpp\
            balltracker_factory.cpp
 
 target.path = /usr/lib/
-INSTALLS += target dbus_proxy_files
+
+INSTALLS += target dbus_files dbus_services
 
 QMAKE_CLEAN += $$PWD/balltracker_worker_interface.cpp       \
                $$PWD/balltracker_worker_interface.h         \

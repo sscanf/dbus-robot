@@ -12,7 +12,6 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
          qDebug() << "Cannot open the web cam";
          return;
     }
-    m_bStreaming    = false;
     m_bEnabled      = bEnabled;
     m_strDescription= strDescription;
     m_strAddress    = QString("%1/%2").arg(DBUS_BASE_ADDRESS).arg(strName);
@@ -23,6 +22,7 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
     m_iHighS        = 255;
     m_iLowV         = 105;
     m_iHighV        = 255;
+    m_bBallDetected = false;
 
     new balltracker_workerInterface(this);
     QString strAddress = m_strAddress;
@@ -31,143 +31,84 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
     m_connection.registerService(strAddress.replace("/","."));
 
     connect (m_pTimer, SIGNAL (timeout()),  this, SLOT (on_timeout()));
-    m_pTimer->start (50);
 
     m_pSocket = new QTcpServer(this);
-    m_pSocket->listen(QHostAddress("0.0.0.0"),1234);
     connect(m_pSocket, SIGNAL (newConnection()), this, SLOT(on_newConnection()));
 }
 
-void balltrackerWorker::startStreaming()
+void balltrackerWorker::startTracking()
 {
-    if (m_data.m_image.data == 0)
-        return;
-
-    std::vector<const char*> options;
-    std::vector<const char*>::iterator option;
-
-    int w, h, channels;
-    w = m_data.m_image.cols;
-    h = m_data.m_image.rows;
-    channels = m_data.m_image.channels();
-    qDebug() << w << h << channels;
-
-    char imemDataArg[256];
-    memset (imemDataArg,0,sizeof(imemDataArg));
-    sprintf(imemDataArg, "--imem-data=%p", &m_data);
-    options.push_back(imemDataArg);
-
-    char imemGetArg[256];
-    memset (imemGetArg,0,sizeof(imemDataArg));
-    sprintf(imemGetArg, "--imem-get=%p", balltrackerWorker::MyImemGetCallback);
-    options.push_back(imemGetArg);
-
-    char imemReleaseArg[256];
-    memset (imemReleaseArg,0,sizeof(imemDataArg));
-    sprintf(imemReleaseArg, "--imem-release=%p", balltrackerWorker::MyImemReleaseCallback);
-    options.push_back(imemReleaseArg);
-    options.push_back("--imem-cookie=\"IMEM\"");
-    options.push_back("--imem-codec=RV24");
-    options.push_back("--imem-cat=2");
-    options.push_back("--imem-fps=10");
-    char imemWidthArg[256];
-    sprintf(imemWidthArg, "--imem-width=%d",w);
-    options.push_back(imemWidthArg);
-
-
-    char imemHeightArg[256];
-    memset (imemHeightArg,0,sizeof(imemDataArg));
-    sprintf(imemHeightArg, "--imem-height=%d",h);
-    options.push_back(imemHeightArg);
-
-    char imemChannelsArg[256];
-    memset (imemChannelsArg,0,sizeof(imemDataArg));
-    sprintf(imemChannelsArg, "--imem-channels=%d",channels);
-    options.push_back(imemChannelsArg);
-    options.push_back("-vvv");
-    //options.push_back("--verbose=2");
-
-    m_pVlcInstance = libvlc_new ((int)options.size(), options.data());
-    m_pVlcMedia = libvlc_media_new_location (m_pVlcInstance, "imem://");
-
-//    options.clear();
-    options.push_back(":sout=#transcode{vcodec=ffmpeg{keyint=1,min-keyint=1,tune=zerolatency,bframes=0,vbv-bufsize=1200}, vcodec=png,vb=800}:rtp{sdp=rtsp://:8554/live.ts}");
-    for(option = options.begin(); option != options.end(); option++) {
-        libvlc_media_add_option(m_pVlcMedia, *option);
-    }
-
-    m_pVlcMediaPlayer = libvlc_media_player_new_from_media (m_pVlcMedia);
-    // No need to keep the media now
-    libvlc_media_release (m_pVlcMedia);
-    // play the media_player
-    libvlc_media_player_play (m_pVlcMediaPlayer);
-    m_bStreaming = true;
+    m_pTimer->start (50);
 }
 
-int balltrackerWorker::MyImemGetCallback(void *data, const char *cookie, int64_t *dts, int64_t *pts, unsigned *flags, size_t *bufferSize, void **buffer)
+void balltrackerWorker::stopTracking()
 {
-    Q_UNUSED (cookie)
-    Q_UNUSED (flags)
-
-    MyImemData *pImem = (MyImemData*)data;
-    if(pImem == NULL)
-         return 1;
-
-     // Changing this value will impact the playback
-     // rate on the receiving end (if they use the dts and pts values).
-     //int64_t uS = 33333; // 30 fps
-     int64_t uS = 100000;
-     *bufferSize = pImem->m_image.rows*pImem->m_image.cols*pImem->m_image.channels();
-     *buffer = pImem->m_image.data;
-     *dts = *pts = pImem->m_dts = pImem->m_pts = (pImem->m_pts + uS);
-     return 0;
+    m_pTimer->stop();
 }
 
-int balltrackerWorker::MyImemReleaseCallback(void *data, const char *cookie, size_t bufferSize, void *buffer)
+void balltrackerWorker::startStream()
 {
-    return 0;
+    m_pSocket->listen(QHostAddress("0.0.0.0"),1234);
 }
 
-void balltrackerWorker::on_timeout()
+void balltrackerWorker::stopStream()
 {
-    //Mat imgOriginal;
-    Mat imgThresholded;
+    m_pSocket->close();
+}
 
-    bool bSuccess = m_capture.read(m_data.m_image); // read a new frame from video
+QPoint balltrackerWorker::centerDistance()
+{
+    return m_centerDistance;
+}
 
-    if (!bSuccess) { //if not success, break loop
-        qDebug() << "Cannot read a frame from video stream";
-        return;
-    }
-    //qDebug() << m_data.m_image.cols << m_data.m_image.rows;
-    int centerX = m_data.m_image.cols/2;
-    int centerY = m_data.m_image.rows/2;
+bool balltrackerWorker::isBallDetected()
+{
+    return m_bBallDetected;
+}
 
-    Mat imgHSV;
-    cvtColor(m_data.m_image, imgHSV, COLOR_BGR2HSV);   //Convert the captured frame from BGR to HSV
-    GaussianBlur(imgHSV, imgHSV, Size(7,7), 2, 2);
+QPoint balltrackerWorker::possition()
+{
+    QPoint pos;
+    pos.setX(m_centerBall.x);
+    pos.setY(m_centerBall.y);
+    return pos;
+}
 
-    inRange(imgHSV, Scalar(m_iLowH, m_iLowS, m_iLowV), Scalar(m_iHighH, m_iHighS, m_iHighV), imgThresholded); //Threshold the image
+void balltrackerWorker::drawCVPannel()
+{
+    Mat image = m_data.m_image;
 
-    GaussianBlur( imgThresholded, imgThresholded, cv::Size(7, 7), 0, 0 );
-    vector<Vec3f> circles;
-    HoughCircles( imgThresholded, circles, CV_HOUGH_GRADIENT, 6, imgThresholded.rows/8, 100, 200, 50, 100 );
-    Point center;
+    cv::Mat roi = image(cv::Rect(0, 0, 150, 100));
+    cv::Mat color(roi.size(), CV_8UC3, cv::Scalar(0, 0, 0));
+    double alpha = 0.7;
+    addWeighted(color, alpha, roi, 1.0 - alpha , 0.0, roi);
 
-    if (circles.size()) {
-        center = Point (cvRound(circles[0][0]), cvRound(circles[0][1]));
-        int radius = cvRound(circles[0][2]);
-        // circle center
-        circle( m_data.m_image, center, 3, Scalar(0,255,0), -1, 8, 0 );
-        // circle outline
-        circle( m_data.m_image, center, radius, Scalar(0,0,255), 3, 8, 0 );
 
-        int fontFace = FONT_HERSHEY_SIMPLEX;
-        double fontScale = 2;
-        int thickness = 3;
-        Point textOrg (10,130);
-        putText (m_data.m_image,"HOLA",textOrg, fontFace, fontScale, Scalar::all(255),thickness,8);
+    int fontFace = FONT_HERSHEY_SIMPLEX;
+    double fontScale = 0.5;
+    int thickness = 1;
+    Point textOrg (10,20);
 
+    char buff[80];
+    sprintf (buff,"X = %d ",m_centerBall.x);
+    putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,8);
+    textOrg.y+=15;
+    sprintf (buff,"Y = %d ",m_centerBall.y);
+    putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,8);
+    textOrg.y+=15;
+    sprintf (buff,"Z = %d ",m_radius);
+    putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,8);
+    textOrg.y+=15;
+    sprintf (buff,"Dist. X = %d ",m_centerDistance.x());
+    putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,8);
+    textOrg.y+=15;
+    sprintf (buff,"Dist. Y = %d ",m_centerDistance.y());
+    putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,8);
+}
+
+void balltrackerWorker::sendTcpFrame()
+{
+    if (m_pSocket->isListening()) {
         Mat img = m_data.m_image;
         QImage imgIn= QImage(img.data, img.cols, img.rows, img.step, QImage::Format_RGB888);
         QByteArray arr;
@@ -177,29 +118,64 @@ void balltrackerWorker::on_timeout()
 
         QByteArray sendArr;
         QDataStream stream (&sendArr,QIODevice::WriteOnly);
-//        stream << (quint64) arr.size();
         stream << arr;
 
         m_mutex.lock();
-
         foreach (QTcpSocket *pSocket, m_listClients) {
             pSocket->write (sendArr);
         }
         m_mutex.unlock();
+    }
+}
 
+void balltrackerWorker::on_timeout()
+{
+    //Mat imgOriginal;
+    Mat imgThresholded_lRed;
+    Mat imgThresholded_hRed;
+    Mat imgThresholded;
+    m_bBallDetected = false;
+
+    bool bSuccess = m_capture.read(m_data.m_image); // read a new frame from video
+
+    if (!bSuccess) { //if not success, break loop
+        qDebug() << "Cannot read a frame from video stream";
+        return;
+    }
+    //qDebug() << m_data.m_image.cols << m_data.m_image.rows;
+    int centerBallX = m_data.m_image.cols/2;
+    int centerBallY = m_data.m_image.rows/2;
+
+    Mat imgHSV;
+    cvtColor(m_data.m_image, imgHSV, COLOR_BGR2HSV);   //Convert the captured frame from BGR to HSV
+//    GaussianBlur(imgHSV, imgHSV, Size(7,7), 2, 2);
+
+    inRange(imgHSV, Scalar(0, 100, 100), Scalar(10, 255,255), imgThresholded_lRed); //Threshold the image
+    inRange(imgHSV, Scalar(160, 100, 100), Scalar(179, 255,255), imgThresholded_hRed); //Threshold the image
+
+    cv::addWeighted(imgThresholded_lRed, 1.0, imgThresholded_hRed, 1.0, 0.0, imgThresholded);
+    GaussianBlur( imgThresholded, imgThresholded, cv::Size(9, 9), 2, 2 );
+    vector<Vec3f> circles;
+
+    HoughCircles( imgThresholded, circles, CV_HOUGH_GRADIENT, 1, imgThresholded.rows/8, 100, 20, 50, 100 );
+
+    if (circles.size()) {
+        m_centerBall = Point (cvRound(circles[0][0]), cvRound(circles[0][1]));
+        m_radius = cvRound(circles[0][2]);
+        // circle m_centerBall
+        circle( m_data.m_image, m_centerBall, 3, Scalar(0,255,0), -1, 8, 0 );
+        // circle outline
+        circle( m_data.m_image, m_centerBall, m_radius, Scalar(0,0,255), 3, 8, 0 );
+        m_bBallDetected = true;
 //        imwrite("/tmp/edges.png",imgThresholded);
 //        imwrite("/tmp/circles.png",img);
     }
-//    else
-//        qDebug() << "No ball !";
+    drawCVPannel();
+    sendTcpFrame();
 
-
-//    if (!m_bStreaming)
-//        startStreaming();
-
-//    int distX = center.x - centerX;
-//    int distY = center.y - centerY;
-    //    qDebug() << distX << distY << center.x << center.y << circles.size() << m_iLowH << m_iHighH << m_iLowS << m_iHighS << m_iLowV << m_iHighV;
+    int distX = m_centerBall.x - centerBallX;
+    int distY = m_centerBall.y - centerBallY;
+    m_centerDistance = QPoint (distX, distY);
 }
 
 void balltrackerWorker::on_newConnection()

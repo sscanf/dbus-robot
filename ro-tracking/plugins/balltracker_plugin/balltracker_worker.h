@@ -18,6 +18,7 @@
 #include <QMutex>
 #include <QImage>
 #include <QImageWriter>
+#include <QVector3D>
 
 #define PLUGIN_TYPE   " Please, define plugin type !!! "
 
@@ -44,28 +45,24 @@ public:
     explicit balltrackerWorker(QString strName, QString strDescription = 0, bool bEnabled=0, QObject *parent = 0);
 
 public Q_SLOTS:
-    QString getName        ()              { return m_strName; }
-    QString getAddress     ()              { return m_strAddress; }
-    QString getPluginType  ()              { return PLUGIN_TYPE; }
-    QString getDescription ()              { return m_strDescription; }
-    bool    isEnabled      ()              { return m_bEnabled; }
-    void    setEnabled     (bool bEnabled) { m_bEnabled = bEnabled; }
-    void    startStreaming ();
-    void    startStreamingSock ();
+    QString getName       ()              { return m_strName; }
+    QString getAddress    ()              { return m_strAddress; }
+    QString getPluginType ()              { return PLUGIN_TYPE; }
+    QString getDescription()              { return m_strDescription; }
+    bool    isEnabled     ()              { return m_bEnabled; }
+    void    setEnabled    (bool bEnabled) { m_bEnabled = bEnabled; }
+    void    startTracking ();
+    void    stopTracking  ();
+    void    startStream   ();
+    void    stopStream    ();
+    QPoint  possition     ();
+    QPoint  centerDistance();
+    bool    isBallDetected();
 
 private:    //Functions
-    static int MyImemGetCallback (void *data,
-                           const char *cookie,
-                           int64_t *dts,
-                           int64_t *pts,
-                           unsigned *flags,
-                           size_t * bufferSize,
-                           void ** buffer);
+    void    drawCVPannel   ();
+    void    sendTcpFrame   ();
 
-    static int MyImemReleaseCallback (void *data,
-                               const char *cookie,
-                               size_t bufferSize,
-                               void * buffer);
 private:    //Variables
     int             m_address;
     QString         m_strName;
@@ -82,14 +79,14 @@ private:    //Variables
     int             m_iLowV;
     int             m_iHighV;
     MyImemData      m_data;
-    bool            m_bStreaming;
 
-    libvlc_instance_t      *m_pVlcInstance;
-    libvlc_media_player_t  *m_pVlcMediaPlayer;
-    libvlc_media_t         *m_pVlcMedia;
-    QTcpServer             *m_pSocket;
-    QList<QTcpSocket *>     m_listClients;
-    QMutex                  m_mutex;
+    QTcpServer         *m_pSocket;
+    QList<QTcpSocket *> m_listClients;
+    QMutex              m_mutex;
+    Point               m_centerBall;
+    QPoint              m_centerDistance;
+    int                 m_radius;
+    bool                m_bBallDetected;
 
 signals:
     void  error (bool bError);

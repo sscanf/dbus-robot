@@ -64,5 +64,5 @@ void MainWindow::on_disconnected()
 
 void MainWindow::on_timeout()
 {
-    m_pSocket->connectToHost("192.168.1.2",1234);
+    m_pSocket->connectToHost("192.168.0.1",1234);
 }

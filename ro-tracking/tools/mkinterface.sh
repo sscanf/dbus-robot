@@ -30,7 +30,7 @@ if [ $STAT1 -gt $STAT2 ] || [ $STAT1 -eq 10 ] || [ $STAT2 -eq 10 ] || [ $interfa
         qdbuscpp2xml $target.h -o com.robot.$target.xml
         qdbusxml2cpp -N -c "$target"Interface -a "$target"_interface.h:"$target"_interface.cpp com.robot.$target.xml
         qdbusxml2cpp -N -c "$target"Interface com.robot.$target.xml -p "$target"_proxy.h:"$target"_proxy.cpp
-        mv *_proxy* ./proxy/
+        /bin/mv *_proxy* ./proxy/
 
         #dbusxx-xml2cpp com.robot.$target.xml --proxy=./proxy/cpp/"$target"_proxy.h
 fi
