@@ -13,7 +13,7 @@
 class @@name@@Worker : public QObject
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "com.zitro.zone.zoaudio")
+    Q_CLASSINFO("D-Bus Interface", "com.robot.@@name@@")
 
 public:
     explicit @@name@@Worker(QString strName, QString strDescription = 0, bool bEnabled=0, QObject *parent = 0);

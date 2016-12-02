@@ -11,10 +11,11 @@ QMAKE_CXXFLAGS += -std=c++0x
 _INSTALL_ROOT=$$(INSTALL_ROOT)
 
 system ($$PWD/../tools/mkinterface.sh @@name@@_manager)
+system ($$quote(cp -r $${PWD}/proxy/* $$(QT_SYSROOT)/usr/include/robot/$$escape_expand(\\n\\t)))
 
-QT          += core dbus
+QT          += core dbus xml
 QT          -= gui
-INCLUDEPATH += $$(QT_SYSROOT)/usr/lib/zone/include
+INCLUDEPATH += $$(QT_SYSROOT)/usr/include
 INCLUDEPATH += ../common/
 TARGET       = @@name@@
 CONFIG      += debug
@@ -24,10 +25,8 @@ TEMPLATE     = app
 SOURCES     +=  main.cpp                     \
 
 
-dbus_proxy_files.path	= /usr/lib/zone/@@name@@/
-dbus_proxy_files.files	= $$PWD/proxy/
 config_files.path	= /etc/
-config_files.files	= $$PWD/zone/
+config_files.files	= $$PWD/robot/
 
 dbus_files.path         = /etc/dbus-1/
 dbus_files.files        = $$PWD/system.d/
@@ -46,12 +45,11 @@ HEADERS += @@name@@_manager.h          \
 
 target.path = /usr/bin/
 INSTALLS += target 
-INSTALLS += dbus_proxy_files 
 INSTALLS += config_files
 INSTALLS += dbus_files
 INSTALLS += dbus_services
 
 QMAKE_CLEAN += $$PWD/@@name@@_manager_interface.cpp \
                $$PWD/@@name@@_manager_interface.h   \
-               $$PWD/com.zitro.zone.@@name@@_manager.xml \
+               $$PWD/com.robot.@@name@@_manager.xml \
                $$PWD/proxy/*

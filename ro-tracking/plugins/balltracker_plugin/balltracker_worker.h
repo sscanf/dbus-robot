@@ -7,7 +7,6 @@
 #include <QTimer>
 #include <rotracking_plugin.h>
 #include <QtDBus/QtDBus>
-#include <vlc/vlc.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/video/video.hpp>
@@ -19,6 +18,7 @@
 #include <QImage>
 #include <QImageWriter>
 #include <QVector3D>
+#include <raspicam/raspicam_cv.h>
 
 #define PLUGIN_TYPE   " Please, define plugin type !!! "
 
@@ -87,6 +87,7 @@ private:    //Variables
     QPoint              m_centerDistance;
     int                 m_radius;
     bool                m_bBallDetected;
+    raspicam::RaspiCam_Cv  m_camera;
 
 signals:
     void  error (bool bError);
@@ -95,6 +96,7 @@ private slots:
     void on_timeout ();
     void on_newConnection();
     void on_disconnected();
+    void on_readyRead();
 };
 
 #endif // balltracker_MANAGER_H

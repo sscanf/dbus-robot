@@ -6,9 +6,9 @@ read name
 echo -n "Enter project path: $(pwd): "
 read project_path
 
-echo -n "Enter the target path: /usr/lib/zone/$name/"
+echo -n "Enter the target path: /usr/lib/"
 read target
-target="/usr/lib/zone/$name/$target"
+target="/usr/lib/$name/$target"
 
 echo -n "Enter D-Bus Service Name: "
 read servicename
@@ -36,7 +36,7 @@ if [ -z "$project_path" ]; then
 	project_path=$(pwd)
 fi
 
-for i in `ls template/manager/template* template/common/* template/template.pro template/manager/services/com.zitro.zone.servicename.service template/manager/system.d/com.zitro.zone.servicename.conf`
+for i in `ls template/manager/template* template/common/* template/template.pro template/manager/services/com.robot.servicename.service template/manager/system.d/com.robot.servicename.conf`
 do
 	if [ "$i" != "$0" ]; then 
 

@@ -1,9 +1,12 @@
 #ifndef MSGDISPATCHER_1H
 #define MSGDISPATCHER_1H
 
-#include <QObject>
+#define ROOT_TAGNAME             "ROBOT"
+#define PLUGINS_PATH             "/usr/lib/"
+#define ROTRACKING_CONFIG_FILE   "/etc/robot/@@name@@_config.xml"
+#define DBUS_BASE_ADDRESS        "/com/robot"
 
-class busdio;
+#include <QObject>
 
 /**
  * @brief
@@ -23,6 +26,6 @@ protected:
 signals:
 };
 
-Q_DECLARE_INTERFACE(@@name@@Plugin, "com.zitro.zone-plugin.@@name@@plugin/1.0")
+Q_DECLARE_INTERFACE(@@name@@Plugin, "com.robot-plugin.@@name@@plugin/1.0")
 
 #endif // clientMsgDispatcher_H

@@ -11,6 +11,7 @@ QMAKE_CXXFLAGS += -std=c++0x
 _INSTALL_ROOT=$$(INSTALL_ROOT)
 
 system ($$PWD/../tools/mkinterface.sh roengines)
+system ($$quote(mkdir $$(QT_SYSROOT)/usr/include/robot/$$escape_expand(\\n\\t)))
 system ($$quote(cp -r $${PWD}/proxy/* $$(QT_SYSROOT)/usr/include/robot/$$escape_expand(\\n\\t)))
 
 QT          += core dbus xml

@@ -34,11 +34,24 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
 
     m_pSocket = new QTcpServer(this);
     connect(m_pSocket, SIGNAL (newConnection()), this, SLOT(on_newConnection()));
+
+    m_camera.set( CV_CAP_PROP_FORMAT, CV_8UC3 );
+    m_camera.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+    m_camera.set(CV_CAP_PROP_FRAME_WIDTH, 640);
+    m_camera.set(CV_CAP_PROP_EXPOSURE, 30);
+
+    if ( !m_camera.open()) {
+        qDebug() << "Error opening camera"<<endl;
+        return;
+    }
+
+    startTracking();
+    startStream();
 }
 
 void balltrackerWorker::startTracking()
 {
-    m_pTimer->start (50);
+    m_pTimer->start (20);
 }
 
 void balltrackerWorker::stopTracking()
@@ -131,33 +144,37 @@ void balltrackerWorker::sendTcpFrame()
 void balltrackerWorker::on_timeout()
 {
     //Mat imgOriginal;
-    Mat imgThresholded_lRed;
-    Mat imgThresholded_hRed;
+//    Mat imgThresholded_lRed;
+//    Mat imgThresholded_hRed;
     Mat imgThresholded;
     m_bBallDetected = false;
 
-    bool bSuccess = m_capture.read(m_data.m_image); // read a new frame from video
+//    bool bSuccess = m_capture.read(m_data.m_image); // read a new frame from video
+//    if (!bSuccess) { //if not success, break loop
+//        qDebug() << "Cannot read a frame from video stream";
+//        return;
+//    }
 
-    if (!bSuccess) { //if not success, break loop
-        qDebug() << "Cannot read a frame from video stream";
-        return;
-    }
+    m_camera.grab();
+    m_camera.retrieve (m_data.m_image);
+//    imwrite("/tmp/edges.png",m_data.m_image);
+
     //qDebug() << m_data.m_image.cols << m_data.m_image.rows;
     int centerBallX = m_data.m_image.cols/2;
     int centerBallY = m_data.m_image.rows/2;
 
     Mat imgHSV;
     cvtColor(m_data.m_image, imgHSV, COLOR_BGR2HSV);   //Convert the captured frame from BGR to HSV
-//    GaussianBlur(imgHSV, imgHSV, Size(7,7), 2, 2);
+    GaussianBlur(imgHSV, imgHSV, Size(7,7), 2, 2);
 
-    inRange(imgHSV, Scalar(0, 100, 100), Scalar(10, 255,255), imgThresholded_lRed); //Threshold the image
-    inRange(imgHSV, Scalar(160, 100, 100), Scalar(179, 255,255), imgThresholded_hRed); //Threshold the image
+    inRange(imgHSV, Scalar(100, 94,84), Scalar(109, 171,143), imgThresholded); //Threshold the image
+//    inRange(imgHSV, Scalar(180, 256, 256), Scalar(179, 255,255), imgThresholded_hRed); //Threshold the image
 
-    cv::addWeighted(imgThresholded_lRed, 1.0, imgThresholded_hRed, 1.0, 0.0, imgThresholded);
+    //cv::addWeighted(imgThresholded_lRed, 1.0, imgThresholded_hRed, 1.0, 0.0, imgThresholded);
     GaussianBlur( imgThresholded, imgThresholded, cv::Size(9, 9), 2, 2 );
     vector<Vec3f> circles;
 
-    HoughCircles( imgThresholded, circles, CV_HOUGH_GRADIENT, 1, imgThresholded.rows/8, 100, 20, 50, 100 );
+    HoughCircles( imgThresholded, circles, CV_HOUGH_GRADIENT, 2, imgThresholded.rows/8, 200, 100, 25, 0 );
 
     if (circles.size()) {
         m_centerBall = Point (cvRound(circles[0][0]), cvRound(circles[0][1]));
@@ -167,9 +184,10 @@ void balltrackerWorker::on_timeout()
         // circle outline
         circle( m_data.m_image, m_centerBall, m_radius, Scalar(0,0,255), 3, 8, 0 );
         m_bBallDetected = true;
-//        imwrite("/tmp/edges.png",imgThresholded);
-//        imwrite("/tmp/circles.png",img);
+        //imwrite("/tmp/edges.png",imgThresholded);
+        //imwrite("/tmp/circles.png",img);
     }
+
     drawCVPannel();
     sendTcpFrame();
 
@@ -182,6 +200,7 @@ void balltrackerWorker::on_newConnection()
 {
     QTcpSocket *clientConnection = m_pSocket->nextPendingConnection();
     connect(clientConnection, SIGNAL (disconnected()), this, SLOT (on_disconnected()));
+    connect(clientConnection, SIGNAL (readyRead()), this, SLOT (on_readyRead()));
     m_listClients.append (clientConnection);
 }
 
@@ -200,4 +219,12 @@ void balltrackerWorker::on_disconnected()
         idx++;
     }
     m_mutex.unlock();
+}
+
+void balltrackerWorker::on_readyRead()
+{
+    QTcpSocket *pSocket = (QTcpSocket *)this->sender();
+    QByteArray arr = pSocket->readAll();
+
+    qDebug() << "Readed data : " << arr;
 }

@@ -14,6 +14,21 @@ MainWindow::MainWindow(QWidget *parent) :
     connect (m_pSocket,SIGNAL (connected()), this, SLOT (on_connected()));
     connect (m_pSocket,SIGNAL (disconnected()), this, SLOT (on_disconnected()));
 
+    m_pValues = new struct values;
+
+    ui->highh->setMaximum(255);
+    ui->highs->setMaximum(255);
+    ui->highv->setMaximum(255);
+    ui->lowh->setMaximum(255);
+    ui->lows->setMaximum(255);
+    ui->lowv->setMaximum(255);
+
+    ui->highh->setValue(m_pValues->m_iHighH);
+    ui->highs->setValue(m_pValues->m_iHighS);
+    ui->highv->setValue(m_pValues->m_iHighV);
+    ui->lowh->setValue(m_pValues->m_iLowH);
+    ui->lows->setValue(m_pValues->m_iLowS);
+    ui->lowv->setValue(m_pValues->m_iLowV);
 
     m_pWidget = new QWidget();
     m_pTimer = new QTimer();
@@ -24,6 +39,11 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::sendData()
+{
+    m_pSocket->write ((const char *)m_pValues, sizeof(struct values));
 }
 
 void MainWindow::on_connected()
@@ -65,4 +85,41 @@ void MainWindow::on_disconnected()
 void MainWindow::on_timeout()
 {
     m_pSocket->connectToHost("192.168.0.1",1234);
+    m_pSocket->write ("HOLA");
+}
+
+void MainWindow::on_lowhChanged(int value)
+{
+    m_pValues->m_iLowH = value;
+    sendData();
+}
+
+void MainWindow::on_lowsChanged(int value)
+{
+    m_pValues->m_iLowS = value;
+    sendData();
+}
+
+void MainWindow::on_lowvChanged(int value)
+{
+    m_pValues->m_iLowV = value;
+    sendData();
+}
+
+void MainWindow::on_highhChanged(int value)
+{
+    m_pValues->m_iHighH = value;
+    sendData();
+}
+
+void MainWindow::on_highsChanged(int value)
+{
+    m_pValues->m_iHighS = value;
+    sendData();
+}
+
+void MainWindow::on_highvChanged(int value)
+{
+    m_pValues->m_iHighV = value;
+    sendData();
 }

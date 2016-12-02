@@ -11,7 +11,8 @@ QMAKE_CXXFLAGS  += -std=c++0x
 _INSTALL_ROOT=$$(INSTALL_ROOT)
 
 system ($$PWD/../tools/mkinterface.sh rotracking_manager)
-system ($$quote(cp -r $${PWD}/proxy/* $$(QT_SYSROOT)/usr/include/robot/$$escape_expand(\\n\\t)))
+system ($$quote(mkdir $$(QT_SYSROOT)/usr/include/robot/$$escape_expand(\\n\\t)))
+system ($$quote(cp -a $${PWD}/proxy/* $$(QT_SYSROOT)/usr/include/robot/$$escape_expand(\\n\\t)))
 
 QT          += core dbus xml
 QT          -= gui
@@ -23,6 +24,7 @@ CONFIG      += console
 CONFIG      -= app_bundle
 TEMPLATE     = app
 SOURCES     +=  main.cpp
+LIBS        += -lopencv_core -lopencv_video -lopencv_highgui -lopencv_imgproc  -lraspicam -lraspicam_cv #-lraspicam_cv -lmmal -lmmal_core -lmmal_vc_client -lmmal_util -lmmal_components -lraspicam
 
 config_files.path	= /etc/
 config_files.files	= $$PWD/robot/

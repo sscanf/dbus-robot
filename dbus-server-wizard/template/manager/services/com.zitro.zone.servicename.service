@@ -1,4 +1,0 @@
-[D-BUS Service]
-Name=com.zitro.zone.@@DBUS_SERVICENAME@@
-Exec=/usr/bin/@@DBUS_SERVICENAME@@
-User=root

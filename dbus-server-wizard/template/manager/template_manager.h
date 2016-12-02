@@ -8,13 +8,13 @@
 #include <QtDBus/QtDBus>
 #include "@@name@@_plugin.h"
 
-#define PLUGINS_PATH        "/usr/lib/zone/@@name@@/"
-#define @@NAME@@_CONFIG_FILE   "/etc/zone/@@name@@_server.xml"
+#define PLUGINS_PATH        "/usr/lib/@@name@@/"
+#define @@NAME@@_CONFIG_FILE   "/etc/robot/@@name@@_server.xml"
 
 class @@name@@Manager : public QCoreApplication
 {
     Q_OBJECT
-    Q_CLASSINFO ("D-Bus Interface","com.zitro.zone.@@name@@")
+    Q_CLASSINFO ("D-Bus Interface","com.robot.@@name@@")
 
 public:
     explicit @@name@@Manager(int & argc, char ** argv);

@@ -6,10 +6,10 @@
 #include <zoaudio_plugin.h>
 #include "@@name@@_worker.h"
 
-class @@name@@_factory : public zoaudioPlugin
+class @@name@@_factory : public @@name@@Plugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.zitro.zone.pio.@@name@@/1.0" FILE "")
+    Q_PLUGIN_METADATA(IID "com.robot.@@name@@/1.0" FILE "")
     Q_INTERFACES(zoaudioPlugin)
 
 public:

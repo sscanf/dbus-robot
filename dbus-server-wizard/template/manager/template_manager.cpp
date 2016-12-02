@@ -12,7 +12,7 @@
 {
     new @@name@@_managerInterface(this);
     m_connection.registerObject("/@@name@@",this);
-    m_connection.registerService("com.zitro.zone.@@name@@");
+    m_connection.registerService("com.robot.@@name@@");
     parseConfig (@@NAME@@_CONFIG_FILE);
 }
 
@@ -37,7 +37,7 @@ QStringList @@name@@Manager::getObjectsByType(QString strType)
     strInterface.replace ("/",".").remove (0,1);
 
     QDBusConnection bus = QDBusConnection::systemBus ();
-    QDBusInterface interface ("com.zitro.zone.@@name@@",
+    QDBusInterface interface ("com.robot.@@name@@",
                               object,
                               strInterface,
                               bus,
@@ -66,7 +66,7 @@ QStringList @@name@@Manager::getObjectsByName(QString strName)
     strInterface.replace ("/",".").remove (0,1);
 
     QDBusConnection bus = QDBusConnection::systemBus ();
-    QDBusInterface interface ("com.zitro.zone.@@name@@",
+    QDBusInterface interface ("com.robot.@@name@@",
                               object,
                               strInterface,
                               bus,
