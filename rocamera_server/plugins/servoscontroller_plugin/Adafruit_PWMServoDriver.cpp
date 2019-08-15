@@ -18,71 +18,66 @@
 
 #include <QDebug>
 #include <Adafruit_PWMServoDriver.h>
-#include <wiringPi.h>
-#include <wiringPiI2C.h>
 #include <QThread>
 #include <QtGlobal>
+#include <math.h>
+#include <string.h>
 
 Adafruit_PWMServoDriver::Adafruit_PWMServoDriver(quint8 addr)
 {
-  m_i2caddr = addr;
+    m_i2caddr = addr;
+    qDebug() << addr;
 }
 
 void Adafruit_PWMServoDriver::begin(void)
 {
-    wiringPiSetupGpio();
-    m_iDevice = wiringPiI2CSetup(0x40);
+    m_i2c.setAddress(m_i2caddr);
     reset();
+    setPWMFreq(50);
 }
 
 void Adafruit_PWMServoDriver::reset(void)
 {
     int errnr;
-    errnr = wiringPiI2CWriteReg8 (m_iDevice, PCA9685_MODE1, 0);
-    qDebug() << strerror(errnr);
-
+    errnr = m_i2c.WriteReg8(PCA9685_MODE1,0x0);
+//    errnr = wiringPiI2CWriteReg8 (m_iDevice, PCA9685_MODE1, 0);
+    if (errnr < 0) {
+        m_i2c.close();
+        qDebug() << strerror(errnr);
+    }
+    QThread::msleep(10);
 }
 
 void Adafruit_PWMServoDriver::setPWMFreq(float freq)
 {
-    //Serial.print("Attempting to set freq ");
-    //Serial.println(freq);
     freq *= 0.9;  // Correct for overshoot in the frequency setting (see issue #11).
     float prescaleval = 25000000.0;
     prescaleval /= 4096;
     prescaleval /= freq;
     prescaleval -= 1.0;
-    uint8_t prescale = floor(prescaleval + 0.5);
+    quint8 prescale = floor(prescaleval + 0.5);
 
-    uint8_t oldmode = wiringPiI2CReadReg8(m_iDevice, PCA9685_MODE1);
-    uint8_t newmode = (oldmode&0x7F) | 0x10; // sleep
-    wiringPiI2CWriteReg8 (m_iDevice, PCA9685_MODE1, newmode); // go to sleep
-    wiringPiI2CWriteReg8 (m_iDevice, PCA9685_PRESCALE, (int) floor(prescale)); // set the prescaler
-    wiringPiI2CWriteReg8 (m_iDevice, PCA9685_MODE1, oldmode);
+    quint8 oldmode = m_i2c.ReadReg8(PCA9685_MODE1);
+
+    quint8 newmode = (oldmode&0x7F) | 0x10; // sleep
+    m_i2c.WriteReg8 (PCA9685_MODE1, newmode);
+    m_i2c.WriteReg8 (PCA9685_PRESCALE, (int) floor(prescale)); // set the prescaler
+    m_i2c.WriteReg8 (PCA9685_MODE1, oldmode);
     QThread::msleep(5);
-    wiringPiI2CWriteReg8 (m_iDevice, PCA9685_MODE1, oldmode | 0x80);  //  This sets the MODE1 register to turn on auto increment.
-                                                                       // This is why the beginTransmission below was not working.
+    m_i2c.WriteReg8 (PCA9685_MODE1, oldmode | 0xa0);  //  This sets the MODE1 register to turn on auto increment.
 }
 
-void Adafruit_PWMServoDriver::setPWM(uint8_t num, uint16_t on, uint16_t off)
+void Adafruit_PWMServoDriver::setPWM(quint8 num, uint16_t on, uint16_t off)
 {
-    int errnr;
-    errnr = wiringPiI2CWriteReg8 (m_iDevice, LED0_ON_L+4*num, on & 0xff);
-//    qDebug() << "write 0x" << hex << (on & 0xFF) << " to register 0x" << hex << (LED0_ON_H + 4 * num) << strerror(errnr);
-
-
-    errnr = wiringPiI2CWriteReg8 (m_iDevice, LED0_ON_H+4*num, on>>8);
-//    qDebug() << "write 0x" << hex << (on>>8) << " to register 0x" << hex << (LED0_ON_L + 4 * num) << strerror(errnr);
-
-    errnr = wiringPiI2CWriteReg8 (m_iDevice, LED0_OFF_L+4*num, off & 0xff);
-//    qDebug() << "write 0x" << hex << (off & 0xFF) << " to register 0x" << hex << (LED0_OFF_H + 4 * num) << strerror(errnr);
-
-    errnr = wiringPiI2CWriteReg8 (m_iDevice, LED0_OFF_H+4*num, off>>8);
-//    qDebug() << "write 0x" << hex << (off>>8) << " to register 0x" << hex << (LED0_OFF_L + 4 * num) << strerror(errnr);
+    m_i2c.WriteReg8 (LED0_ON_L+4*num, on & 0xff);
+    m_i2c.WriteReg8 (LED0_ON_H+4*num, on>>8);
+    m_i2c.WriteReg8 (LED0_OFF_L+4*num, off & 0xff);
+    m_i2c.WriteReg8 (LED0_OFF_H+4*num, off>>8);
+//    qDebug() << on << off;
 
 }
 /*
-void Adafruit_PWMServoDriver::setPulse(uint8_t n, double pulse)
+void Adafruit_PWMServoDriver::setPulse(quint8 n, double pulse)
 {
     double pulselength;
 
@@ -95,7 +90,7 @@ void Adafruit_PWMServoDriver::setPulse(uint8_t n, double pulse)
     degrees = map(pulselength, SERVOMIN, SERVOMAX, 0, 180);
 }
 
-void setServoPulse(uint8_t n, double pulse)
+void setServoPulse(quint8 n, double pulse)
 {
   double pulselength;
 

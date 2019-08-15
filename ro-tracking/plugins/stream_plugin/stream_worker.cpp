@@ -21,6 +21,9 @@ streamWorker::streamWorker(QString strName, QString strDescription, bool bEnable
     QString strObject = "/"+strName;
     m_connection.registerObject(strObject,this);
     m_connection.registerService(strAddress.replace("/","."));
+
+    setImage ("//usr/lib/robot/rotracking/rc/fxone.jpg");
+    start();
 }
 
 void streamWorker::setImage(const char *pImage)
@@ -37,7 +40,7 @@ void streamWorker::start()
     std::vector<const char*>::iterator option;
 
     char imemDataArg[256];
-    sprintf(imemDataArg, "--imem-data=%p", &m_pImage);
+    sprintf(imemDataArg, "--imem-data=%p", m_pImage);
     options.push_back(imemDataArg);
 
     char imemGetArg[256];
@@ -47,7 +50,7 @@ void streamWorker::start()
     char imemReleaseArg[256];
     sprintf(imemReleaseArg, "--imem-release=%p", streamWorker::MyImemReleaseCallback);
     options.push_back(imemReleaseArg);
-    options.push_back(":sout=#transcode{vcodec=h264,venc=x264,vb=0,vbv-bufsize=1200,bframes=0,scale=0,acodec=none}:rtp{sdp=rtsp://:1234/BigDog}");
+    options.push_back(":sout=#transcode{vcodec=h264,venc=x264,vb=0,vbv-bufsize=1200,bframes=0,scale=0,acodec=none}:rtp{sdp=rtsp://:1234}");
     options.push_back("--imem-cookie=\"IMEM\"");
     options.push_back("--imem-codec=RV24");
     options.push_back("--imem-cat=2");

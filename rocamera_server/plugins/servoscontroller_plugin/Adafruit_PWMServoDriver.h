@@ -15,10 +15,10 @@
   BSD license, all text above must be included in any redistribution
  ****************************************************/
 #include <QObject>
+#include "zoi2c.h"
 
 #ifndef _ADAFRUIT_PWMServoDriver_H
 #define _ADAFRUIT_PWMServoDriver_H
-
 
 #define PCA9685_SUBADR1 0x2
 #define PCA9685_SUBADR2 0x3
@@ -46,13 +46,15 @@ public:
     void begin(void);
     void reset(void);
     void setPWMFreq(float freq);
-    void setPWM(uint8_t num, uint16_t on, uint16_t off);
-    void setPin(uint8_t num, int val, bool invert=false);
-//    void setPulse(uint8_t n, double pulse);
+    void setPWM(quint8 num, uint16_t on, uint16_t off);
+    void setPin(quint8 num, int val, bool invert=false);
+//    void setPulse(quint8 n, double pulse);
+
 
 private:
-    uint8_t   m_i2caddr;
-    int       m_iDevice;
+    quint8  m_i2caddr;
+    int      m_iDevice;
+    zoi2c   m_i2c;
 };
 
 #endif

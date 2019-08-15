@@ -60,7 +60,7 @@ private:
     QTcpSocket *m_pCtrlSocket;
     quint64     m_totalBytes;
     QByteArray  m_arrImage;
-    qint32      m_bytesRead;
+    quint64     m_bytesRead;
     QByteArray *m_pData;
     QWidget    *m_pWidget;
     QTimer     *m_pTimer;

@@ -9,7 +9,7 @@
 class balltracker_factory : public rotrackingPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.robot.balltracker/1.0" FILE "")
+    Q_PLUGIN_METADATA(IID "com.robot.balltracker/1.0" )
     Q_INTERFACES(rotrackingPlugin)
 
 public:

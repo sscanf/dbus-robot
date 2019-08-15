@@ -13,7 +13,7 @@ RobotViewer::RobotViewer(QQuickItem *parent):
     m_totalBytes = 1;
     m_pData = new QByteArray();
     m_pValues = new struct values;
-    m_pValues->m_iImgSelect=1;
+    m_pValues->m_iImgSelect=0;
     m_pValues->m_iLowH =ILOW_H;
     m_pValues->m_iHighH=IHIGH_H;
     m_pValues->m_iLowS =ILOW_S;
@@ -29,9 +29,9 @@ RobotViewer::RobotViewer(QQuickItem *parent):
     connect (m_pSocket,SIGNAL (disconnected()), this, SLOT (on_disconnected()));
     connect (m_pSocket,SIGNAL (error(QAbstractSocket::SocketError)), this, SLOT (on_error(QAbstractSocket::SocketError)));
 
-    m_pCtrlSocket = new QTcpSocket (this);
-    connect (m_pCtrlSocket,SIGNAL (connected()),    this, SLOT (on_ctrlConnected()));
-    connect (m_pCtrlSocket,SIGNAL (disconnected()), this, SLOT (on_ctrlDisconnected()));
+//    m_pCtrlSocket = new QTcpSocket (this);
+//    connect (m_pCtrlSocket,SIGNAL (connected()),    this, SLOT (on_ctrlConnected()));
+//    connect (m_pCtrlSocket,SIGNAL (disconnected()), this, SLOT (on_ctrlDisconnected()));
     conectamos();
 
     //m_pTimer->start (1000);
@@ -134,22 +134,22 @@ void RobotViewer::conectamos()
     m_pSocket->close();
     m_pSocket->connectToHost("192.168.0.1",1234);
 
-    m_pCtrlSocket->abort();
-    m_pCtrlSocket->reset();
-    m_pCtrlSocket->close();
-    m_pCtrlSocket->connectToHost("192.168.0.1",1235);
+//    m_pCtrlSocket->abort();
+//    m_pCtrlSocket->reset();
+//    m_pCtrlSocket->close();
+//    m_pCtrlSocket->connectToHost("192.168.0.1",1235);
 }
 
 void RobotViewer::sendData()
 {
-    m_pCtrlSocket->write ((const char *)m_pValues, sizeof(struct values));
-    quint8 pepe[sizeof (values)];
-    memcpy (pepe,m_pValues,sizeof(values));
+//    m_pSocket->write ((const char *)m_pValues, sizeof(struct values));
+//    quint8 pepe[sizeof (values)];
+//    memcpy (pepe,m_pValues,sizeof(values));
 
-    for (int n=0;n<sizeof(values);n++) {
-        printf ("%x ",pepe[n]);
-    }
-    printf ("\n");
+//    for (int n=0;n<sizeof(values);n++) {
+//        printf ("%x ",pepe[n]);
+//    }
+//    printf ("\n");
 }
 
 void RobotViewer::on_connected()
@@ -173,6 +173,7 @@ void RobotViewer::on_readyRead()
             stream >> m_bytesRead;
             if (m_bytesRead > 90000)
                 m_bytesRead = 0;
+            qDebug() << m_bytesRead;
         }
 
         m_pData->append (m_pSocket->readAll());

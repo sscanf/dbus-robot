@@ -5,11 +5,11 @@
 #include <QTcpSocket>
 #include <QImage>
 #include <QTimer>
-
+#include "streamclientWidget.h"
 
 #define ILOW_H  0
-#define IHIGH_H 188
-#define ILOW_S  92
+#define IHIGH_H 219
+#define ILOW_S  88
 #define IHIGH_S 255
 #define ILOW_V  105
 #define IHIGH_V 255
@@ -17,23 +17,6 @@
 namespace Ui {
 class MainWindow;
 }
-
-struct values
-{
-    int m_iLowH;
-    int m_iHighH;
-    int m_iLowS;
-    int m_iHighS;
-    int m_iLowV;
-    int m_iHighV;
-
-    values(): m_iLowH   (ILOW_H),
-              m_iHighH  (IHIGH_H),
-              m_iLowS   (ILOW_S),
-              m_iHighS  (IHIGH_S),
-              m_iLowV   (ILOW_V),
-              m_iHighV  (IHIGH_V){}
-};
 
 class MainWindow : public QMainWindow
 {
@@ -47,15 +30,19 @@ private:
     void sendData (void);
 
 private:
-    Ui::MainWindow  *ui;
-    QTcpSocket      *m_pSocket;
-    quint64          m_totalBytes;
-    QByteArray       m_arrImage;
-    qint32           m_bytesRead;
-    QByteArray      *m_pData;
-    QWidget         *m_pWidget;
-    QTimer          *m_pTimer;
-    values          *m_pValues;
+    Ui::MainWindow     *ui;
+    QTcpSocket         *m_pSocket;
+    quint64             m_totalBytes;
+    QByteArray          m_arrImage;
+    QTimer             *m_pTimer;
+    int                 m_iLowH;
+    int                 m_iHighH;
+    int                 m_iLowS;
+    int                 m_iHighS;
+    int                 m_iLowV;
+    int                 m_iHighV;
+    streamClientWidget *m_pWidgetThreshold;
+    streamClientWidget *m_pWidgetResult;
 
 private slots:
     void on_connected();

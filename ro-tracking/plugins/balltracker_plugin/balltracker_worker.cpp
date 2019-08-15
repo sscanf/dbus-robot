@@ -6,7 +6,13 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
     QObject     (parent),
     m_strName   (strName),
     m_connection(QDBusConnection::systemBus()),
-    m_capture   (0)
+    m_capture   (0),
+    m_iLowH   (ILOW_H),
+    m_iHighH  (IHIGH_H),
+    m_iLowS   (ILOW_S),
+    m_iHighS  (IHIGH_S),
+    m_iLowV   (ILOW_V),
+    m_iHighV  (IHIGH_V)
 {
     if ( !m_capture.isOpened() ){  // if not success, exit program
          qDebug() << "Cannot open the web cam";
@@ -16,12 +22,6 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
     m_strDescription= strDescription;
     m_strAddress    = QString("%1/%2").arg(DBUS_BASE_ADDRESS).arg(strName);
     m_pTimer        = new QTimer();
-    m_iLowH         = 0;
-    m_iHighH        = 188;
-    m_iLowS         = 92;
-    m_iHighS        = 255;
-    m_iLowV         = 105;
-    m_iHighV        = 255;
     m_bBallDetected = false;
 
     new balltracker_workerInterface(this);
@@ -32,26 +32,39 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
 
     connect (m_pTimer, SIGNAL (timeout()),  this, SLOT (on_timeout()));
 
+    m_pThresholdSender = new streamServer (1235);
+    m_pResultSender = new streamServer (1236);
     m_pSocket = new QTcpServer(this);
     connect(m_pSocket, SIGNAL (newConnection()), this, SLOT(on_newConnection()));
+    m_pSocket->listen(QHostAddress("0.0.0.0"),1234);
 
-    m_camera.set( CV_CAP_PROP_FORMAT, CV_8UC3 );
-    m_camera.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
-    m_camera.set(CV_CAP_PROP_FRAME_WIDTH, 640);
-    m_camera.set(CV_CAP_PROP_EXPOSURE, 30);
+//    m_camera.set( CV_CAP_PROP_FORMAT, CV_8UC3 );
+//    m_camera.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+//    m_camera.set(CV_CAP_PROP_FRAME_WIDTH, 640);
+//    m_camera.set(CV_CAP_PROP_EXPOSURE, 30);
 
-    if ( !m_camera.open()) {
-        qDebug() << "Error opening camera"<<endl;
-        return;
-    }
-
+//    if ( !m_camera. open()) {
+//        qDebug() << "Error opening camera"<<endl;
+//        return;
+//    }
     startTracking();
     startStream();
 }
 
+void balltrackerWorker::morphOps(Mat const &thresh)
+{
+    Mat erodeElement = getStructuringElement(MORPH_RECT, Size (3,3));
+    Mat dilatEelment = getStructuringElement(MORPH_RECT,Size (3,3));
+    erode (thresh, thresh, erodeElement);
+    erode (thresh, thresh, erodeElement);
+
+    dilate (thresh, thresh, dilatEelment);
+    dilate (thresh, thresh, dilatEelment);
+}
+
 void balltrackerWorker::startTracking()
 {
-    m_pTimer->start (20);
+    m_pTimer->start (60);
 }
 
 void balltrackerWorker::stopTracking()
@@ -61,12 +74,14 @@ void balltrackerWorker::stopTracking()
 
 void balltrackerWorker::startStream()
 {
-    m_pSocket->listen(QHostAddress("0.0.0.0"),1234);
+    m_pThresholdSender->startListening();
+    m_pResultSender->startListening();
 }
 
 void balltrackerWorker::stopStream()
 {
-    m_pSocket->close();
+    m_pThresholdSender->stopListening();
+    m_pResultSender->stopListening();
 }
 
 QPoint balltrackerWorker::centerDistance()
@@ -79,12 +94,17 @@ bool balltrackerWorker::isBallDetected()
     return m_bBallDetected;
 }
 
-QPoint balltrackerWorker::possition()
+QPoint balltrackerWorker::xyPossition()
 {
     QPoint pos;
-    pos.setX(m_centerBall.x);
-    pos.setY(m_centerBall.y);
+    pos.setX(m_centerBall.x());
+    pos.setY(m_centerBall.y());
     return pos;
+}
+
+int balltrackerWorker::zPossition()
+{
+   return m_centerBall.z();
 }
 
 void balltrackerWorker::drawCVPannel()
@@ -103,13 +123,13 @@ void balltrackerWorker::drawCVPannel()
     Point textOrg (10,20);
 
     char buff[80];
-    sprintf (buff,"X = %d ",m_centerBall.x);
+    sprintf (buff,"X = %f ",m_centerBall.x());
     putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,8);
     textOrg.y+=15;
-    sprintf (buff,"Y = %d ",m_centerBall.y);
+    sprintf (buff,"Y = %f ",m_centerBall.y());
     putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,8);
     textOrg.y+=15;
-    sprintf (buff,"Z = %d ",m_radius);
+    sprintf (buff,"Z = %f ",m_centerBall.z());
     putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,8);
     textOrg.y+=15;
     sprintf (buff,"Dist. X = %d ",m_centerDistance.x());
@@ -117,28 +137,6 @@ void balltrackerWorker::drawCVPannel()
     textOrg.y+=15;
     sprintf (buff,"Dist. Y = %d ",m_centerDistance.y());
     putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,8);
-}
-
-void balltrackerWorker::sendTcpFrame()
-{
-    if (m_pSocket->isListening()) {
-        Mat img = m_data.m_image;
-        QImage imgIn= QImage(img.data, img.cols, img.rows, img.step, QImage::Format_RGB888);
-        QByteArray arr;
-        QBuffer buffer(&arr);
-        buffer.open (QIODevice::WriteOnly);
-        imgIn.save (&buffer,"JPEG");
-
-        QByteArray sendArr;
-        QDataStream stream (&sendArr,QIODevice::WriteOnly);
-        stream << arr;
-
-        m_mutex.lock();
-        foreach (QTcpSocket *pSocket, m_listClients) {
-            pSocket->write (sendArr);
-        }
-        m_mutex.unlock();
-    }
 }
 
 void balltrackerWorker::on_timeout()
@@ -149,82 +147,73 @@ void balltrackerWorker::on_timeout()
     Mat imgThresholded;
     m_bBallDetected = false;
 
-//    bool bSuccess = m_capture.read(m_data.m_image); // read a new frame from video
-//    if (!bSuccess) { //if not success, break loop
-//        qDebug() << "Cannot read a frame from video stream";
-//        return;
-//    }
+    bool bSuccess = m_capture.read(m_data.m_image); // read a new frame from video
+    if (!bSuccess) { //if not success, break loop
+        qDebug() << "Cannot read a frame from video stream";
+        return;
+    }
 
-    m_camera.grab();
-    m_camera.retrieve (m_data.m_image);
-//    imwrite("/tmp/edges.png",m_data.m_image);
+    //Rotamos la imágen 90 grados porque la cámara está en posición vertical.
+    double angle = 90;
+    Point2f center((m_data.m_image.cols-1)/2.0, (m_data.m_image.rows-1)/2.0);
+    Mat rot = getRotationMatrix2D( center,angle,1);
+    warpAffine(m_data.m_image, m_data.m_image, rot, m_data.m_image.size());
 
-    //qDebug() << m_data.m_image.cols << m_data.m_image.rows;
     int centerBallX = m_data.m_image.cols/2;
     int centerBallY = m_data.m_image.rows/2;
 
     Mat imgHSV;
     cvtColor(m_data.m_image, imgHSV, COLOR_BGR2HSV);   //Convert the captured frame from BGR to HSV
-    GaussianBlur(imgHSV, imgHSV, Size(7,7), 2, 2);
 
-    inRange(imgHSV, Scalar(100, 94,84), Scalar(109, 171,143), imgThresholded); //Threshold the image
-//    inRange(imgHSV, Scalar(180, 256, 256), Scalar(179, 255,255), imgThresholded_hRed); //Threshold the image
+    inRange(imgHSV, Scalar(m_iLowH, m_iLowS, m_iLowV), Scalar(m_iHighH, m_iHighS, m_iHighV), imgThresholded); //Threshold the image
+    morphOps (imgThresholded);
 
-    //cv::addWeighted(imgThresholded_lRed, 1.0, imgThresholded_hRed, 1.0, 0.0, imgThresholded);
     GaussianBlur( imgThresholded, imgThresholded, cv::Size(9, 9), 2, 2 );
     vector<Vec3f> circles;
-
-    HoughCircles( imgThresholded, circles, CV_HOUGH_GRADIENT, 2, imgThresholded.rows/8, 200, 100, 25, 0 );
+    HoughCircles( imgThresholded, circles, CV_HOUGH_GRADIENT, 2, imgThresholded.rows/32, 200, 100, 10, 0 );
 
     if (circles.size()) {
-        m_centerBall = Point (cvRound(circles[0][0]), cvRound(circles[0][1]));
-        m_radius = cvRound(circles[0][2]);
+        m_centerBall = QVector3D (cvRound(circles[0][0]), cvRound(circles[0][1]), cvRound(circles[0][2]));
         // circle m_centerBall
-        circle( m_data.m_image, m_centerBall, 3, Scalar(0,255,0), -1, 8, 0 );
+        circle( m_data.m_image, Point (m_centerBall.x(), m_centerBall.y()), 3, Scalar(0,255,0), -1, 8, 0 );
         // circle outline
-        circle( m_data.m_image, m_centerBall, m_radius, Scalar(0,0,255), 3, 8, 0 );
+        circle( m_data.m_image, Point (m_centerBall.x(), m_centerBall.y()), m_centerBall.z(), Scalar(0,0,255), 3, 8, 0 );
         m_bBallDetected = true;
-        //imwrite("/tmp/edges.png",imgThresholded);
+        emit possitionChanged(xyPossition());
         //imwrite("/tmp/circles.png",img);
     }
 
     drawCVPannel();
-    sendTcpFrame();
+    m_pThresholdSender->sendTcpFrame(imgThresholded);
+    m_pResultSender->sendTcpFrame(m_data.m_image);
 
-    int distX = m_centerBall.x - centerBallX;
-    int distY = m_centerBall.y - centerBallY;
+    int distX = m_centerBall.x() - centerBallX;
+    int distY = m_centerBall.y() - centerBallY;
     m_centerDistance = QPoint (distX, distY);
 }
 
 void balltrackerWorker::on_newConnection()
 {
-    QTcpSocket *clientConnection = m_pSocket->nextPendingConnection();
-    connect(clientConnection, SIGNAL (disconnected()), this, SLOT (on_disconnected()));
-    connect(clientConnection, SIGNAL (readyRead()), this, SLOT (on_readyRead()));
-    m_listClients.append (clientConnection);
+    m_pClient = m_pSocket->nextPendingConnection();
+    connect(m_pClient, SIGNAL (disconnected()), this, SLOT (on_disconnected()));
+    connect(m_pClient, SIGNAL (readyRead()), this, SLOT (on_readyRead()));
 }
 
 void balltrackerWorker::on_disconnected()
 {
-    QTcpSocket *pClient = (QTcpSocket *)sender();
-
-    m_mutex.lock();
-    int idx=0;
-    foreach (QTcpSocket *pSocket, m_listClients) {
-        if (pSocket == pClient) {
-            m_listClients.removeAt (idx);
-            pSocket->deleteLater();
-            break;
-        }
-        idx++;
-    }
-    m_mutex.unlock();
+    m_pClient->deleteLater();
 }
 
 void balltrackerWorker::on_readyRead()
 {
     QTcpSocket *pSocket = (QTcpSocket *)this->sender();
     QByteArray arr = pSocket->readAll();
+    QDataStream in (&arr, QIODevice::ReadOnly);
+    in >> m_iLowH;
+    in >> m_iHighH;
+    in >> m_iLowS;
+    in >> m_iHighS;
+    in >> m_iLowV;
+    in >> m_iHighV;
 
-    qDebug() << "Readed data : " << arr;
 }

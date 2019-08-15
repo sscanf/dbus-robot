@@ -3,12 +3,9 @@ QT += dbus
 VERSION = \\\"'01.00.00'\\\"
 DEFINES += APP_VERSION=$${VERSION}
 
-_INSTALL_ROOT=$$(INSTALL_ROOT)
-isEmpty (_INSTALL_ROOT){
-    message ("not defined");
-    _INSTALL_ROOT=/
-}
-
+system ($$PWD/../tools/mkinterface.sh stream_worker)
+system ($$quote(mkdir $$[QT_SYSROOT]/usr/include/robot/$$escape_expand(\\n\\t)))
+system ($$quote(cp -a $${PWD}/proxy/* $$[QT_SYSROOT]/usr/include/robot/$$escape_expand(\\n\\t)))
 system ($$PWD/../tools/mkinterface.sh stream_worker)
 
 INCLUDEPATH += ../../common
@@ -21,11 +18,14 @@ CONFIG      += plugin debug
 TARGET       = $$qtLibraryTarget(stream-plugin)
 DESTDIR      = plugins
 LIBS        += -lvlc
+LIBS        += -L$$(OECORE_TARGET_SYSROOT)/usr/lib/arm-linux-gnueabihf/tegra/
 
-dbus_proxy_files.path   = /usr/lib/zone/zoaudio
+dbus_proxy_files.path   = /usr/lib/robot/rotracking
 dbus_proxy_files.files  = $$PWD/proxy
 config_files.path       = /etc/
-config_files.files      = $$PWD/zone/
+config_files.files      = $$PWD/robot/
+resource_files.path     = /usr/lib/robot/rotracking
+resource_files.files    = $$PWD/rc/
 
 HEADERS = stream_worker_interface.h   \
           stream_factory.h            \
@@ -36,7 +36,7 @@ SOURCES  = stream_worker_interface.cpp\
            stream_factory.cpp
 
 target.path = /usr/lib/
-INSTALLS += target dbus_proxy_files
+INSTALLS += target dbus_proxy_files resource_files
 
 QMAKE_CLEAN += $$PWD/stream_worker_interface.cpp       \
                $$PWD/stream_worker_interface.h         \

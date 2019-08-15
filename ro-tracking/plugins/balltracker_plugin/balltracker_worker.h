@@ -18,12 +18,20 @@
 #include <QImage>
 #include <QImageWriter>
 #include <QVector3D>
-#include <raspicam/raspicam_cv.h>
+#include "streamServer.h"
+//#include <raspicam/raspicam_cv.h>
 
 #define PLUGIN_TYPE   " Please, define plugin type !!! "
 
 using namespace std;
 using namespace cv;
+
+#define ILOW_H  0
+#define IHIGH_H 189
+#define ILOW_S  54
+#define IHIGH_S 206
+#define ILOW_V  207
+#define IHIGH_V 255
 
 class MyImemData
 {
@@ -55,13 +63,14 @@ public Q_SLOTS:
     void    stopTracking  ();
     void    startStream   ();
     void    stopStream    ();
-    QPoint  possition     ();
+    QPoint  xyPossition   ();
+    int     zPossition    ();
     QPoint  centerDistance();
     bool    isBallDetected();
+    void    morphOps      (Mat const &thresh);
 
 private:    //Functions
     void    drawCVPannel   ();
-    void    sendTcpFrame   ();
 
 private:    //Variables
     int             m_address;
@@ -72,25 +81,27 @@ private:    //Variables
     QDBusConnection m_connection;
     QTimer         *m_pTimer;
     VideoCapture    m_capture;
+    MyImemData      m_data;
+    QTcpServer     *m_pSocket;
+    QTcpSocket     *m_pClient;
+    streamServer    *m_pThresholdSender;
+    streamServer    *m_pResultSender;
+    QMutex          m_mutex;
+    QVector3D       m_centerBall;
+    QPoint          m_centerDistance;
+    bool            m_bBallDetected;
     int             m_iLowH;
     int             m_iHighH;
     int             m_iLowS;
     int             m_iHighS;
     int             m_iLowV;
     int             m_iHighV;
-    MyImemData      m_data;
 
-    QTcpServer         *m_pSocket;
-    QList<QTcpSocket *> m_listClients;
-    QMutex              m_mutex;
-    Point               m_centerBall;
-    QPoint              m_centerDistance;
-    int                 m_radius;
-    bool                m_bBallDetected;
-    raspicam::RaspiCam_Cv  m_camera;
+//    raspicam::RaspiCam_Cv  m_camera;
 
 signals:
-    void  error (bool bError);
+    void error (bool bError);
+    void possitionChanged (QPoint possition);
 
 private slots:
     void on_timeout ();

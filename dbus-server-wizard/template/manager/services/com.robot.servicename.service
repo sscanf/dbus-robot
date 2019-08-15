@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=com.robot.@@DBUS_SERVICENAME@@
+Exec=/usr/bin/@@DBUS_SERVICENAME@@
+User=root
