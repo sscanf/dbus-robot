@@ -18,7 +18,7 @@ TEMPLATE     = lib
 CONFIG      += plugin
 TARGET       = $$qtLibraryTarget(balltracker-plugin)
 DESTDIR      = plugins
-LIBS        += -L$$(OECORE_TARGET_SYSROOT)/usr/lib/arm-linux-gnueabihf/tegra/
+#LIBS        += -L$$(OECORE_TARGET_SYSROOT)/usr/lib/arm-linux-gnueabihf/tegra/
 
 LIBS        += -lopencv_core -lopencv_video -lopencv_highgui -lopencv_imgproc -lopencv_videoio  #-lraspicam -lraspicam_cv -lmmal -lmmal_core -lmmal_vc_client -lmmal_util -lmmal_components -lraspicam
 

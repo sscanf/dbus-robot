@@ -16,7 +16,6 @@ system ($$quote(cp -r $${PWD}/proxy/* $$(QT_SYSROOT)/usr/include/robot/$$escape_
 
 QT          += core dbus xml
 QT          -= gui
-INCLUDEPATH += $$(QT_SYSROOT)/usr/include
 INCLUDEPATH += ../common/
 TARGET       = roengines
 CONFIG      += debug

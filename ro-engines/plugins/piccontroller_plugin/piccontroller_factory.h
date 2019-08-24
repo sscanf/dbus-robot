@@ -9,7 +9,7 @@
 class piccontroller_factory : public roenginesPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.robot.piccontroller/1.0" FILE "")
+    Q_PLUGIN_METADATA(IID "com.robot.piccontroller/1.0" )
     Q_INTERFACES(roenginesPlugin)
 
 public:
