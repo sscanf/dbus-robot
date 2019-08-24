@@ -12,6 +12,7 @@
 #include <opencv2/video/video.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/core/ocl.hpp>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QMutex>
@@ -96,12 +97,14 @@ private:    //Variables
     int             m_iHighS;
     int             m_iLowV;
     int             m_iHighV;
+    int             m_ballLostCount=0;
 
 //    raspicam::RaspiCam_Cv  m_camera;
 
 signals:
     void error (bool bError);
     void possitionChanged (QPoint possition);
+    void ballLost();
 
 private slots:
     void on_timeout ();

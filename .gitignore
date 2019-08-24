@@ -41,6 +41,4 @@ com.robot.roengines.xml
 com.robot.rotracking_manager.xml
 com.robot.balltracker_worker.xml
 *proxy/
-rotracking
-robot
-rostream
+vlc-qt

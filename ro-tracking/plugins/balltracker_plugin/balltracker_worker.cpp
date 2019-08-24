@@ -14,10 +14,24 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
     m_iLowV   (ILOW_V),
     m_iHighV  (IHIGH_V)
 {
+
+    ocl::setUseOpenCL(true);
+    if (!ocl::haveOpenCL()) {
+        qDebug() << "OpenCL is not available...";
+    }
+
+
     if ( !m_capture.isOpened() ){  // if not success, exit program
          qDebug() << "Cannot open the web cam";
          return;
     }
+
+
+    m_capture.set (CV_CAP_PROP_FRAME_WIDTH,320);
+    m_capture.set (CV_CAP_PROP_FRAME_HEIGHT,240);
+    m_capture.set (CV_CAP_PROP_BRIGHTNESS,50);
+    m_capture.set(CV_CAP_PROP_EXPOSURE, 30);
+
     m_bEnabled      = bEnabled;
     m_strDescription= strDescription;
     m_strAddress    = QString("%1/%2").arg(DBUS_BASE_ADDRESS).arg(strName);
@@ -38,10 +52,8 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
     connect(m_pSocket, SIGNAL (newConnection()), this, SLOT(on_newConnection()));
     m_pSocket->listen(QHostAddress("0.0.0.0"),1234);
 
-//    m_camera.set( CV_CAP_PROP_FORMAT, CV_8UC3 );
 //    m_camera.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
 //    m_camera.set(CV_CAP_PROP_FRAME_WIDTH, 640);
-//    m_camera.set(CV_CAP_PROP_EXPOSURE, 30);
 
 //    if ( !m_camera. open()) {
 //        qDebug() << "Error opening camera"<<endl;
@@ -153,11 +165,11 @@ void balltrackerWorker::on_timeout()
         return;
     }
 
-    //Rotamos la imágen 90 grados porque la cámara está en posición vertical.
-    double angle = 90;
-    Point2f center((m_data.m_image.cols-1)/2.0, (m_data.m_image.rows-1)/2.0);
-    Mat rot = getRotationMatrix2D( center,angle,1);
-    warpAffine(m_data.m_image, m_data.m_image, rot, m_data.m_image.size());
+//    //Rotamos la imágen 90 grados porque la cámara está en posición vertical.
+//    double angle = 90;
+//    Point2f center((m_data.m_image.cols-1)/2.0, (m_data.m_image.rows-1)/2.0);
+//    Mat rot = getRotationMatrix2D( center,angle,1);
+//    warpAffine(m_data.m_image, m_data.m_image, rot, m_data.m_image.size());
 
     int centerBallX = m_data.m_image.cols/2;
     int centerBallY = m_data.m_image.rows/2;
@@ -180,7 +192,14 @@ void balltrackerWorker::on_timeout()
         circle( m_data.m_image, Point (m_centerBall.x(), m_centerBall.y()), m_centerBall.z(), Scalar(0,0,255), 3, 8, 0 );
         m_bBallDetected = true;
         emit possitionChanged(xyPossition());
+        m_ballLostCount=0;
         //imwrite("/tmp/circles.png",img);
+    } else {
+        m_ballLostCount++;
+        if (m_ballLostCount>4) {
+            emit ballLost();
+            m_ballLostCount=0;
+        }
     }
 
     drawCVPannel();

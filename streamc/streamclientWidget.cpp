@@ -5,6 +5,8 @@ streamClientWidget::streamClientWidget(QString host, int port, QWidget *parent) 
     m_port (port),
     QWidget (parent)
 {
+    setMinimumSize(QSize (640,480));
+    resize (QSize (320,240));
     m_bytesRead = 0;
     m_pData = new QByteArray();
 
@@ -40,9 +42,10 @@ void streamClientWidget::on_readyRead()
 
     if (m_pData->size() >= m_bytesRead) {
         m_bytesRead=0;
-        QImage image;
+        QPixmap image;
         image.loadFromData(*m_pData);
         QPalette palette;
+        image = image.scaled (QSize (640,480));
         palette.setBrush(QPalette::Background,QBrush(image));
         setPalette(palette);
         show();
