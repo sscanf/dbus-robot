@@ -6,7 +6,7 @@
 #define ROOT_TAGNAME             "ROBOT"
 #define PLUGINS_PATH             "/usr/lib/"
 #define ROTRACKING_CONFIG_FILE   "/etc/robot/roenginesserver.xml"
-#define DBUS_BASE_ADDRESS        "/com/robot"
+#define DBUS_BASE_ADDRESS        "roengines/engines"
 
 
 /**

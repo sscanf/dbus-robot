@@ -8,8 +8,6 @@ VERSION = \\\"'01.00.00'\\\"
 DEFINES += APP_VERSION=$${VERSION}
 QMAKE_CXXFLAGS += -std=c++0x
 
-_INSTALL_ROOT=$$(INSTALL_ROOT)
-
 system ($$PWD/../tools/mkinterface.sh roengines)
 system ($$quote(mkdir $$(QT_SYSROOT)/usr/include/robot/$$escape_expand(\\n\\t)))
 system ($$quote(cp -r $${PWD}/proxy/* $$(QT_SYSROOT)/usr/include/robot/$$escape_expand(\\n\\t)))
@@ -18,7 +16,6 @@ QT          += core dbus xml
 QT          -= gui
 INCLUDEPATH += ../common/
 TARGET       = roengines
-CONFIG      += debug
 CONFIG      += console
 CONFIG      -= app_bundle
 TEMPLATE     = app
@@ -51,4 +48,4 @@ INSTALLS    += dbus_services
 QMAKE_CLEAN += $$PWD/roengines_interface.cpp \
                $$PWD/roengines_interface.h   \
                $$PWD/com.robot.roengines.xml \
-               $$PWD/proxy/*
+               -r $$PWD/proxy/*

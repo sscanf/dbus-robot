@@ -10,6 +10,7 @@ QT          += core dbus xml
 QT          -= gui
 INCLUDEPATH += ../../common
 #INCLUDEPATH += $$[QT_SYSROOT]/usr/include
+INCLUDEPATH += ../../../common/
 INCLUDEPATH += ./plugins/common/
 INCLUDEPATH += $$PWD/
 TEMPLATE     = lib
@@ -33,14 +34,14 @@ target.path = /usr/lib/
 HEADERS = servoscontroller_worker_interface.h   \
           servoscontroller_factory.h            \
           servoscontroller_worker.h \
-    Adafruit_PWMServoDriver.h \
-    zoi2c.h
+          Adafruit_PWMServoDriver.h \
+          ../../../common/zoi2c.h
 
 SOURCES  = servoscontroller_worker_interface.cpp\
            servoscontroller_worker.cpp          \
            servoscontroller_factory.cpp \
-    Adafruit_PWMServoDriver.cpp \
-    zoi2c.cpp
+           Adafruit_PWMServoDriver.cpp \
+           ../../../common/zoi2c.cpp
 
 INSTALLS += target #dbus_files dbus_services
 

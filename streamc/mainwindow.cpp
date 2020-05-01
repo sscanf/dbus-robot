@@ -33,8 +33,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lows->setValue(m_iLowS);
     ui->lowv->setValue(m_iLowV);
 
-    m_pWidgetThreshold = new streamClientWidget("192.168.1.142",1235);
-    m_pWidgetResult = new streamClientWidget("192.168.1.142",1236);
+    m_pWidgetThreshold = new streamClientWidget("192.168.0.1",1235);
+    m_pWidgetResult = new streamClientWidget("192.168.0.1",1236);
     m_pTimer = new QTimer();
     connect (m_pTimer,SIGNAL (timeout()), this, SLOT (on_timeout()));
     m_pTimer->start (1000);
@@ -70,7 +70,7 @@ void MainWindow::on_disconnected()
 
 void MainWindow::on_timeout()
 {
-    m_pSocket->connectToHost("192.168.1.142",1234);
+    m_pSocket->connectToHost("192.168.0.1",1234);
 }
 
 void MainWindow::on_lowhChanged(int value)

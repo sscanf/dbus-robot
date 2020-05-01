@@ -17,7 +17,6 @@ piccontrollerWorker::piccontrollerWorker(QString strName, QString strDescription
     QString strAddress = m_strAddress;
     QString strObject = "/"+strName;
     m_connection.registerObject(strObject,this);
-    m_connection.registerService(strAddress.replace("/","."));
 
     m_pUsbBufferTx = new quint8[USB_BUFFER_LEN];
     m_pUsbBufferRx = new quint8[USB_BUFFER_LEN];
@@ -29,13 +28,16 @@ piccontrollerWorker::piccontrollerWorker(QString strName, QString strDescription
 
 void piccontrollerWorker::getEngineData()
 {
+    unsigned int speed;
     if (m_libUsb.get (m_pUsbBufferRx,USB_BUFFER_LEN)) {
         //Error de USB
-        //Posiblemente el SUB se ha desconectado.
+        //Posiblemente el USB se ha desconectado.
         emit error(true);
     } else {
-        m_speed      = m_pUsbBufferRx[0] << 8;
-        m_speed     |= m_pUsbBufferRx[1];
+        speed      = m_pUsbBufferRx[0] << 8;
+        speed     |= m_pUsbBufferRx[1];
+        m_realSpeed = (int16_t)(speed)*-1;
+
         m_encoder1   = m_pUsbBufferRx[2] << 8;
         m_encoder1  |= m_pUsbBufferRx[3];
         m_encoder2   = m_pUsbBufferRx[4] << 8;
@@ -58,7 +60,7 @@ void piccontrollerWorker::on_timeout()
 
 int piccontrollerWorker::getSpeed()
 {
-    return m_speed;
+    return m_realSpeed;
 }
 
 int piccontrollerWorker::getEncoder1()
@@ -74,6 +76,7 @@ int piccontrollerWorker::getEncoder2()
 void piccontrollerWorker::setSpeed(int speed)
 {
     int bPid = 1;
+//    speed*=-1;
 
     m_pUsbBufferTx[VELOCIDAD_H]=speed>>8;
     m_pUsbBufferTx[VELOCIDAD_L]=speed&0x00ff;
@@ -111,19 +114,45 @@ void piccontrollerWorker::setDualSpeed(int left, int right)
 
 void piccontrollerWorker::setTurn(int turn)
 {
-    int tmp = (m_speed - (turn+m_speed));
-    int engineLeft  = 15;
-    int engineRight = 15;
+    int engineLeft =0;
+    int engineRight=0;
 
-    if (tmp<0)
-      engineLeft+=tmp;
-    else
-      engineRight-=tmp;
-
-    engineLeft -= (m_speed*-1)+15;
-    engineRight -= (m_speed*-1)+15;
-
-    if (engineLeft<0) engineLeft=0;
-    if (engineRight<0) engineRight=0;
+    if (m_speed==0) {
+        if (turn>0) {
+            engineRight=turn;
+            engineLeft=turn*-1;
+        } else {
+            engineRight=turn;
+            engineLeft=turn*-1;
+        }
+    } else {
+        if (turn>0) {
+            engineRight=m_speed+turn;
+            engineLeft=m_speed;
+        } else {
+            engineLeft=m_speed+turn;
+            engineRight=m_speed;
+        }
+    }
+    qDebug() << engineLeft << engineRight;
     setDualSpeed (engineLeft, engineRight);
+//    int tmp = (m_speed - (turn+m_speed));
+//    qDebug() << tmp;
+//    int engineLeft  = 15;
+//    int engineRight = 15;
+
+//    if (tmp<0)
+//      engineLeft+=tmp;
+//    else
+//      engineRight-=tmp;
+
+//    engineLeft -= (m_speed)+15;
+//    engineRight -= (m_speed)+15;
+
+//    if (engineLeft<0) engineLeft=0;
+//    if (engineRight<0) engineRight=0;
+
+
+
+
 }

@@ -42,7 +42,6 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
     QString strAddress = m_strAddress;
     QString strObject = "/"+strName;
     m_connection.registerObject(strObject,this);
-    m_connection.registerService(strAddress.replace("/","."));
 
     connect (m_pTimer, SIGNAL (timeout()),  this, SLOT (on_timeout()));
 
@@ -182,7 +181,7 @@ void balltrackerWorker::on_timeout()
 
     GaussianBlur( imgThresholded, imgThresholded, cv::Size(9, 9), 2, 2 );
     vector<Vec3f> circles;
-    HoughCircles( imgThresholded, circles, CV_HOUGH_GRADIENT, 2, imgThresholded.rows/32, 200, 100, 10, 0 );
+    HoughCircles( imgThresholded, circles, CV_HOUGH_GRADIENT, 2, imgThresholded.rows/32, 200, 80, 0, 0 );
 
     if (circles.size()) {
         m_centerBall = QVector3D (cvRound(circles[0][0]), cvRound(circles[0][1]), cvRound(circles[0][2]));
@@ -234,5 +233,6 @@ void balltrackerWorker::on_readyRead()
     in >> m_iHighS;
     in >> m_iLowV;
     in >> m_iHighV;
+
 
 }

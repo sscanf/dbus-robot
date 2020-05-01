@@ -27,6 +27,8 @@ public:
     int         setDevicefile  (QString filename);
     int         receive        (unsigned char *RxBuf, int length);
     int         receive        (unsigned char RegisterAddress, unsigned char *RxBuf, int length);
+    int         ReadBytes      (unsigned char RegisterAddress, unsigned char *RxBuf, int length);
+
     qint8       ReadReg8       (unsigned char RegisterAddress);
     int         WriteReg8      (quint8 RegisterAddress, int value);
     int         send           (const QByteArray &buffer);

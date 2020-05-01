@@ -22,7 +22,6 @@ bool QlibUsb::isOpen ()
 int QlibUsb::open (int vendorId, int productId)
 {
     int r; 								//for return values
-    ssize_t cnt; 						//holding number of devices in list
     r = libusb_init(NULL); 				//initialize the library for the session we just declared
     if(r < 0)
     {

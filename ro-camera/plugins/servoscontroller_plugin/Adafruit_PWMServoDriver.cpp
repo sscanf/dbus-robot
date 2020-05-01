@@ -31,7 +31,7 @@ Adafruit_PWMServoDriver::Adafruit_PWMServoDriver(quint8 addr)
 
 void Adafruit_PWMServoDriver::begin(void)
 {
-    m_i2c.setAddress(m_i2caddr);
+   qDebug() << "setAddres = " << m_i2c.setAddress(m_i2caddr);
     reset();
     setPWMFreq(50);
 }
@@ -67,7 +67,7 @@ void Adafruit_PWMServoDriver::setPWMFreq(float freq)
     m_i2c.WriteReg8 (PCA9685_MODE1, oldmode | 0xa0);  //  This sets the MODE1 register to turn on auto increment.
 }
 
-void Adafruit_PWMServoDriver::setPWM(quint8 num, uint16_t on, uint16_t off)
+void Adafruit_PWMServoDriver::setPWM(quint8 num, quint16 on, quint16 off)
 {
     m_i2c.WriteReg8 (LED0_ON_L+4*num, on & 0xff);
     m_i2c.WriteReg8 (LED0_ON_H+4*num, on>>8);

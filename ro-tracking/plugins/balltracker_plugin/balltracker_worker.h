@@ -48,7 +48,7 @@ public:
 class balltrackerWorker : public QObject
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "com.robot.tracker")
+    Q_CLASSINFO("D-Bus Interface", "com.robot.rotracking")
 
 public:
     explicit balltrackerWorker(QString strName, QString strDescription = 0, bool bEnabled=0, QObject *parent = 0);

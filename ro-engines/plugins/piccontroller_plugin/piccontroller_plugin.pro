@@ -1,13 +1,8 @@
-QT += dbus multimedia
+QT += dbus
+QT -= gui
 
 VERSION = \\\"'01.00.00'\\\"
 DEFINES += APP_VERSION=$${VERSION}
-
-_INSTALL_ROOT=$$(INSTALL_ROOT)
-isEmpty (_INSTALL_ROOT){
-    message ("not defined");
-    _INSTALL_ROOT=/
-}
 
 system ($$PWD/../tools/mkinterface.sh piccontroller_worker)
 system ($$quote(mkdir $$(QT_SYSROOT)/usr/include/robot/$$escape_expand(\\n\\t)))

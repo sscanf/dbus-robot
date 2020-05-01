@@ -115,7 +115,7 @@ int zoi2c::receive(unsigned char *RxBuf, int length){
     int ret = read(fd, RxBuf, static_cast<int>(length));
     if (ret != length)
         return errorMsg( QString ("i2c read error! Address: %1 dev file: %3\n").arg(slave_address).arg(devicefile));
-    return 1;
+    return ret;
 }
 
 int zoi2c::receive(unsigned char RegisterAddress, unsigned char *RxBuf, int length)
@@ -138,6 +138,17 @@ int zoi2c::receive(unsigned char RegisterAddress, unsigned char *RxBuf, int leng
         return errorMsg( QString ("i2c read error! Address: %1 dev file: %3\n").arg(slave_address).arg(devicefile));
 
     return 1;
+}
+
+int zoi2c::ReadBytes(unsigned char RegisterAddress, unsigned char *RxBuf, int length)
+{
+    int n;
+    for (n=0;n<length;n++) {
+        RxBuf[n]=ReadReg8(RegisterAddress+n);
+        if (RxBuf[n]==-1)
+            break;
+    }
+    return n;
 }
 
 qint8 zoi2c::ReadReg8(unsigned char RegisterAddress)

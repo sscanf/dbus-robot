@@ -1,5 +1,6 @@
 TEMPLATE = subdirs
-SUBDIRS += $$PWD/ro-camera \
+SUBDIRS += $$PWD/robot \
+           $$PWD/ro-camera \
            $$PWD/ro-engines \
            $$PWD/ro-tracking \
-           $$PWD/streamc
+           $$PWD/ro-sensors

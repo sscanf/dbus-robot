@@ -1,6 +1,6 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node>
-  <interface name="com.zitro.zone.zoaudio">
+  <interface name="com.robot.roengines">
     <signal name="error">
       <arg name="bError" type="b" direction="out"/>
     </signal>

@@ -13,7 +13,6 @@ TARGET       = rocamera
 CONFIG      += console
 CONFIG      -= app_bundle
 TEMPLATE     = app
-SOURCES     +=  main.cpp                     \
 
 
 config_files.path   = /etc/
@@ -26,7 +25,8 @@ dbus_services.path  = /usr/share/dbus-1/
 dbus_services.files = $$PWD/services
 
 
-SOURCES += rocamera_manager.cpp         \
+SOURCES += main.cpp \
+           rocamera_manager.cpp         \
            rocamera_manager_interface.cpp
 
 HEADERS += rocamera_manager.h          \
@@ -42,4 +42,4 @@ INSTALLS += dbus_services
 QMAKE_CLEAN += $$PWD/rocamera_manager_interface.cpp \
                $$PWD/rocamera_manager_interface.h   \
                $$PWD/com.robot.rocamera_manager.xml \
-               $$PWD/proxy/*
+               -r $$PWD/proxy/*

@@ -11,8 +11,8 @@ rotrackingManager::rotrackingManager(int & argc, char ** argv) :
     m_connection (QDBusConnection::systemBus())
 {
     new rotracking_managerInterface(this);
-    m_connection.registerObject("/rotracking",this);
     m_connection.registerService("com.robot.rotracking");
+    m_connection.registerObject("/rotracking",this);
     parseConfig (ROTRACKING_CONFIG_FILE);
 }
 

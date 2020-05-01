@@ -38,7 +38,7 @@ CMakeLists.txt.user
 
 com.robot.roengines.xml
 *_interface.*
-com.robot.rotracking_manager.xml
-com.robot.balltracker_worker.xml
+*_manager.xml
+*_worker.xml
 *proxy/
 vlc-qt

@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=com.robot.rosensors
+Exec=/usr/bin/rosensors
+User=root

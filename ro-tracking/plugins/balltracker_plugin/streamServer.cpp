@@ -81,4 +81,5 @@ void streamServer::on_disconnected()
 
 void streamServer::on_readyRead()
 {
+    qDebug() << "receiving ...";
 }

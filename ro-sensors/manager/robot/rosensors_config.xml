@@ -1,0 +1,5 @@
+<ROBOT>
+<!--        <Plugin name="mpu92" description="MPU-92 driver" active="true" file="libmpu92-plugin.so" />-->
+        <Plugin name="hcsr04" description="HC-SR04 driver" active="true" file="libhcsr04-plugin.so" />
+<!--        <Plugin name="stream" description="Streaming plugin" active="true" file="libstream-plugin.so" /> -->
+</ROBOT>

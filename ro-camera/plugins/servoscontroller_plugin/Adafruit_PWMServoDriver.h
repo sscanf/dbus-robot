@@ -46,7 +46,7 @@ public:
     void begin(void);
     void reset(void);
     void setPWMFreq(float freq);
-    void setPWM(quint8 num, uint16_t on, uint16_t off);
+    void setPWM(quint8 num, quint16 on, quint16 off);
     void setPin(quint8 num, int val, bool invert=false);
 //    void setPulse(quint8 n, double pulse);
 

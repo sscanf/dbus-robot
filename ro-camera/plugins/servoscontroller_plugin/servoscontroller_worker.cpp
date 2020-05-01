@@ -8,11 +8,11 @@ servoscontrollerWorker::servoscontrollerWorker(QString strName, QString strDescr
     m_strName   (strName),
     m_connection(QDBusConnection::systemBus())
 {
-    m_bEnabled          = bEnabled;
-    m_strDescription    = strDescription;
-    m_strAddress        = QString("%1/%2").arg(DBUS_BASE_ADDRESS).arg(strName);
-    m_angle             = 0;
-    m_inc               = +1;
+    m_bEnabled       = bEnabled;
+    m_strDescription = strDescription;
+    m_strAddress     = QString("%1/%2").arg(DBUS_BASE_ADDRESS).arg(strName);
+    m_angle          = 0;
+    m_inc            = +1;
 
     new servoscontroller_workerInterface(this);
     QString strAddress = m_strAddress;
@@ -50,7 +50,7 @@ void servoscontrollerWorker::setAngle(quint8 n, quint16 angle)
 {
     // 240 = 1ms
     // 480 = 2ms
-    qDebug() << angle;
+//    qDebug() << angle;
     m_pwm.setPWM(n, 0, map (angle, 0, 180, 120, 480));
 //    m_pwm.setPWM(2, 0, map (angle, 0, 180, 120, 480));
 }

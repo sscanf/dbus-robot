@@ -8,7 +8,6 @@ system ($$PWD/../tools/mkinterface.sh balltracker_worker)
 system ($$quote(mkdir $$[QT_SYSROOT]/usr/include/robot/$$escape_expand(\\n\\t)))
 system ($$quote(cp -a $${PWD}/proxy/* $$[QT_SYSROOT]/usr/include/robot/$$escape_expand(\\n\\t)))
 
-
 INCLUDEPATH += ../../common
 INCLUDEPATH += ./plugins/common/
 INCLUDEPATH += ../../lib

@@ -8,7 +8,7 @@ class busdio;
 #define ROOT_TAGNAME             "ROBOT"
 #define PLUGINS_PATH             "/usr/lib/"
 #define ROTRACKING_CONFIG_FILE   "/etc/robot/rotracking_config.xml"
-#define DBUS_BASE_ADDRESS        "/com/robot"
+#define DBUS_BASE_ADDRESS        "/rotracking/"
 
 /**
  * @brief

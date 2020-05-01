@@ -19,8 +19,7 @@ TARGET       = rotracking
 CONFIG      += c++11 console
 CONFIG      -= app_bundle
 TEMPLATE     = app
-SOURCES     +=  main.cpp
-LIBS        += -L$$(OECORE_TARGET_SYSROOT)/usr/lib/arm-linux-gnueabihf/tegra/
+#LIBS        += -L$$(OECORE_TARGET_SYSROOT)/usr/lib/arm-linux-gnueabihf/tegra/
 
 
 config_files.path  = /etc/
@@ -31,7 +30,8 @@ dbus_services.path = /usr/share/dbus-1/
 dbus_services.files= $$PWD/system-services \
                           $$PWD/services
 
-SOURCES += rotracking_manager.cpp         \
+SOURCES += main.cpp \
+           rotracking_manager.cpp         \
            rotracking_manager_interface.cpp
 
 HEADERS += rotracking_manager.h          \

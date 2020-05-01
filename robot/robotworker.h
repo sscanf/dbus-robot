@@ -3,7 +3,43 @@
 #include <QCoreApplication>
 #include <QtDBus/QtDBus>
 #include <QtDBus/qdbusconnection.h>
-#include <positionthrd.h>
+#include "positionthrd.h"
+#include "walkthread.h"
+#include "pid.h"
+
+#define LOW_SPEED 2
+
+class RO3DPoint
+{
+public:
+    RO3DPoint(){}
+
+    int x() const {
+        return m_x;
+    }
+    void setX(double x) {
+        m_x = x;
+    }
+
+    int y() const {
+        return m_y;
+    }
+    void setY(double y) {
+        m_y = y;
+    }
+
+    int z() const {
+        return m_z;
+    }
+    void setZ(double z) {
+        m_z = z;
+    }
+
+private:
+    qint32 m_x;
+    qint32 m_y;
+    qint32 m_z;
+};
 
 
 class robotWorker : public QCoreApplication
@@ -14,29 +50,38 @@ public:
     robotWorker(int & argc, char ** argv);
 
 private: //Functions
-    void initTracker();
-    void initCamera();
-    void setAngle (quint16 azim, quint16 elev);
-    bool isBallDetected();
-    double map(double x, double in_min, double in_max, double out_min, double out_max);
+    void      initTracker();
+    void      initDistSensors();
+    double    map(double x, double in_min, double in_max, double out_min, double out_max);
+    RO3DPoint getCenterDistance();
 
 
 private: //Variables
     QTimer         *m_pTimer;
+    QTimer         *m_pRandomTimer;
+    QTimer         *m_pTurnTimer;
     QDBusConnection m_connection;
     QDBusInterface *m_pTrackingIface;
-    QDBusInterface *m_pCameraIface;
+    QDBusInterface *m_pDistanceIface;
     int             m_azimut;
     int             m_elev;
+    int             m_lastAzimut;
+    int             m_lastElev;
     int             m_lastDirElev;
     int             m_lastDirAzim;
     bool            m_ballLost=false;
-    positionThrd   *m_pThrd;
+    int             m_totalCameraRounds=0;
+    positionThrd   *m_pPositionThrd;
+    walkThread     *m_pWalkThread;
+    PID            *m_pPid;
 
 private slots:
-    void on_timeout();
-    void on_possitionChanged (const QPoint &);
-    void on_ballLost();
+    void onTimeout();
+    void onRandomTimeout();
+    void onPossitionChanged (QPoint );
+    void onBallLost();
+    void onTurnTimeout();
+    void onFrontCollision();
 };
 
 #endif // ROBOTWORKER_H
