@@ -1,0 +1,17 @@
+Partlist exported from /home/oscar/trabajo/Robot/eagle/robot/bms.sch at 01/03/11 7:42
+
+Qty Value         Device          Parts                                                    
+1   0.1           C-EU025-024X044 C3                                                       
+2   0.1uF         C-EU025-024X044 C1, C4                                                   
+1   1M5           R-EU_0204/7     R3                                                       
+2   4k7           R-EU_0204/7     R5, R6                                                   
+1   10uF          CPOL-USE1.8-4   C2                                                       
+1   22-27-2061-06 22-27-2061-06   J1                                                       
+2   100K          R-EU_0204/7     R1, RS                                                   
+1   105K          R-EU_0204/7     RB2                                                      
+12  200k          R-EU_0204/7     R2, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19, R21
+3   330           R-EU_0204/7     R7, R8, R9                                               
+1   909K          R-EU_0204/7     RB1                                                      
+1   AB12V         AB9V            G1                                                       
+1   BQ2013H       BQ2013H         IC1                                                      
+5   green         LED5MM          LED1, LED2, LED3, LED4, LED5                             

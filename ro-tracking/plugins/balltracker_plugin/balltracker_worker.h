@@ -28,10 +28,10 @@ using namespace std;
 using namespace cv;
 
 #define ILOW_H  0
-#define IHIGH_H 189
-#define ILOW_S  54
-#define IHIGH_S 206
-#define ILOW_V  207
+#define ILOW_S  100
+#define ILOW_V  100
+#define IHIGH_H 10
+#define IHIGH_S 255
 #define IHIGH_V 255
 
 class MyImemData
@@ -69,6 +69,7 @@ public Q_SLOTS:
     QPoint  centerDistance();
     bool    isBallDetected();
     void    morphOps      (Mat const &thresh);
+    void    detectCircles ();
 
 private:    //Functions
     void    drawCVPannel   ();
@@ -97,6 +98,7 @@ private:    //Variables
     int             m_iHighS;
     int             m_iLowV;
     int             m_iHighV;
+    int             m_camBrightness=100;
     int             m_ballLostCount=0;
 
 //    raspicam::RaspiCam_Cv  m_camera;

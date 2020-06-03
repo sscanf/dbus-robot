@@ -47,7 +47,7 @@ private: //Functions
 private: //Variables
 
     QDBusConnection          m_connection;
-    QList <rosensorsPlugin*>  m_plugins;         /**< Plugins list*/
+    QList <rosensorsPlugin*> m_plugins;         /**< Plugins list*/
     QList <QPluginLoader *>  m_hPlugins;        /**< Plugin handlers list*/
 };
 

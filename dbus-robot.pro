@@ -3,4 +3,5 @@ SUBDIRS += $$PWD/robot \
            $$PWD/ro-camera \
            $$PWD/ro-engines \
            $$PWD/ro-tracking \
+           $$PWD/ro-gamepad \
            $$PWD/ro-sensors

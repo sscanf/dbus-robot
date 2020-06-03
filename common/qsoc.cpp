@@ -90,7 +90,7 @@ int QSoc::setDirection(QString strName, gpio_direction dir)
     return ret;
 }
 
-int QSoc::disableInterrupt(QString strName)
+void QSoc::disableInterrupt(QString strName)
 {
     if (m_pGpioInterrupts[strName]!=NULL) {
         libsoc_gpio_callback_interrupt_cancel (m_pGpioInterrupts[strName]);

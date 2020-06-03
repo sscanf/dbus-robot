@@ -31,7 +31,6 @@ void streamClientWidget::on_connected()
 void streamClientWidget::on_readyRead()
 {
     QDataStream stream (m_pSocket);
-
     if (m_bytesRead == 0) {
         m_pData->clear();
         stream >> m_bytesRead;

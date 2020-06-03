@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=com.robot.rogamepad
+Exec=/usr/bin/rogamepad
+User=root

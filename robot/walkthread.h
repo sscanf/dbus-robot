@@ -27,9 +27,16 @@ class walkThread : public QThread
 {
     Q_OBJECT
 public:
-    explicit walkThread(QObject *parent = nullptr);
-    void setSpeed      (int speed);
-    void pushTask      (tasks task);
+    explicit walkThread(QDBusConnection connection, QObject *parent = nullptr);
+    void       setDualSpeed  (int left, int right);
+    void       setSpeed      (int speed);
+    int        getSpeed      (void);
+    bool       isTurningRight();
+    bool       isTurningLeft ();
+    void       pushTask      (tasks task);
+    QList<QVariant> getCollisions();
+    void       terminate();
+    void       turn (int speed);
 
 
 private:
@@ -41,11 +48,17 @@ private:
     void run           ();
 
 private:
+    QDBusConnection m_connection;
     QDBusInterface *m_pEnginesIface;
+    QDBusInterface *m_pSensorsIface;
     int             m_speed=2;
     QQueue<tasks>   m_tasks;
 
+private slots:
+    void onEnginesError (int err);
+
 signals:
+    void error (int);
 
 };
 

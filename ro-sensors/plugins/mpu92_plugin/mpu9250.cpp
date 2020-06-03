@@ -92,7 +92,7 @@ void mpu9250::initMPU9250()
 void mpu9250::initAK8963(float * destination)
 {
     // First extract the factory calibration for each magnetometer axis
-    quint8 rawData[3];  // x/y/z gyro calibration data stored here
+    qint8 rawData[3];  // x/y/z gyro calibration data stored here
     m_i2cMagneto.WriteReg8(AK8963_CNTL, 0x00); // Power down magnetometer
     QThread::msleep(10);
     m_i2cMagneto.WriteReg8(AK8963_CNTL, 0x0F); // Enter Fuse ROM access mode
@@ -114,7 +114,7 @@ void mpu9250::readAccelData()
 {
     QVector3D vector;
     qint16 accelCount[3];  // Stores the 16-bit signed accelerometer sensor output
-    quint8 rawData[6];  // x/y/z accel register data stored here
+    qint8 rawData[6];  // x/y/z accel register data stored here
 
     m_i2c9250.ReadBytes(ACCEL_XOUT_H, rawData,6);  // Read the six raw data registers into data array
     accelCount[0] = ((qint16)rawData[0] << 8) | rawData[1];  // Turn the MSB and LSB into a signed 16-bit value
@@ -133,7 +133,7 @@ void mpu9250::readGyroData()
 {
     QVector3D vector;
     qint16 destination[3];  // Stores the 16-bit signed accelerometer sensor output
-    quint8 rawData[6];  // x/y/z accel register data stored here
+    qint8 rawData[6];  // x/y/z accel register data stored here
     m_i2c9250.ReadBytes(GYRO_XOUT_H, rawData, 6);  // Read the six raw data registers sequentially into data array
 //    qDebug() << rawData[0] << rawData[1] << ":" << rawData[2] << rawData[3] << ":" << rawData[4] << ":" << rawData[5];
     destination[0] = ((int16_t)rawData[0] << 8) | rawData[1] ;  // Turn the MSB and LSB into a signed 16-bit value
@@ -152,12 +152,12 @@ void mpu9250::readMagData()
 {
     QVector3D vector;
     qint16 destination[3];  // Stores the 16-bit signed accelerometer sensor output
-    quint8 rawData[7];      // x/y/z accel register data stored here
+    qint8 rawData[7];      // x/y/z accel register data stored here
     float magbias[3]={0,0,0};
 
     if(m_i2cMagneto.ReadReg8(AK8963_ST1) & 0x01) { // wait for magnetometer data ready bit to be set
         m_i2cMagneto.ReadBytes(AK8963_XOUT_L, rawData, 7);  // Read the six raw data and ST2 registers sequentially into data array
-        quint8 c = rawData[6]; // End data read by reading ST2 register
+        qint8 c = rawData[6]; // End data read by reading ST2 register
         if(!(c & 0x08)) { // Check if magnetic sensor overflow set, if not then report data
             destination[0] = ((qint16)rawData[1] << 8) | rawData[0] ;  // Turn the MSB and LSB into a signed 16-bit value
             destination[1] = ((qint16)rawData[3] << 8) | rawData[2] ;  // Data stored as little Endian
@@ -181,7 +181,7 @@ void mpu9250::readMagData()
 float mpu9250::getTemperature()
 {
     float temperature;
-    quint8 rawData[2];
+    qint8 rawData[2];
     m_i2c9250.ReadBytes(TEMP_OUT_H, rawData, 2);  // Read the two raw data registers sequentially into data array
     qint16 tempCount = ((qint16)rawData[0] << 8) | rawData[1];
     temperature = ((float) tempCount) / 333.87 + 21.0; // Temperature in degrees Centigrade
@@ -283,7 +283,7 @@ QVector3D mpu9250::getMagPosition()
 // of the at-rest readings and then loads the resulting offsets into accelerometer and gyro bias registers.
 void mpu9250::calibrateMPU9250(QVector3D *dest1, QVector3D *dest2)
 {
-    quint8 data[12]; // data array to hold accelerometer and gyro x, y, z, data
+    qint8 data[12]; // data array to hold accelerometer and gyro x, y, z, data
     quint16 ii, packet_count, fifo_count;
     quint32 gyro_bias[3]  = {0, 0, 0}, accel_bias[3] = {0, 0, 0};
 
@@ -439,7 +439,7 @@ void mpu9250::enableInterrupt(QString strGPIOName, int (*callback)(void *), void
 
 void mpu9250::selfTest(float *destination)
 {
-    quint8 rawData[6]= {0,0,0,0,0,0};
+    qint8 rawData[6]= {0,0,0,0,0,0};
     quint8 selfTest[6];
     qint32 gAvg[3]={0,0,0}, aAvg[3]={0,0,0}, aSTAvg[3]={0,0,0}, gSTAvg[3]={0,0,0};
     float factoryTrim[6];

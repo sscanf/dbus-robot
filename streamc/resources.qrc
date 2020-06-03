@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>SlotButton.qml</file>
+        <file>SpeedGauge.qml</file>
+        <file>ToggleButton.qml</file>
+        <file>AzimutGaugeStyle.qml</file>
+        <file>SpeedPanel.qml</file>
+        <file>ZOSlider.qml</file>
+        <file>ROButton.qml</file>
+        <file>PowerPanel.qml</file>
+        <file>ZEnergyBar.qml</file>
+        <file>commons.js</file>
+    </qresource>
+</RCC>

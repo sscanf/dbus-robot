@@ -23,7 +23,10 @@ piccontrollerWorker::piccontrollerWorker(QString strName, QString strDescription
 
     m_pTimer = new QTimer (this);
     connect (m_pTimer,SIGNAL (timeout()), this, SLOT (on_timeout()));
-    m_pTimer->start (1000);
+    m_pTimer->start (100);
+
+    m_pCheckMotorsTimer = new QTimer(this);
+    connect (m_pCheckMotorsTimer,SIGNAL (timeout()), this, SLOT (on_CheckMotors()));
 }
 
 void piccontrollerWorker::getEngineData()
@@ -38,10 +41,20 @@ void piccontrollerWorker::getEngineData()
         speed     |= m_pUsbBufferRx[1];
         m_realSpeed = (int16_t)(speed)*-1;
 
-        m_encoder1   = m_pUsbBufferRx[2] << 8;
-        m_encoder1  |= m_pUsbBufferRx[3];
-        m_encoder2   = m_pUsbBufferRx[4] << 8;
-        m_encoder2  |= m_pUsbBufferRx[5];
+        m_encoderLeft   = m_pUsbBufferRx[2] << 8;
+        m_encoderLeft  |= m_pUsbBufferRx[3];
+        m_encoderRight  = m_pUsbBufferRx[4] << 8;
+        m_encoderRight |= m_pUsbBufferRx[5];
+
+        if (m_encoderLeft != m_lastEncoderLeft) {
+            m_lastEncoderLeft=m_encoderLeft;
+            emit encoderLeftChange(m_encoderLeft);
+        }
+
+        if (m_encoderRight != m_lastEncoderRight) {
+            m_lastEncoderRight=m_encoderRight;
+            emit encoderRightChange(m_encoderRight);
+        }
     }
 }
 
@@ -58,25 +71,51 @@ void piccontrollerWorker::on_timeout()
     }
 }
 
+void piccontrollerWorker::on_CheckMotors()
+{
+    qDebug() << "Checking Motors : " << m_encoderLeft << m_encoderRight << getSpeed();
+    if ((m_encoderLeft == 0) && getSpeed() ) {
+        emit error (ERR_MOTOR_LEFT);
+    }
+    if ((m_encoderRight == 0) && getSpeed() ) {
+        emit error (ERR_MOTOR_RIGHT);
+    }
+}
+
 int piccontrollerWorker::getSpeed()
 {
-    return m_realSpeed;
+    return m_realSpeed*-1;
 }
 
-int piccontrollerWorker::getEncoder1()
+int piccontrollerWorker::getEncoderLeft()
 {
-    return m_encoder1;
+    return m_encoderLeft;
 }
 
-int piccontrollerWorker::getEncoder2()
+int piccontrollerWorker::getEncoderRight()
 {
-    return m_encoder2;
+    return m_encoderRight;
+}
+
+bool piccontrollerWorker::isTurningRight()
+{
+    return (m_encoderLeft > m_encoderRight ) ? true : false;
+}
+
+bool piccontrollerWorker::isTurningLeft()
+{
+    return (m_encoderLeft < m_encoderRight ) ? true : false;
 }
 
 void piccontrollerWorker::setSpeed(int speed)
 {
     int bPid = 1;
 //    speed*=-1;
+    if (speed>m_maxSpeed)
+        speed=m_maxSpeed;
+
+    if (speed<-m_maxSpeed)
+        speed=-m_maxSpeed;
 
     m_pUsbBufferTx[VELOCIDAD_H]=speed>>8;
     m_pUsbBufferTx[VELOCIDAD_L]=speed&0x00ff;
@@ -91,11 +130,27 @@ void piccontrollerWorker::setSpeed(int speed)
     m_pUsbBufferTx[BPID_L]=bPid&0x00ff;
 
     m_libUsb.send (m_pUsbBufferTx, USB_BUFFER_LEN);
+
+    if (speed) {
+        m_pCheckMotorsTimer->start (2000);
+    } else
+        m_pCheckMotorsTimer->stop();
 }
 
 void piccontrollerWorker::setDualSpeed(int left, int right)
 {
     int bPid = 1;
+    if (left>m_maxSpeed)
+        left=m_maxSpeed;
+
+    if (right>m_maxSpeed)
+        right=m_maxSpeed;
+
+    if (left<-m_maxSpeed)
+        left=-m_maxSpeed;
+
+    if (right<-m_maxSpeed)
+        right=-m_maxSpeed;
 
     m_pUsbBufferTx[VELOCIDAD_H]=left>>8;
     m_pUsbBufferTx[VELOCIDAD_L]=left&0x00ff;
@@ -110,6 +165,15 @@ void piccontrollerWorker::setDualSpeed(int left, int right)
     m_pUsbBufferTx[BPID_L]=bPid&0x00ff;
 
     m_libUsb.send (m_pUsbBufferTx, USB_BUFFER_LEN);
+    if (left || right) {
+        m_pCheckMotorsTimer->start (2000);
+    } else if ( !left && !right)
+        m_pCheckMotorsTimer->stop();
+}
+
+void piccontrollerWorker::setMaximumSpeed(int speed)
+{
+    m_maxSpeed = speed;
 }
 
 void piccontrollerWorker::setTurn(int turn)
@@ -134,25 +198,6 @@ void piccontrollerWorker::setTurn(int turn)
             engineRight=m_speed;
         }
     }
-    qDebug() << engineLeft << engineRight;
     setDualSpeed (engineLeft, engineRight);
-//    int tmp = (m_speed - (turn+m_speed));
-//    qDebug() << tmp;
-//    int engineLeft  = 15;
-//    int engineRight = 15;
-
-//    if (tmp<0)
-//      engineLeft+=tmp;
-//    else
-//      engineRight-=tmp;
-
-//    engineLeft -= (m_speed)+15;
-//    engineRight -= (m_speed)+15;
-
-//    if (engineLeft<0) engineLeft=0;
-//    if (engineRight<0) engineRight=0;
-
-
-
-
 }
+

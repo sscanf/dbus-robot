@@ -118,7 +118,7 @@ int zoi2c::receive(unsigned char *RxBuf, int length){
     return ret;
 }
 
-int zoi2c::receive(unsigned char RegisterAddress, unsigned char *RxBuf, int length)
+int zoi2c::receive(unsigned char RegisterAddress, qint8 *RxBuf, int length)
 {
     if (RxBuf == nullptr)
         return errorMsg("Receive method received a null TxBuf pointer.\n");
@@ -140,7 +140,7 @@ int zoi2c::receive(unsigned char RegisterAddress, unsigned char *RxBuf, int leng
     return 1;
 }
 
-int zoi2c::ReadBytes(unsigned char RegisterAddress, unsigned char *RxBuf, int length)
+int zoi2c::ReadBytes(unsigned char RegisterAddress, qint8 *RxBuf, int length)
 {
     int n;
     for (n=0;n<length;n++) {

@@ -21,15 +21,6 @@ DESTDIR      = plugins
 
 LIBS        += -lopencv_core -lopencv_video -lopencv_highgui -lopencv_imgproc -lopencv_videoio  #-lraspicam -lraspicam_cv -lmmal -lmmal_core -lmmal_vc_client -lmmal_util -lmmal_components -lraspicam
 
-#sysroot_files.path    = $$[QT_SYSROOT)/etc/
-#sysroot_files.files   = $$PWD/zone/
-#sysroot_files.commands= cp $$config.files.files $$config_files.path
-#dbus_files.path       = /etc/dbus-1/
-#dbus_files.files      = $$PWD/system.d
-#dbus_services.path    = /usr/share/dbus-1/
-#dbus_services.files   = $$PWD/system-services \
-#                        $$PWD/services
-
 HEADERS = balltracker_worker_interface.h \
           balltracker_factory.h          \
           balltracker_worker.h \

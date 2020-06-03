@@ -18,7 +18,7 @@ servoscontrollerWorker::servoscontrollerWorker(QString strName, QString strDescr
     QString strAddress = m_strAddress;
     QString strObject = "/"+strName;
     m_connection.registerObject(strObject,this);
-    m_connection.registerService(strAddress.replace("/","."));
+//    m_connection.registerService(strAddress.replace("/","."));
 
     m_pTimer = new QTimer(this);
     connect (m_pTimer, SIGNAL (timeout()), this, SLOT(on_timeout()));

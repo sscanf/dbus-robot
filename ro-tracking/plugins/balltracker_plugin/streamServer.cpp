@@ -3,8 +3,8 @@
 #include "streamServer.h"
 
 streamServer::streamServer(int port, QObject *parent) :
-    m_port (port),
-    QObject(parent)
+    QObject(parent),
+    m_port (port)
 {
     m_pSocket = new QTcpServer(this);
     connect(m_pSocket, SIGNAL (newConnection()), this, SLOT(on_newConnection()));

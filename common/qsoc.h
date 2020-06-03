@@ -14,12 +14,12 @@ public:
     explicit QSoc(QObject *parent = nullptr);
     ~QSoc();
 
-    int addNewGPIO      (QString strName, gpio_direction direction);
-    int setLevel        (QString strName, gpio_level level);
-    gpio_level level    (QString strName);
-    int enableInterrupt (QString strName, gpio_edge edge,int (*callback_fn)(void *), void *ptr);
-    int setDirection    (QString strName, gpio_direction dir);
-    int disableInterrupt(QString strName);
+    int addNewGPIO       (QString strName, gpio_direction direction);
+    int setLevel         (QString strName, gpio_level level);
+    gpio_level level     (QString strName);
+    int enableInterrupt  (QString strName, gpio_edge edge,int (*callback_fn)(void *), void *ptr);
+    int setDirection     (QString strName, gpio_direction dir);
+    void disableInterrupt(QString strName);
 
 protected:
     QHash<QString, gpio *>  m_gpios;

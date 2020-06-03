@@ -1,0 +1,37 @@
+Partlist
+
+Exported from schema1.brd at 01/11/09 12:43
+
+EAGLE Version 5.6.0 Copyright (c) 1988-2009 CadSoft
+
+Part     Value          Package  Library        Position (inch)       Orientation
+
+C1       20p            C2.5-3   capacitor-wima (2.25 1.45)           R90
+C2       20p            C2.5-3   capacitor-wima (2.25 1.2)            R90
+C3       0.1uF          C2.5-3   capacitor-wima (2.35 1.7)            R0
+C4       0.1uF          C2.5-3   capacitor-wima (3.3 1.85)            R90
+C5       0.1uF          C2.5-3   capacitor-wima (3.55 0.1)            R0
+C6       0.1uF          C2.5-3   capacitor-wima (2.55 0.55)           R0
+C7       0.1uF          C2.5-3   capacitor-wima (3.75 0.1)            R180
+C8       100nF          C2.5-3   capacitor-wima (4 0.45)              R90
+C9       10uF           E1,8-4   rcl            (4 0.7)               R90
+C10      470n           C2.5-3   capacitor-wima (2.4 0.95)            R90
+D1       1N4004         DO41-10  diode          (3.2 0.25)            R0
+D2       1N4004         DO41-10  diode          (3.2 0.1)             R180
+IC1      PIC18F4455_40  DIL40    microchip      (2.85 1.65)           R270
+IC2      7805           78XXS    v-reg          (3.65 0.4)            R0
+IC3      MAX233         DIL20    maxim          (3.45 1.25)           R90
+IC4      LM317          317TS    v-reg          (2.9 0.45)            R180
+J1       Ristra 3p      04C      jumper         (3.7 0.5)             R180
+LED1                    LED3MM   led            (2.25 0.95)           R90
+Q1       20Mhz          QS       special        (2.4 1.3)             R90
+R1       10k            0204/5   rcl            (2.75 2.7)            R0
+R2       470            0204/5   rcl            (3.4 2.75)            R90
+R3       *              0204/5   rcl            (3 0.4)               R0
+R4       470            0204/5   rcl            (2.35 0.7)            R0
+S1                      B3F-31XX switch-omron   (2.35 2.8)            R180
+SV1      Ristra 6p      MA06-1   con-lstb       (2.95 2.85)           R0
+X1       USB            PN61729  con-berg       (4 1.1)               R90
+X2                      F09H     con-subd       (3.8 2.05)            R270
+X3       Ristra 2p      KK-156-2 con-molex      (2.3 0.2)             R0
+X4       Ristra 2p      KK-156-2 con-molex      (2.7 0.2)             R0

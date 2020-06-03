@@ -1,7 +1,9 @@
 #include "positionthrd.h"
 
-positionThrd::positionThrd(quint16 azim, quint16 elev, QObject *parent) :
-    QThread (parent)
+
+positionThrd::positionThrd(QDBusConnection connection, quint16 azim, quint16 elev, QObject *parent) :
+    QThread (parent),
+    m_connection (connection)
 {
     m_azim = azim;
     m_elev = elev;
@@ -10,12 +12,11 @@ positionThrd::positionThrd(quint16 azim, quint16 elev, QObject *parent) :
 
 void positionThrd::run()
 {
-    QDBusConnection connection (QDBusConnection::systemBus());
     m_pCameraIface = new QDBusInterface ("com.robot.rocamera",
-                                       "/servos",
-                                       "com.robot.servoscontroller",
-                                       connection,
-                                       this);
+                                         "/servos",
+                                         "com.robot.servoscontroller",
+                                         m_connection,
+                                         this);
     int antElev=0;
     int antAzim=0;
     forever {
@@ -47,8 +48,18 @@ void positionThrd::setPossition(quint16 azim, quint16 elev)
 
 }
 
-void positionThrd::setAngle(quint16 azim, quint16 elev)
+void positionThrd::setAzimuth(quint16 azim)
 {
     m_pCameraIface->call ("setAngle", QVariant::fromValue(uchar(1)), QVariant::fromValue(quint16(azim)));
+}
+
+void positionThrd::setElevation(quint16 elev)
+{
     m_pCameraIface->call ("setAngle", QVariant::fromValue(uchar(0)), QVariant::fromValue(quint16(elev)));
+}
+
+void positionThrd::setAngle(quint16 azim, quint16 elev)
+{
+    setAzimuth (azim);
+    setElevation (elev);
 }

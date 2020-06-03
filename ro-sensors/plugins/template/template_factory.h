@@ -3,13 +3,13 @@
 
 #include <QObject>
 #include <QDBusConnection>
-#include <zoaudio_plugin.h>
+#include <rosensors_plugin.h>
 #include "@@name@@_worker.h"
 
-class @@name@@_factory : public @@name@@Plugin
+class @@name@@_factory : public rosensorsPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.robot.@@name@@/1.0" FILE "")
+    Q_PLUGIN_METADATA(IID "com.robot.rosensors/1.0" FILE "")
     Q_INTERFACES(zoaudioPlugin)
 
 public:

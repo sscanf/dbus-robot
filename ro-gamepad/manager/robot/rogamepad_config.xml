@@ -1,0 +1,4 @@
+<ROBOT>
+        <Plugin name="dualshock4" description="dualshock4 driver" active="true" file="libdualshock4-plugin.so" />
+<!--        <Plugin name="stream" description="Streaming plugin" active="true" file="libstream-plugin.so" /> -->
+</ROBOT>

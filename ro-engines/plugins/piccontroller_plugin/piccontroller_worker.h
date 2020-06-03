@@ -11,14 +11,15 @@
 
 #define PLUGIN_TYPE     " Please, define plugin type !!! "
 #define USB_BUFFER_LEN 	32
-#define VELOCIDAD_H		0
-#define VELOCIDAD_L		1
-#define MOTOR_LEFT_H	2
-#define MOTOR_LEFT_L	3
-#define MOTOR_RIGHT_H	4
-#define MOTOR_RIGHT_L	5
-#define BPID_H			6
-#define BPID_L			7
+#define VELOCIDAD_H	    0
+#define VELOCIDAD_L	    1
+#define MOTOR_LEFT_H    2
+#define MOTOR_LEFT_L    3
+#define MOTOR_RIGHT_H   4
+#define MOTOR_RIGHT_L   5
+#define BPID_H          6
+#define BPID_L          7
+#define MAX_SPEED       15
 
 class piccontrollerWorker : public QObject
 {
@@ -26,6 +27,10 @@ class piccontrollerWorker : public QObject
     Q_CLASSINFO("D-Bus Interface", "com.robot.roengines")
 
 public:
+    enum errors {
+        ERR_MOTOR_LEFT,
+        ERR_MOTOR_RIGHT
+    };
     explicit piccontrollerWorker(QString strName, QString strDescription = 0, bool bEnabled=0, QObject *parent = 0);
 
 public Q_SLOTS:
@@ -36,11 +41,14 @@ public Q_SLOTS:
     bool    isEnabled     ()              { return m_bEnabled; }
     void    setEnabled    (bool bEnabled) { m_bEnabled = bEnabled; }
     int     getSpeed      ();
-    int     getEncoder1   ();
-    int     getEncoder2   ();
+    int     getEncoderLeft();
+    int     getEncoderRight();
+    bool    isTurningRight();
+    bool    isTurningLeft ();
     void    setSpeed      (int speed);
     void    setTurn       (int turn);
     void    setDualSpeed  (int left, int right);
+    void    setMaximumSpeed (int speed);
 
 private:    //Functions
     void    getEngineData ();
@@ -57,15 +65,22 @@ private:    //Variables
     quint8         *m_pUsbBufferRx;
     int             m_speed=0;
     int             m_realSpeed;
-    int             m_encoder1;
-    int             m_encoder2;
+    int             m_encoderLeft;
+    int             m_encoderRight;
+    int             m_lastEncoderRight=0;
+    int             m_lastEncoderLeft=0;
     QTimer         *m_pTimer;
+    QTimer         *m_pCheckMotorsTimer;
+    int             m_maxSpeed=MAX_SPEED;
 
 signals:
     void  error (bool bError);
+    void  encoderRightChange (int val);
+    void  encoderLeftChange (int val);
 
 private slots:
     void  on_timeout();
+    void  on_CheckMotors();
 
 };
 #endif // piccontroller_MANAGER_H

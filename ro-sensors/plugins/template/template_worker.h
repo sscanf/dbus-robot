@@ -5,7 +5,7 @@
 #include <QMap>
 #include <QFile>
 #include <QTimer>
-#include <zoaudio_plugin.h>
+#include <rosensors_plugin.h>
 #include <QtDBus/QtDBus>
 
 #define PLUGIN_TYPE   " Please, define plugin type !!! "
@@ -13,7 +13,7 @@
 class @@name@@Worker : public QObject
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "com.robot.@@name@@")
+    Q_CLASSINFO("D-Bus Interface", "com.robot.rosensors")
 
 public:
     explicit @@name@@Worker(QString strName, QString strDescription = 0, bool bEnabled=0, QObject *parent = 0);

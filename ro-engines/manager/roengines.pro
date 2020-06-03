@@ -19,25 +19,23 @@ TARGET       = roengines
 CONFIG      += console
 CONFIG      -= app_bundle
 TEMPLATE     = app
-SOURCES     +=  main.cpp                     \
+SOURCES     +=  main.cpp
 
 
-config_files.path	= /etc/
-config_files.files	= $$PWD/robot/
-
-dbus_files.path         = /etc/dbus-1/
-dbus_files.files        = $$PWD/system.d/
- 
-dbus_services.path      = /usr/share/dbus-1/
-dbus_services.files     = $$PWD/system-services \
-                          $$PWD/services
+config_files.path  = /etc/
+config_files.files = $$PWD/robot/
+dbus_files.path    = /etc/dbus-1/
+dbus_files.files   = $$PWD/system.d/
+dbus_services.path = /usr/share/dbus-1/
+dbus_services.files= $$PWD/system-services \
+                     $$PWD/services
 
 SOURCES += roengines.cpp         \
            roengines_interface.cpp
 
 HEADERS += roengines.h          \
-           roengines_interface.h	 \
-	   ../common/roengines_plugin.h
+           roengines_interface.h \
+            ../common/roengines_plugin.h
 
 target.path  = /usr/bin/
 INSTALLS    += target

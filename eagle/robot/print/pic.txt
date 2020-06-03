@@ -1,0 +1,33 @@
+Partlist exported from /home/oscar/Robot/eagle/robot/pic.sch at 15/07/10 15:40
+
+Qty Value         Device          Parts                           
+1                 C2,5-3          C6                              
+1                 F09HPS          X1                              
+1   *             R-EU_0204/5     R12                             
+5   0.1uF         C2,5-3          C2, C3, C11, C12, C13           
+3   1N4004        1N4004          D1, D2, D3                      
+4   3k3           R-EU_0204/7     R6, R7, R15, R16                
+1   10k           R-EU_0204/5     R1                              
+4   10k           R-EU_0204/7     R8, R9, R17, R18                
+1   10uF          CPOL-USE1.8-4   C8                              
+1   20Mhz         XTAL/S          Q3                              
+2   20p           C2,5-3          C4, C5                          
+4   47            R-EU_0204/7     R4, R5, R13, R14                
+1   74HC04N       74HC04N         IC1                             
+1   74HC08N       74HC08N         IC2                             
+1   100nF         C2,5-3          C9                              
+4   470           R-EU_0204/7     R2, R3, R10, R11                
+1   470n          C2,5-3          C7                              
+1   7805          78XXS           IC6                             
+8   BC548         BC548           T1, T2, T5, T6, T7, T8, T11, T12
+1   ICSP          MA06-1          SV1                             
+1   LM317         LM317TS         IC5                             
+1   MAX233        MAX233          IC4                             
+2   MOTOR         C-GRID-06-70543 X2, X7                          
+1   PIC18F4455_40 PIC18F4455_40   IC3                             
+1   Pulsador c.i. 31-XX           S1                              
+2   Ristra 2p     KK-156-2        X9, X10                         
+4   TIP122        TIP122          T3, T4, T9, T10                 
+4   TIP125        TIP125          Q1, Q2, Q4, Q5                  
+1   USB           PN61729         X5                              
+1   VCC/USB       JP2E            J1                              

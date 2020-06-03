@@ -5,13 +5,16 @@
 #include <QTcpSocket>
 #include <QImage>
 #include <QTimer>
+#include <QColor>
 #include "streamclientWidget.h"
+#include "statuswidget.h"
+#include "powerwidget.h"
 
-#define ILOW_H  0
-#define IHIGH_H 219
-#define ILOW_S  88
+#define ILOW_H  100
+#define ILOW_S  100
+#define ILOW_V  100
+#define IHIGH_H 10
 #define IHIGH_S 255
-#define ILOW_V  105
 #define IHIGH_V 255
 
 namespace Ui {
@@ -43,6 +46,9 @@ private:
     int                 m_iHighV;
     streamClientWidget *m_pWidgetThreshold;
     streamClientWidget *m_pWidgetResult;
+    statusWidget       *m_pWidgetStatus;
+    powerWidget        *m_pWidgetPower;
+    QColor              m_color;
 
 private slots:
     void on_connected();
@@ -55,6 +61,9 @@ private slots:
     void on_highhChanged(int value);
     void on_highsChanged(int value);
     void on_highvChanged(int value);
+    void on_highChanged(int);
+    void on_lowChanged(int);
+    void on_cameraChanged(int);
 };
 
 #endif // MAINWINDOW_H

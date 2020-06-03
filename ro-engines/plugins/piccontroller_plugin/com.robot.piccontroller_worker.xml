@@ -4,6 +4,12 @@
     <signal name="error">
       <arg name="bError" type="b" direction="out"/>
     </signal>
+    <signal name="encoderRightChange">
+      <arg name="val" type="i" direction="out"/>
+    </signal>
+    <signal name="encoderLeftChange">
+      <arg name="val" type="i" direction="out"/>
+    </signal>
     <method name="getName">
       <arg type="s" direction="out"/>
     </method>
@@ -25,11 +31,17 @@
     <method name="getSpeed">
       <arg type="i" direction="out"/>
     </method>
-    <method name="getEncoder1">
+    <method name="getEncoderLeft">
       <arg type="i" direction="out"/>
     </method>
-    <method name="getEncoder2">
+    <method name="getEncoderRight">
       <arg type="i" direction="out"/>
+    </method>
+    <method name="isTurningRight">
+      <arg type="b" direction="out"/>
+    </method>
+    <method name="isTurningLeft">
+      <arg type="b" direction="out"/>
     </method>
     <method name="setSpeed">
       <arg name="speed" type="i" direction="in"/>
@@ -40,6 +52,9 @@
     <method name="setDualSpeed">
       <arg name="left" type="i" direction="in"/>
       <arg name="right" type="i" direction="in"/>
+    </method>
+    <method name="setMaximumSpeed">
+      <arg name="speed" type="i" direction="in"/>
     </method>
   </interface>
 </node>

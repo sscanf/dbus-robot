@@ -19,6 +19,16 @@ MainWindow::MainWindow(QWidget *parent) :
     connect (m_pSocket,SIGNAL (connected()), this, SLOT (on_connected()));
     connect (m_pSocket,SIGNAL (disconnected()), this, SLOT (on_disconnected()));
 
+    connect (ui->highh,SIGNAL (valueChanged(int)), this, SLOT (on_highChanged(int)));
+    connect (ui->highs,SIGNAL (valueChanged(int)), this, SLOT (on_highChanged(int)));
+    connect (ui->highv,SIGNAL (valueChanged(int)), this, SLOT (on_highChanged(int)));
+
+    connect (ui->lowh,SIGNAL (valueChanged(int)), this, SLOT (on_lowChanged(int)));
+    connect (ui->lows,SIGNAL (valueChanged(int)), this, SLOT (on_lowChanged(int)));
+    connect (ui->lowv,SIGNAL (valueChanged(int)), this, SLOT (on_lowChanged(int)));
+
+    connect (ui->camBrightness, SIGNAL (valueChanged(int)), this, SLOT (on_cameraChanged(int)));
+
     ui->highh->setMaximum(255);
     ui->highs->setMaximum(255);
     ui->highv->setMaximum(255);
@@ -35,9 +45,18 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_pWidgetThreshold = new streamClientWidget("192.168.0.1",1235);
     m_pWidgetResult = new streamClientWidget("192.168.0.1",1236);
+    m_pWidgetStatus = new statusWidget();
+    m_pWidgetStatus->show();
+    m_pWidgetPower = new powerWidget();
+    m_pWidgetPower->show();
+
+
     m_pTimer = new QTimer();
     connect (m_pTimer,SIGNAL (timeout()), this, SLOT (on_timeout()));
     m_pTimer->start (1000);
+
+    on_lowChanged(0);
+    on_highChanged(0);
 }
 
 MainWindow::~MainWindow()
@@ -49,8 +68,9 @@ void MainWindow::sendData()
 {
     QByteArray arr;
     QDataStream out (&arr, QIODevice::WriteOnly);
-    out << m_iLowH << m_iHighH << m_iLowS << m_iHighS << m_iLowV << m_iHighV;
-    m_pSocket->write (arr);
+    out << m_iLowH << m_iHighH << m_iLowS << m_iHighS << m_iLowV << m_iHighV << ui->camBrightness->value();
+    if (m_pSocket->isOpen())
+        m_pSocket->write (arr);
 }
 
 void MainWindow::on_connected()
@@ -107,4 +127,28 @@ void MainWindow::on_highvChanged(int value)
 {
     m_iHighV = value;
     sendData();
+}
+
+void MainWindow::on_lowChanged(int value)
+{
+    Q_UNUSED (value);
+    m_color.setHsv(ui->lowh->value(), ui->lows->value(), ui->lowv->value());
+    QPalette pal = ui->displayL->palette();
+    pal.setColor (QPalette::Window,m_color);
+    ui->displayL->setPalette(pal);
+}
+
+void MainWindow::on_cameraChanged(int)
+{
+    sendData();
+}
+
+void MainWindow::on_highChanged(int value)
+{
+    Q_UNUSED (value);
+    m_color.setHsv(ui->highh->value(), ui->highs->value(), ui->highv->value());
+    QPalette pal = ui->displayH->palette();
+    pal.setColor (QPalette::Window,m_color);
+    ui->displayH->setPalette(pal);
+    ui->displayH->repaint();
 }

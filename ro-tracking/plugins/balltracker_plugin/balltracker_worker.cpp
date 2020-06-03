@@ -6,7 +6,7 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
     QObject     (parent),
     m_strName   (strName),
     m_connection(QDBusConnection::systemBus()),
-    m_capture   (0),
+    m_capture   (1),
     m_iLowH   (ILOW_H),
     m_iHighH  (IHIGH_H),
     m_iLowS   (ILOW_S),
@@ -15,10 +15,10 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
     m_iHighV  (IHIGH_V)
 {
 
-    ocl::setUseOpenCL(true);
-    if (!ocl::haveOpenCL()) {
-        qDebug() << "OpenCL is not available...";
-    }
+//    ocl::setUseOpenCL(false);
+//    if (!ocl::haveOpenCL()) {
+//        qDebug() << "OpenCL is not available...";
+//    }
 
 
     if ( !m_capture.isOpened() ){  // if not success, exit program
@@ -29,8 +29,9 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
 
     m_capture.set (CV_CAP_PROP_FRAME_WIDTH,320);
     m_capture.set (CV_CAP_PROP_FRAME_HEIGHT,240);
-    m_capture.set (CV_CAP_PROP_BRIGHTNESS,50);
-    m_capture.set(CV_CAP_PROP_EXPOSURE, 30);
+    m_capture.set (CV_CAP_PROP_BRIGHTNESS,40);
+    m_capture.set (CV_CAP_PROP_CONTRAST,1);
+//    m_capture.set (CV_CAP_PROP_XI_LED_MODE,1);
 
     m_bEnabled      = bEnabled;
     m_strDescription= strDescription;
@@ -122,39 +123,42 @@ void balltrackerWorker::drawCVPannel()
 {
     Mat image = m_data.m_image;
 
-    cv::Mat roi = image(cv::Rect(0, 0, 150, 100));
+    cv::Mat roi = image(cv::Rect(0, 0, 100, 90));
     cv::Mat color(roi.size(), CV_8UC3, cv::Scalar(0, 0, 0));
     double alpha = 0.7;
     addWeighted(color, alpha, roi, 1.0 - alpha , 0.0, roi);
 
 
     int fontFace = FONT_HERSHEY_SIMPLEX;
-    double fontScale = 0.5;
-    int thickness = 1;
+    double fontScale = 0.3;
+    int thickness = 0.2;
     Point textOrg (10,20);
 
     char buff[80];
     sprintf (buff,"X = %f ",m_centerBall.x());
-    putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,8);
+    putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,3);
     textOrg.y+=15;
     sprintf (buff,"Y = %f ",m_centerBall.y());
-    putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,8);
+    putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,3);
     textOrg.y+=15;
     sprintf (buff,"Z = %f ",m_centerBall.z());
-    putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,8);
+    putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,3);
     textOrg.y+=15;
     sprintf (buff,"Dist. X = %d ",m_centerDistance.x());
-    putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,8);
+    putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,3);
     textOrg.y+=15;
     sprintf (buff,"Dist. Y = %d ",m_centerDistance.y());
-    putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,8);
+    putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,3);
 }
 
 void balltrackerWorker::on_timeout()
 {
-    //Mat imgOriginal;
-//    Mat imgThresholded_lRed;
-//    Mat imgThresholded_hRed;
+    detectCircles();
+}
+
+
+void balltrackerWorker::detectCircles()
+{
     Mat imgThresholded;
     m_bBallDetected = false;
 
@@ -165,10 +169,10 @@ void balltrackerWorker::on_timeout()
     }
 
 //    //Rotamos la imágen 90 grados porque la cámara está en posición vertical.
-//    double angle = 90;
-//    Point2f center((m_data.m_image.cols-1)/2.0, (m_data.m_image.rows-1)/2.0);
-//    Mat rot = getRotationMatrix2D( center,angle,1);
-//    warpAffine(m_data.m_image, m_data.m_image, rot, m_data.m_image.size());
+    double angle = -90;
+    Point2f center((m_data.m_image.cols-1)/2.0, (m_data.m_image.rows-1)/2.0);
+    Mat rot = getRotationMatrix2D( center,angle,1);
+    warpAffine(m_data.m_image, m_data.m_image, rot, m_data.m_image.size());
 
     int centerBallX = m_data.m_image.cols/2;
     int centerBallY = m_data.m_image.rows/2;
@@ -177,7 +181,7 @@ void balltrackerWorker::on_timeout()
     cvtColor(m_data.m_image, imgHSV, COLOR_BGR2HSV);   //Convert the captured frame from BGR to HSV
 
     inRange(imgHSV, Scalar(m_iLowH, m_iLowS, m_iLowV), Scalar(m_iHighH, m_iHighS, m_iHighV), imgThresholded); //Threshold the image
-    morphOps (imgThresholded);
+//    morphOps (imgThresholded);
 
     GaussianBlur( imgThresholded, imgThresholded, cv::Size(9, 9), 2, 2 );
     vector<Vec3f> circles;
@@ -185,10 +189,17 @@ void balltrackerWorker::on_timeout()
 
     if (circles.size()) {
         m_centerBall = QVector3D (cvRound(circles[0][0]), cvRound(circles[0][1]), cvRound(circles[0][2]));
+        IplImage copy = m_data.m_image;
+        IplImage *nImage = &copy;
+        if (m_centerBall.x() <= m_data.m_image.rows && m_centerBall.y() <= m_data.m_image.cols ) {
+                CvScalar c = cvGet2D(nImage, m_centerBall.x(), m_centerBall.y()); //color of the center
+        }
+
         // circle m_centerBall
         circle( m_data.m_image, Point (m_centerBall.x(), m_centerBall.y()), 3, Scalar(0,255,0), -1, 8, 0 );
         // circle outline
         circle( m_data.m_image, Point (m_centerBall.x(), m_centerBall.y()), m_centerBall.z(), Scalar(0,0,255), 3, 8, 0 );
+
         m_bBallDetected = true;
         emit possitionChanged(xyPossition());
         m_ballLostCount=0;
@@ -233,6 +244,7 @@ void balltrackerWorker::on_readyRead()
     in >> m_iHighS;
     in >> m_iLowV;
     in >> m_iHighV;
-
-
+    in >> m_camBrightness;
+    qDebug() << m_iLowH <<  m_iLowS << m_iLowV << " : " << m_iHighH << m_iHighS << m_iHighV << m_camBrightness;
+//    m_capture.set (CV_CAP_PROP_BRIGHTNESS,m_camBrightness);
 }
