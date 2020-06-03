@@ -1,0 +1,18 @@
+Para poder hacer que la Arduino UNO actúe como un teclado USB HID
+se ha de actualizar el firmware.
+Esto se hace mediante la herramiente reflash.sh. Una vez actualizado
+no se podrá acceder la Arduino para reprogramarla, para ello se ha de
+volver a reprogramar la flash con el firmware original.
+
+Para programar la Arduino con el firmware de teclado:
+
+# reflash.sh keyboard
+
+Para programar la Arduino con el firmaware original:
+
+# reflash.sh devel
+
+
+Antes de poder reprogramar la flash, se ha de cruzar los pins RESET con GND.
+Ver https://www.arduino.cc/en/Hacking/DFUProgramming8U2
+
