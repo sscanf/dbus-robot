@@ -1,0 +1,2 @@
+#!/bin/bash
+pk2cmd -B/usr/share/pk2 -P -R -M -F$1

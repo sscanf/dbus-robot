@@ -1,0 +1,15 @@
+M:prueba
+S:Fprueba$__str_0$0$0({12}DA12d,SC:S),D,0,0
+S:Fprueba$__str_1$0$0({20}DA20d,SC:S),D,0,0
+S:Fprueba$__str_2$0$0({17}DA17d,SC:S),D,0,0
+S:Fprueba$__str_3$0$0({11}DA11d,SC:S),D,0,0
+S:Fprueba$__str_4$0$0({11}DA11d,SC:S),D,0,0
+S:Fprueba$__str_5$0$0({10}DA10d,SC:S),D,0,0
+S:Fprueba$__str_6$0$0({10}DA10d,SC:S),D,0,0
+S:Fprueba$__str_7$0$0({10}DA10d,SC:S),D,0,0
+S:Fprueba$__str_8$0$0({13}DA13d,SC:S),D,0,0
+S:Fprueba$__str_9$0$0({16}DA16d,SC:S),D,0,0
+S:Fprueba$__str_10$0$0({21}DA21d,SC:S),D,0,0
+S:Fprueba$__str_11$0$0({21}DA21d,SC:S),D,0,0
+S:Fprueba$__str_12$0$0({11}DA11d,SC:S),D,0,0
+S:Fprueba$__str_13$0$0({12}DA12d,SC:S),D,0,0

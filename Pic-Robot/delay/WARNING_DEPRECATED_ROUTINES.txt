@@ -1,0 +1,32 @@
+NOTE: 2007-06-18- this project routines may NOT WORK if the project is too large and Hi-Tech C starts to bank variables in the wrong place.
+
+Instead, use the following code (this has worked well on a commercial product with 2000 products in the field, 95% usage of both CPU and flash):
+
+#if	FREQ_CORE < (8MHZ)
+	#define uS_MUL	1.0
+	#define uS_CNT  (238.0/uS_MUL)
+#elif FREQ_CORE == (8MHZ)
+	#define uS_MUL	1.0
+	#define uS_CNT  (244.0/uS_MUL)
+#elif FREQ_CORE > (8MHZ)
+	#define uS_MUL	4.0
+	#define uS_CNT  (246.0/uS_MUL)
+#else
+	#error FREQ_CORE undefined. Have you included "xtal_freq.h"?
+#endif
+
+#define FREQ_MULT	((FREQ_CORE/1000000)/4)
+
+/* Assuming TMR0L and TMR0H are &0xFF
+ */
+#include <pic18.h>
+#define	DelayUS(x) { \
+	T0CON = 0b00001000; \
+	TMR0H = (-((unsigned int)x*(unsigned int)FREQ_MULT))/0x100; \
+	TMR0L = (-((unsigned int)x*(unsigned int)FREQ_MULT))&0x0FF; \
+	TMR0IF = 0; \
+	T0CON = 0b10001000; \
+	while(TMR0IF == 0);\
+	}
+
+#endif

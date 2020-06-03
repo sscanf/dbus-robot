@@ -1,0 +1,2 @@
+#!/bin/bash
+pk2cmd -P -Y -F$1

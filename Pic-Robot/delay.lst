@@ -1,0 +1,176 @@
+gpasm-0.13.7 beta               delay.asm   9-1-2014  01:28:50           PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00001 ;--------------------------------------------------------
+               00002 ; File Created by SDCC : free open source ANSI-C Compiler
+               00003 ; Version 3.4.0 #8981 (Apr  5 2014) (Linux)
+               00004 ; This file was generated Mon Sep  1 01:28:50 2014
+               00005 ;--------------------------------------------------------
+               00006 ; PIC16 port for the Microchip 16-bit core micros
+               00007 ;--------------------------------------------------------
+               00008 
+               00009         .ident "SDCC version 3.4.0 #8981 [pic16 port]"
+               00010         .file   "delay.c"
+               00011         list    p=18f4455
+               00012         radix   dec
+               00013 
+               00014 
+               00015 ;--------------------------------------------------------
+               00016 ; public variables in this module
+               00017 ;--------------------------------------------------------
+               00018         global  _ContadorA
+               00019         global  _ContadorB
+               00020         global  _ContadorC
+               00021         global  _delay_1ms
+               00022         global  _delay_ms
+               00023 
+               00024 ;--------------------------------------------------------
+               00025 ;       Equates to used internal registers
+               00026 ;--------------------------------------------------------
+  00000FD8     00027 STATUS  equ     0xfd8
+  00000FE1     00028 FSR1L   equ     0xfe1
+  00000FD9     00029 FSR2L   equ     0xfd9
+  00000FE5     00030 POSTDEC1        equ     0xfe5
+  00000FE4     00031 PREINC1 equ     0xfe4
+  00000FDB     00032 PLUSW2  equ     0xfdb
+               00033 
+               00034 
+               00035 ; Internal registers
+               00036 .registers      udata_ovr       0x0000
+               00037 r0x00   res     1
+               00038 r0x01   res     1
+               00039 r0x02   res     1
+               00040 r0x03   res     1
+               00041 
+               00042 udata_delay_0   udata
+               00043 _ContadorC      res     1
+               00044 
+               00045 udata_delay_1   udata
+               00046 _ContadorB      res     1
+               00047 
+               00048 udata_delay_2   udata
+               00049 _ContadorA      res     1
+               00050 
+               00051 ;--------------------------------------------------------
+               00052 ; global & static initialisations
+               00053 ;--------------------------------------------------------
+               00054 ; I code from now on!
+gpasm-0.13.7 beta               delay.asm   9-1-2014  01:28:50           PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00055 ; ; Starting pCode block
+               00056 S_delay__delay_ms       code
+0000 00057 _delay_ms:
+               00058         .line   29; delay.c     void delay_ms (unsigned long ms)
+0000 CFD9 FFE5 00059         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00060         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 00061         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 00062         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 00063         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 00064         MOVFF   r0x03, POSTDEC1
+0018 0E02      00065         MOVLW   0x02
+001A CFDB F000 00066         MOVFF   PLUSW2, r0x00
+001E 0E03      00067         MOVLW   0x03
+0020 CFDB F000 00068         MOVFF   PLUSW2, r0x01
+0024 0E04      00069         MOVLW   0x04
+0026 CFDB F000 00070         MOVFF   PLUSW2, r0x02
+002A 0E05      00071         MOVLW   0x05
+002C CFDB F000 00072         MOVFF   PLUSW2, r0x03
+0030 00073 _00112_DS_:
+               00074         .line   31; delay.c     for (;ms>0;ms--)
+0030 5000      00075         MOVF    r0x00, W
+0032 1000      00076         IORWF   r0x01, W
+0034 1000      00077         IORWF   r0x02, W
+0036 1000      00078         IORWF   r0x03, W
+0038 E000      00079         BZ      _00114_DS_
+               00080         .line   32; delay.c     delay_1ms();
+003A EC00 F000 00081         CALL    _delay_1ms
+               00082         .line   31; delay.c     for (;ms>0;ms--)
+003E 0EFF      00083         MOVLW   0xff
+0040 2600      00084         ADDWF   r0x00, F
+0042 2200      00085         ADDWFC  r0x01, F
+0044 2200      00086         ADDWFC  r0x02, F
+0046 2200      00087         ADDWFC  r0x03, F
+0048 D000      00088         BRA     _00112_DS_
+004A 00089 _00114_DS_:
+004A CFE4 F000 00090         MOVFF   PREINC1, r0x03
+004E CFE4 F000 00091         MOVFF   PREINC1, r0x02
+0052 CFE4 F000 00092         MOVFF   PREINC1, r0x01
+0056 CFE4 F000 00093         MOVFF   PREINC1, r0x00
+005A CFE4 FFD9 00094         MOVFF   PREINC1, FSR2L
+005E 0012      00095         RETURN  
+               00096 
+               00097 ; ; Starting pCode block
+               00098 S_delay__delay_1ms      code
+0000 00099 _delay_1ms:
+               00100         .line   4; delay.c      void delay_1ms (void)
+0000 CFD9 FFE5 00101         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00102         MOVFF   FSR1L, FSR2L
+               00103         ; Código de retardo generado por PikLoops (sáb nov-2009-14 02:57:28)
+               00104         ; Tiempo de retardo = 0.00099980 con Osc = 20.00000000MHz
+0008 00105 retraso_0.001_seg:
+0008 0E07      00106         movlw D'7'
+000A 6E00      00107         movwf _ContadorB
+000C 0E7C      00108         movlw D'124'
+gpasm-0.13.7 beta               delay.asm   9-1-2014  01:28:50           PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+000E 6E00      00109         movwf _ContadorA
+0010 00110 retraso_0.001_seg_bucle:
+0010 2E00      00111         decfsz _ContadorA,1
+0012 EF00 F000 00112         goto retraso_0.001_seg_bucle
+0016 2E00      00113         decfsz _ContadorB,1
+0018 EF00 F000 00114         goto retraso_0.001_seg_bucle
+001C CFE4 FFD9 00115         MOVFF   PREINC1, FSR2L
+0020 0012      00116         RETURN  
+               00117 
+               00118 
+               00119 
+               00120 ; Statistics:
+               00121 ; code size:      134 (0x0086) bytes ( 0.10%)
+               00122 ;                  67 (0x0043) words
+               00123 ; udata size:       3 (0x0003) bytes ( 0.17%)
+               00124 ; access size:      4 (0x0004) bytes
+               00125 
+               00126 
+gpasm-0.13.7 beta               delay.asm   9-1-2014  01:28:50           PAGE  4
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+FSR1L                             00000FE1
+FSR2L                             00000FD9
+PLUSW2                            00000FDB
+POSTDEC1                          00000FE5
+PREINC1                           00000FE4
+STATUS                            00000FD8
+_00112_DS_                        00000030
+_00114_DS_                        0000004A
+_ContadorA                        00000000
+_ContadorB                        00000000
+_ContadorC                        00000000
+__18F4455                         00000001
+_delay_1ms                        00000000
+_delay_ms                         00000000
+r0x00                             00000000
+r0x01                             00000001
+r0x02                             00000002
+r0x03                             00000003
+retraso_0.001_seg                 00000008
+retraso_0.001_seg_bucle           00000010
+
+
+Errors   :       0
+Warnings :       0 reported,       0 suppressed
+Messages :       0 reported,       0 suppressed
+

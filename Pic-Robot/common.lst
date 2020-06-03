@@ -1,0 +1,404 @@
+gpasm-0.13.7 beta               common.asm  9-1-2014  01:28:50           PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00001 ;--------------------------------------------------------
+               00002 ; File Created by SDCC : free open source ANSI-C Compiler
+               00003 ; Version 3.4.0 #8981 (Apr  5 2014) (Linux)
+               00004 ; This file was generated Mon Sep  1 01:28:50 2014
+               00005 ;--------------------------------------------------------
+               00006 ; PIC16 port for the Microchip 16-bit core micros
+               00007 ;--------------------------------------------------------
+               00008 
+               00009         .ident "SDCC version 3.4.0 #8981 [pic16 port]"
+               00010         .file   "common.c"
+               00011         list    p=18f4455
+               00012         radix   dec
+               00013 
+               00014 
+               00015 ;--------------------------------------------------------
+               00016 ; public variables in this module
+               00017 ;--------------------------------------------------------
+               00018         global  _labs
+               00019         global  _atoi
+               00020 
+               00021 ;--------------------------------------------------------
+               00022 ; extern variables in this module
+               00023 ;--------------------------------------------------------
+               00024         extern  __gptrget1
+               00025         extern  __mulint
+               00026 
+               00027 ;--------------------------------------------------------
+               00028 ;       Equates to used internal registers
+               00029 ;--------------------------------------------------------
+  00000FD8     00030 STATUS  equ     0xfd8
+  00000FE8     00031 WREG    equ     0xfe8
+  00000FE9     00032 FSR0L   equ     0xfe9
+  00000FE1     00033 FSR1L   equ     0xfe1
+  00000FD9     00034 FSR2L   equ     0xfd9
+  00000FE5     00035 POSTDEC1        equ     0xfe5
+  00000FE4     00036 PREINC1 equ     0xfe4
+  00000FDB     00037 PLUSW2  equ     0xfdb
+  00000FF3     00038 PRODL   equ     0xff3
+  00000FF4     00039 PRODH   equ     0xff4
+               00040 
+               00041 
+               00042 ; Internal registers
+               00043 .registers      udata_ovr       0x0000
+               00044 r0x00   res     1
+               00045 r0x01   res     1
+               00046 r0x02   res     1
+               00047 r0x03   res     1
+               00048 r0x04   res     1
+               00049 r0x05   res     1
+               00050 r0x06   res     1
+               00051 r0x07   res     1
+               00052 r0x08   res     1
+               00053 r0x09   res     1
+               00054 
+gpasm-0.13.7 beta               common.asm  9-1-2014  01:28:50           PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00055 ;--------------------------------------------------------
+               00056 ; global & static initialisations
+               00057 ;--------------------------------------------------------
+               00058 ; I code from now on!
+               00059 ; ; Starting pCode block
+               00060 S_common__atoi  code
+0000 00061 _atoi:
+               00062         .line   6; common.c     int atoi(char * s)
+0000 CFD9 FFE5 00063         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00064         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 00065         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 00066         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 00067         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 00068         MOVFF   r0x03, POSTDEC1
+0018 C000 FFE5 00069         MOVFF   r0x04, POSTDEC1
+001C C000 FFE5 00070         MOVFF   r0x05, POSTDEC1
+0020 C000 FFE5 00071         MOVFF   r0x06, POSTDEC1
+0024 C000 FFE5 00072         MOVFF   r0x07, POSTDEC1
+0028 C000 FFE5 00073         MOVFF   r0x08, POSTDEC1
+002C C000 FFE5 00074         MOVFF   r0x09, POSTDEC1
+0030 0E02      00075         MOVLW   0x02
+0032 CFDB F000 00076         MOVFF   PLUSW2, r0x00
+0036 0E03      00077         MOVLW   0x03
+0038 CFDB F000 00078         MOVFF   PLUSW2, r0x01
+003C 0E04      00079         MOVLW   0x04
+003E CFDB F000 00080         MOVFF   PLUSW2, r0x02
+               00081         .line   8; common.c     int rv=0; 
+0042 6A00      00082         CLRF    r0x03
+0044 6A00      00083         CLRF    r0x04
+               00084         .line   9; common.c     char sign = 0;
+0046 6A00      00085         CLRF    r0x05
+               00086         .line   12; common.c    while (*s) 
+0048 C000 F000 00087         MOVFF   r0x00, r0x06
+004C C000 F000 00088         MOVFF   r0x01, r0x07
+0050 C000 F000 00089         MOVFF   r0x02, r0x08
+0054 00090 _00123_DS_:
+0054 C000 FFE9 00091         MOVFF   r0x06, FSR0L
+0058 C000 FFF3 00092         MOVFF   r0x07, PRODL
+005C 5000      00093         MOVF    r0x08, W
+005E EC00 F000 00094         CALL    __gptrget1
+0062 6E00      00095         MOVWF   r0x09
+0064 5000      00096         MOVF    r0x09, W
+0066 E000      00097         BZ      _00152_DS_
+               00098         .line   14; common.c    if (*s <= '9' && *s >= '0')
+0068 5000      00099         MOVF    r0x09, W
+006A 0F80      00100         ADDLW   0x80
+006C 0F46      00101         ADDLW   0x46
+006E E200      00102         BC      _00118_DS_
+0070 5000      00103         MOVF    r0x09, W
+0072 0F80      00104         ADDLW   0x80
+0074 0F50      00105         ADDLW   0x50
+0076 E200      00106         BC      _00152_DS_
+0078 00107 _00118_DS_:
+               00108         .line   16; common.c    if (*s == '-' || *s == '+') 
+gpasm-0.13.7 beta               common.asm  9-1-2014  01:28:50           PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0078 C000 FFE9 00109         MOVFF   r0x06, FSR0L
+007C C000 FFF3 00110         MOVFF   r0x07, PRODL
+0080 5000      00111         MOVF    r0x08, W
+0082 EC00 F000 00112         CALL    __gptrget1
+0086 6E00      00113         MOVWF   r0x09
+0088 5000      00114         MOVF    r0x09, W
+008A 0A2D      00115         XORLW   0x2d
+008C E000      00116         BZ      _00152_DS_
+008E 5000      00117         MOVF    r0x09, W
+0090 0A2B      00118         XORLW   0x2b
+0092 E000      00119         BZ      _00152_DS_
+               00120         .line   18; common.c    s++;
+0094 2A00      00121         INCF    r0x06, F
+0096 E300      00122         BNC     _00184_DS_
+0098 4A00      00123         INFSNZ  r0x07, F
+009A 2A00      00124         INCF    r0x08, F
+009C 00125 _00184_DS_:
+009C D000      00126         BRA     _00123_DS_
+009E 00127 _00152_DS_:
+009E C000 F000 00128         MOVFF   r0x06, r0x00
+00A2 C000 F000 00129         MOVFF   r0x07, r0x01
+00A6 C000 F000 00130         MOVFF   r0x08, r0x02
+               00131         .line   21; common.c    if(*s == '-')sign=1;
+00AA C000 FFE9 00132         MOVFF   r0x06, FSR0L
+00AE C000 FFF3 00133         MOVFF   r0x07, PRODL
+00B2 5000      00134         MOVF    r0x08, W
+00B4 EC00 F000 00135         CALL    __gptrget1
+00B8 6E00      00136         MOVWF   r0x06
+00BA 6A00      00137         CLRF    r0x07
+00BC 5000      00138         MOVF    r0x06, W
+00BE 0A2D      00139         XORLW   0x2d
+00C0 E100      00140         BNZ     _00186_DS_
+00C2 2A00      00141         INCF    r0x07, F
+00C4 00142 _00186_DS_:
+00C4 5000      00143         MOVF    r0x07, W
+00C6 E000      00144         BZ      _00127_DS_
+00C8 0E01      00145         MOVLW   0x01
+00CA 6E00      00146         MOVWF   r0x05
+00CC 00147 _00127_DS_:
+               00148         .line   23; common.c    if (*s == '-' || *s == '+') s++;
+00CC 5000      00149         MOVF    r0x07, W
+00CE E100      00150         BNZ     _00128_DS_
+00D0 5000      00151         MOVF    r0x06, W
+00D2 0A2B      00152         XORLW   0x2b
+00D4 E100      00153         BNZ     _00150_DS_
+00D6 00154 _00128_DS_:
+00D6 2A00      00155         INCF    r0x00, F
+00D8 E300      00156         BNC     _00150_DS_
+00DA 4A00      00157         INFSNZ  r0x01, F
+00DC 2A00      00158         INCF    r0x02, F
+00DE 00159 _00189_DS_:
+00DE 00160 _00150_DS_:
+00DE 00161 _00133_DS_:
+               00162         .line   25; common.c    while (*s && *s >= '0' && *s <= '9') 
+gpasm-0.13.7 beta               common.asm  9-1-2014  01:28:50           PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+00DE C000 FFE9 00163         MOVFF   r0x00, FSR0L
+00E2 C000 FFF3 00164         MOVFF   r0x01, PRODL
+00E6 5000      00165         MOVF    r0x02, W
+00E8 EC00 F000 00166         CALL    __gptrget1
+00EC 6E00      00167         MOVWF   r0x06
+00EE 5000      00168         MOVF    r0x06, W
+00F0 E000      00169         BZ      _00135_DS_
+00F2 5000      00170         MOVF    r0x06, W
+00F4 0F80      00171         ADDLW   0x80
+00F6 0F50      00172         ADDLW   0x50
+00F8 E300      00173         BNC     _00135_DS_
+00FA 5000      00174         MOVF    r0x06, W
+00FC 0F80      00175         ADDLW   0x80
+00FE 0F46      00176         ADDLW   0x46
+0100 E200      00177         BC      _00135_DS_
+               00178         .line   27; common.c    rv = (rv * 10) + (*s - '0');
+0102 5000      00179         MOVF    r0x04, W
+0104 6EE5      00180         MOVWF   POSTDEC1
+0106 5000      00181         MOVF    r0x03, W
+0108 6EE5      00182         MOVWF   POSTDEC1
+010A 0E00      00183         MOVLW   0x00
+010C 6EE5      00184         MOVWF   POSTDEC1
+010E 0E0A      00185         MOVLW   0x0a
+0110 6EE5      00186         MOVWF   POSTDEC1
+0112 EC00 F000 00187         CALL    __mulint
+0116 6E00      00188         MOVWF   r0x07
+0118 CFF3 F000 00189         MOVFF   PRODL, r0x08
+011C 0E04      00190         MOVLW   0x04
+011E 26E1      00191         ADDWF   FSR1L, F
+0120 6A00      00192         CLRF    r0x09
+0122 BE00      00193         BTFSC   r0x06, 7
+0124 6800      00194         SETF    r0x09
+0126 0ED0      00195         MOVLW   0xd0
+0128 2600      00196         ADDWF   r0x06, F
+012A A0D8      00197         BTFSS   STATUS, 0
+012C 0600      00198         DECF    r0x09, F
+012E 5000      00199         MOVF    r0x06, W
+0130 2400      00200         ADDWF   r0x07, W
+0132 6E00      00201         MOVWF   r0x03
+0134 5000      00202         MOVF    r0x09, W
+0136 2000      00203         ADDWFC  r0x08, W
+0138 6E00      00204         MOVWF   r0x04
+               00205         .line   28; common.c    s++;
+013A 2A00      00206         INCF    r0x00, F
+013C E300      00207         BNC     _00192_DS_
+013E 4A00      00208         INFSNZ  r0x01, F
+0140 2A00      00209         INCF    r0x02, F
+0142 00210 _00192_DS_:
+0142 D000      00211         BRA     _00133_DS_
+0144 00212 _00135_DS_:
+               00213         .line   31; common.c    return (sign ? -rv : rv);
+0144 5000      00214         MOVF    r0x05, W
+0146 E000      00215         BZ      _00138_DS_
+0148 1C00      00216         COMF    r0x04, W
+gpasm-0.13.7 beta               common.asm  9-1-2014  01:28:50           PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+014A 6E00      00217         MOVWF   r0x01
+014C 1C00      00218         COMF    r0x03, W
+014E 6E00      00219         MOVWF   r0x00
+0150 4A00      00220         INFSNZ  r0x00, F
+0152 2A00      00221         INCF    r0x01, F
+0154 D000      00222         BRA     _00139_DS_
+0156 00223 _00138_DS_:
+0156 C000 F000 00224         MOVFF   r0x03, r0x00
+015A C000 F000 00225         MOVFF   r0x04, r0x01
+015E 00226 _00139_DS_:
+015E C000 FFF3 00227         MOVFF   r0x01, PRODL
+0162 5000      00228         MOVF    r0x00, W
+0164 CFE4 F000 00229         MOVFF   PREINC1, r0x09
+0168 CFE4 F000 00230         MOVFF   PREINC1, r0x08
+016C CFE4 F000 00231         MOVFF   PREINC1, r0x07
+0170 CFE4 F000 00232         MOVFF   PREINC1, r0x06
+0174 CFE4 F000 00233         MOVFF   PREINC1, r0x05
+0178 CFE4 F000 00234         MOVFF   PREINC1, r0x04
+017C CFE4 F000 00235         MOVFF   PREINC1, r0x03
+0180 CFE4 F000 00236         MOVFF   PREINC1, r0x02
+0184 CFE4 F000 00237         MOVFF   PREINC1, r0x01
+0188 CFE4 F000 00238         MOVFF   PREINC1, r0x00
+018C CFE4 FFD9 00239         MOVFF   PREINC1, FSR2L
+0190 0012      00240         RETURN  
+               00241 
+               00242 ; ; Starting pCode block
+               00243 S_common__labs  code
+0000 00244 _labs:
+               00245         .line   1; common.c     long labs (long i) 
+0000 CFD9 FFE5 00246         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00247         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 00248         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 00249         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 00250         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 00251         MOVFF   r0x03, POSTDEC1
+0018 C000 FFE5 00252         MOVFF   r0x04, POSTDEC1
+001C C000 FFE5 00253         MOVFF   r0x05, POSTDEC1
+0020 C000 FFE5 00254         MOVFF   r0x06, POSTDEC1
+0024 C000 FFE5 00255         MOVFF   r0x07, POSTDEC1
+0028 0E02      00256         MOVLW   0x02
+002A CFDB F000 00257         MOVFF   PLUSW2, r0x00
+002E 0E03      00258         MOVLW   0x03
+0030 CFDB F000 00259         MOVFF   PLUSW2, r0x01
+0034 0E04      00260         MOVLW   0x04
+0036 CFDB F000 00261         MOVFF   PLUSW2, r0x02
+003A 0E05      00262         MOVLW   0x05
+003C CFDB F000 00263         MOVFF   PLUSW2, r0x03
+               00264         .line   3; common.c     return i < 0 ? -i : i;
+0040 80D8      00265         BSF     STATUS, 0
+0042 AE00      00266         BTFSS   r0x03, 7
+0044 90D8      00267         BCF     STATUS, 0
+0046 E300      00268         BNC     _00107_DS_
+0048 1C00      00269         COMF    r0x03, W
+004A 6E00      00270         MOVWF   r0x07
+gpasm-0.13.7 beta               common.asm  9-1-2014  01:28:50           PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+004C 1C00      00271         COMF    r0x02, W
+004E 6E00      00272         MOVWF   r0x06
+0050 1C00      00273         COMF    r0x01, W
+0052 6E00      00274         MOVWF   r0x05
+0054 1C00      00275         COMF    r0x00, W
+0056 6E00      00276         MOVWF   r0x04
+0058 2A00      00277         INCF    r0x04, F
+005A E100      00278         BNZ     _00108_DS_
+005C 2A00      00279         INCF    r0x05, F
+005E E100      00280         BNZ     _00108_DS_
+0060 4A00      00281         INFSNZ  r0x06, F
+0062 2A00      00282         INCF    r0x07, F
+0064 00283 _00112_DS_:
+0064 D000      00284         BRA     _00108_DS_
+0066 00285 _00107_DS_:
+0066 C000 F000 00286         MOVFF   r0x00, r0x04
+006A C000 F000 00287         MOVFF   r0x01, r0x05
+006E C000 F000 00288         MOVFF   r0x02, r0x06
+0072 C000 F000 00289         MOVFF   r0x03, r0x07
+0076 00290 _00108_DS_:
+0076 C000 FFE9 00291         MOVFF   r0x07, FSR0L
+007A C000 FFF4 00292         MOVFF   r0x06, PRODH
+007E C000 FFF3 00293         MOVFF   r0x05, PRODL
+0082 5000      00294         MOVF    r0x04, W
+0084 CFE4 F000 00295         MOVFF   PREINC1, r0x07
+0088 CFE4 F000 00296         MOVFF   PREINC1, r0x06
+008C CFE4 F000 00297         MOVFF   PREINC1, r0x05
+0090 CFE4 F000 00298         MOVFF   PREINC1, r0x04
+0094 CFE4 F000 00299         MOVFF   PREINC1, r0x03
+0098 CFE4 F000 00300         MOVFF   PREINC1, r0x02
+009C CFE4 F000 00301         MOVFF   PREINC1, r0x01
+00A0 CFE4 F000 00302         MOVFF   PREINC1, r0x00
+00A4 CFE4 FFD9 00303         MOVFF   PREINC1, FSR2L
+00A8 0012      00304         RETURN  
+               00305 
+               00306 
+               00307 
+               00308 ; Statistics:
+               00309 ; code size:      572 (0x023c) bytes ( 0.44%)
+               00310 ;                 286 (0x011e) words
+               00311 ; udata size:       0 (0x0000) bytes ( 0.00%)
+               00312 ; access size:     10 (0x000a) bytes
+               00313 
+               00314 
+gpasm-0.13.7 beta               common.asm  9-1-2014  01:28:50           PAGE  7
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+FSR0L                             00000FE9
+FSR1L                             00000FE1
+FSR2L                             00000FD9
+PLUSW2                            00000FDB
+POSTDEC1                          00000FE5
+PREINC1                           00000FE4
+PRODH                             00000FF4
+PRODL                             00000FF3
+STATUS                            00000FD8
+WREG                              00000FE8
+_00107_DS_                        00000066
+_00108_DS_                        00000076
+_00112_DS_                        00000064
+_00118_DS_                        00000078
+_00123_DS_                        00000054
+_00127_DS_                        000000CC
+_00128_DS_                        000000D6
+_00133_DS_                        000000DE
+_00135_DS_                        00000144
+_00138_DS_                        00000156
+_00139_DS_                        0000015E
+_00150_DS_                        000000DE
+_00152_DS_                        0000009E
+_00184_DS_                        0000009C
+_00186_DS_                        000000C4
+_00189_DS_                        000000DE
+_00192_DS_                        00000142
+__18F4455                         00000001
+__gptrget1                        00000000
+__mulint                          00000000
+_atoi                             00000000
+_labs                             00000000
+r0x00                             00000000
+r0x01                             00000001
+r0x02                             00000002
+r0x03                             00000003
+r0x04                             00000004
+r0x05                             00000005
+r0x06                             00000006
+r0x07                             00000007
+r0x08                             00000008
+r0x09                             00000009
+
+
+Errors   :       0
+Warnings :       0 reported,       0 suppressed
+Messages :       0 reported,       0 suppressed
+

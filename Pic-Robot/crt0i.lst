@@ -1,0 +1,219 @@
+gpasm-0.13.7 beta               crt0i.asm   8-27-2014  21:11:52          PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00001 ;--------------------------------------------------------
+               00002 ; File Created by SDCC : free open source ANSI-C Compiler
+               00003 ; Version 3.3.0 #8604 (Dec 30 2013) (Linux)
+               00004 ; This file was generated Wed Aug 27 21:11:52 2014
+               00005 ;--------------------------------------------------------
+               00006 ; PIC16 port for the Microchip 16-bit core micros
+               00007 ;--------------------------------------------------------
+               00008         list    p=18f4550
+               00009         radix   dec
+               00010 
+               00011 
+               00012 ;--------------------------------------------------------
+               00013 ; public variables in this module
+               00014 ;--------------------------------------------------------
+               00015         global  ___uflags
+               00016         global  __entry
+               00017         global  __startup
+               00018 
+               00019 ;--------------------------------------------------------
+               00020 ; extern variables in this module
+               00021 ;--------------------------------------------------------
+               00022         extern  _stack_end
+               00023         extern  _TBLPTRU
+               00024         extern  _TBLPTRH
+               00025         extern  _TBLPTRL
+               00026         extern  _FSR0L
+               00027         extern  _FSR0H
+               00028         extern  _TABLAT
+               00029         extern  _POSTINC0
+               00030         extern  _main
+               00031         extern  _cinit
+               00032 
+               00033 
+               00034         idata
+               00035 ___uflags       db      0x00
+               00036 
+               00037 ;--------------------------------------------------------
+               00038 ; global & static initialisations
+               00039 ;--------------------------------------------------------
+               00040 ; ; Starting pCode block
+               00041 S_crt0i___entry code    0X000000
+0000 00042 __entry:
+0000 EF00 F000 00043         goto __startup
+               00044         
+               00045 ; I code from now on!
+               00046 ; ; Starting pCode block
+               00047 S_crt0i___startup       code
+0000 00048 __startup:
+               00049         ; Initialize the stack pointer
+0000 EE10 F000 00050         lfsr 1, _stack_end
+0004 EE20 F000 00051         lfsr 2, _stack_end
+               00052         ; 1st silicon does not do this on POR
+0008 6A00      00053         clrf _TBLPTRU, 0
+               00054         ; Initialize the flash memory access configuration.
+gpasm-0.13.7 beta               crt0i.asm   8-27-2014  21:11:52          PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00055         ; This is harmless for non-flash devices, so we do it on all parts.
+000A 8EA6      00056         bsf 0xa6, 7, 0 ; EECON1.EEPGD = 1, TBLPTR accesses program memory
+000C 9CA6      00057         bcf 0xa6, 6, 0 ; EECON1.CFGS = 0, TBLPTR accesses program memory
+               00058         ; TBLPTR = &cinit
+000E 0E00      00059         movlw low(_cinit)
+0010 6E00      00060         movwf _TBLPTRL, 0
+0012 0E00      00061         movlw high(_cinit)
+0014 6E00      00062         movwf _TBLPTRH, 0
+0016 0E00      00063         movlw upper(_cinit)
+0018 6E00      00064         movwf _TBLPTRU, 0
+               00065         ; 0x05 = cinit.num_init
+001A 0009      00066         tblrd*+
+001C C000 F005 00067         movff _TABLAT, 0x05
+0020 0009      00068         tblrd*+
+0022 C000 F006 00069         movff _TABLAT, (0x05 + 1)
+               00070         ; while (0x05)
+0026 D000      00071         bra entry_loop_dec
+0028 00072 entry_loop:
+               00073         ; Count down so we only have to look up the data in _cinit once.
+               00074         ; At this point we know that TBLPTR points to the top of the current
+               00075         ; entry in _cinit, so we can just start reading the from, to, and
+               00076         ; size values.
+               00077         ; Read the source address low.
+               00078         ; 0x00 = 0x07 ->from;
+0028 0009      00079         tblrd*+
+002A C000 F000 00080         movff _TABLAT, 0x00
+               00081         ; source address high
+002E 0009      00082         tblrd*+
+0030 C000 F001 00083         movff _TABLAT, (0x00 + 1)
+               00084         ; source address upper
+0034 0009      00085         tblrd*+
+0036 C000 F002 00086         movff _TABLAT, (0x00 + 2)
+               00087         ; Skip 0 byte since it is stored as 0 32bit int.
+003A 0009      00088         tblrd*+
+               00089         ; Read the destination address directly into FSR0
+               00090         ; destination address low.
+               00091         ; FSR0 = (unsigned short)0x07 ->to;
+003C 0009      00092         tblrd*+
+003E C000 F000 00093         movff _TABLAT, _FSR0L
+               00094         ; destination address high
+0042 0009      00095         tblrd*+
+0044 C000 F000 00096         movff _TABLAT, _FSR0H
+               00097         ; Skip two bytes since it is stored as 0 32bit int.
+0048 0009      00098         tblrd*+
+004A 0009      00099         tblrd*+
+               00100         ; Read the size of data to transfer to destination address.
+               00101         ; 0x03 = (unsigned short)0x07 ->size;
+004C 0009      00102         tblrd*+
+004E C000 F003 00103         movff _TABLAT, 0x03
+0052 0009      00104         tblrd*+
+0054 C000 F004 00105         movff _TABLAT, (0x03 + 1)
+               00106         ; Skip two bytes since it is stored as 0 32bit int.
+0058 0009      00107         tblrd*+
+005A 0009      00108         tblrd*+
+gpasm-0.13.7 beta               crt0i.asm   8-27-2014  21:11:52          PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00109         ; 0x00 = 0x07 ->from;
+               00110         ; FSR0 = (unsigned short)0x07 ->to;
+               00111         ; 0x03 = (unsigned short)0x07 ->size;
+               00112         ; The table pointer now points to the next entry. Save it
+               00113         ; off since we will be using the table pointer to do the copying
+               00114         ; for the entry.
+               00115         ; 0x07 = TBLPTR
+005C C000 F007 00116         movff _TBLPTRL, 0x07
+0060 C000 F008 00117         movff _TBLPTRH, (0x07 + 1)
+0064 C000 F009 00118         movff _TBLPTRU, (0x07 + 2)
+               00119         ; Now assign the source address to the table pointer.
+               00120         ; TBLPTR = 0x00
+0068 C000 F000 00121         movff 0x00, _TBLPTRL
+006C C001 F000 00122         movff (0x00 + 1), _TBLPTRH
+0070 C002 F000 00123         movff (0x00 + 2), _TBLPTRU
+0074 D000      00124         bra copy_loop_dec
+0076 00125 copy_loop:
+0076 0009      00126         tblrd*+
+0078 C000 F000 00127         movff _TABLAT, _POSTINC0
+007C 00128 copy_loop_dec:
+               00129         ; while (--0x03);
+               00130         ; Decrement and test the byte counter.
+               00131         ; The cycle ends when the value of counter reaches the -1.
+007C 0603      00132         decf 0x03, f, 0
+007E E200      00133         bc copy_loop
+0080 0604      00134         decf (0x03 + 1), f, 0
+0082 E200      00135         bc copy_loop
+               00136         ; Restore the table pointer for the next entry.
+               00137         ; TBLPTR = 0x07
+0084 C007 F000 00138         movff 0x07, _TBLPTRL
+0088 C008 F000 00139         movff (0x07 + 1), _TBLPTRH
+008C C009 F000 00140         movff (0x07 + 2), _TBLPTRU
+0090 00141 entry_loop_dec:
+               00142         ; while (--0x05);
+               00143         ; Decrement and test the entry counter.
+               00144         ; The cycle ends when the value of counter reaches the -1.
+0090 0605      00145         decf 0x05, f, 0
+0092 E200      00146         bc entry_loop
+0094 0606      00147         decf (0x05 + 1), f, 0
+0096 E200      00148         bc entry_loop
+               00149         
+               00150 ;       .line   240; /usr/share/sdcc/lib/src/pic16/startup/crt0i.c      main ();
+0098 EC00 F000 00151         CALL    _main
+009C 00152 lockup:
+               00153         ; Returning from main will lock up.
+009C D000      00154         bra lockup
+               00155         
+               00156 
+               00157 
+               00158 ; Statistics:
+               00159 ; code size:      218 (0x00da) bytes ( 0.17%)
+               00160 ;                 109 (0x006d) words
+               00161 ; udata size:       0 (0x0000) bytes ( 0.00%)
+               00162 ; access size:      0 (0x0000) bytes
+gpasm-0.13.7 beta               crt0i.asm   8-27-2014  21:11:52          PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00163 
+               00164 
+gpasm-0.13.7 beta               crt0i.asm   8-27-2014  21:11:52          PAGE  5
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_FSR0H                            00000000
+_FSR0L                            00000000
+_POSTINC0                         00000000
+_TABLAT                           00000000
+_TBLPTRH                          00000000
+_TBLPTRL                          00000000
+_TBLPTRU                          00000000
+__18F4550                         00000001
+___uflags                         00000000
+__entry                           00000000
+__startup                         00000000
+_cinit                            00000000
+_main                             00000000
+_stack_end                        00000000
+copy_loop                         00000076
+copy_loop_dec                     0000007C
+entry_loop                        00000028
+entry_loop_dec                    00000090
+lockup                            0000009C
+
+
+Errors   :       0
+Warnings :       0 reported,       0 suppressed
+Messages :       0 reported,       0 suppressed
+

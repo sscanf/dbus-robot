@@ -1,0 +1,2442 @@
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00001 ;--------------------------------------------------------
+               00002 ; File Created by SDCC : free open source ANSI-C Compiler
+               00003 ; Version 3.4.0 #8981 (Apr  5 2014) (Linux)
+               00004 ; This file was generated Mon Sep  1 01:28:50 2014
+               00005 ;--------------------------------------------------------
+               00006 ; PIC16 port for the Microchip 16-bit core micros
+               00007 ;--------------------------------------------------------
+               00008 
+               00009         .ident "SDCC version 3.4.0 #8981 [pic16 port]"
+               00010         .file   "motores.c"
+               00011         list    p=18f4455
+               00012         radix   dec
+               00013 
+               00014 
+               00015 ;--------------------------------------------------------
+               00016 ; public variables in this module
+               00017 ;--------------------------------------------------------
+               00018         global  _bDebug
+               00019         global  _readEncoders
+               00020         global  _initializeMotors
+               00021         global  _setPidEnabled
+               00022         global  _motorSpeed
+               00023         global  _setMotorsDebug
+               00024         global  _motorDir
+               00025         global  _motorInvertDir
+               00026         global  _motorChangeDir
+               00027         global  _getEncoderWidth
+               00028         global  _getEncoderDir
+               00029         global  _current_state
+               00030         global  _TimerTimeout
+               00031         global  _abs
+               00032         global  _stSampling
+               00033         global  _stWaitForMotor1Bak
+               00034         global  _stWaitForMotor2Bak
+               00035         global  _stWaitForMotor1Forward
+               00036         global  _stWaitForMotor2Forward
+               00037 
+               00038 ;--------------------------------------------------------
+               00039 ; extern variables in this module
+               00040 ;--------------------------------------------------------
+               00041         extern  _SPPCFGbits
+               00042         extern  _SPPEPSbits
+               00043         extern  _SPPCONbits
+               00044         extern  _UFRMLbits
+               00045         extern  _UFRMHbits
+               00046         extern  _UIRbits
+               00047         extern  _UIEbits
+               00048         extern  _UEIRbits
+               00049         extern  _UEIEbits
+               00050         extern  _USTATbits
+               00051         extern  _UCONbits
+               00052         extern  _UADDRbits
+               00053         extern  _UCFGbits
+               00054         extern  _UEP0bits
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00055         extern  _UEP1bits
+               00056         extern  _UEP2bits
+               00057         extern  _UEP3bits
+               00058         extern  _UEP4bits
+               00059         extern  _UEP5bits
+               00060         extern  _UEP6bits
+               00061         extern  _UEP7bits
+               00062         extern  _UEP8bits
+               00063         extern  _UEP9bits
+               00064         extern  _UEP10bits
+               00065         extern  _UEP11bits
+               00066         extern  _UEP12bits
+               00067         extern  _UEP13bits
+               00068         extern  _UEP14bits
+               00069         extern  _UEP15bits
+               00070         extern  _PORTAbits
+               00071         extern  _PORTBbits
+               00072         extern  _PORTCbits
+               00073         extern  _PORTDbits
+               00074         extern  _PORTEbits
+               00075         extern  _LATAbits
+               00076         extern  _LATBbits
+               00077         extern  _LATCbits
+               00078         extern  _LATDbits
+               00079         extern  _LATEbits
+               00080         extern  _DDRAbits
+               00081         extern  _TRISAbits
+               00082         extern  _DDRBbits
+               00083         extern  _TRISBbits
+               00084         extern  _DDRCbits
+               00085         extern  _TRISCbits
+               00086         extern  _DDRDbits
+               00087         extern  _TRISDbits
+               00088         extern  _DDREbits
+               00089         extern  _TRISEbits
+               00090         extern  _OSCTUNEbits
+               00091         extern  _PIE1bits
+               00092         extern  _PIR1bits
+               00093         extern  _IPR1bits
+               00094         extern  _PIE2bits
+               00095         extern  _PIR2bits
+               00096         extern  _IPR2bits
+               00097         extern  _EECON1bits
+               00098         extern  _RCSTAbits
+               00099         extern  _TXSTAbits
+               00100         extern  _T3CONbits
+               00101         extern  _CMCONbits
+               00102         extern  _CVRCONbits
+               00103         extern  _CCP1ASbits
+               00104         extern  _ECCP1ASbits
+               00105         extern  _CCP1DELbits
+               00106         extern  _ECCP1DELbits
+               00107         extern  _BAUDCONbits
+               00108         extern  _BAUDCTLbits
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00109         extern  _CCP2CONbits
+               00110         extern  _CCP1CONbits
+               00111         extern  _ECCP1CONbits
+               00112         extern  _ADCON2bits
+               00113         extern  _ADCON1bits
+               00114         extern  _ADCON0bits
+               00115         extern  _SSPCON2bits
+               00116         extern  _SSPCON1bits
+               00117         extern  _SSPSTATbits
+               00118         extern  _T2CONbits
+               00119         extern  _T1CONbits
+               00120         extern  _RCONbits
+               00121         extern  _WDTCONbits
+               00122         extern  _HLVDCONbits
+               00123         extern  _LVDCONbits
+               00124         extern  _OSCCONbits
+               00125         extern  _T0CONbits
+               00126         extern  _STATUSbits
+               00127         extern  _INTCON3bits
+               00128         extern  _INTCON2bits
+               00129         extern  _INTCONbits
+               00130         extern  _STKPTRbits
+               00131         extern  _stdin
+               00132         extern  _stdout
+               00133         extern  _SPPDATA
+               00134         extern  _SPPCFG
+               00135         extern  _SPPEPS
+               00136         extern  _SPPCON
+               00137         extern  _UFRM
+               00138         extern  _UFRML
+               00139         extern  _UFRMH
+               00140         extern  _UIR
+               00141         extern  _UIE
+               00142         extern  _UEIR
+               00143         extern  _UEIE
+               00144         extern  _USTAT
+               00145         extern  _UCON
+               00146         extern  _UADDR
+               00147         extern  _UCFG
+               00148         extern  _UEP0
+               00149         extern  _UEP1
+               00150         extern  _UEP2
+               00151         extern  _UEP3
+               00152         extern  _UEP4
+               00153         extern  _UEP5
+               00154         extern  _UEP6
+               00155         extern  _UEP7
+               00156         extern  _UEP8
+               00157         extern  _UEP9
+               00158         extern  _UEP10
+               00159         extern  _UEP11
+               00160         extern  _UEP12
+               00161         extern  _UEP13
+               00162         extern  _UEP14
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00163         extern  _UEP15
+               00164         extern  _PORTA
+               00165         extern  _PORTB
+               00166         extern  _PORTC
+               00167         extern  _PORTD
+               00168         extern  _PORTE
+               00169         extern  _LATA
+               00170         extern  _LATB
+               00171         extern  _LATC
+               00172         extern  _LATD
+               00173         extern  _LATE
+               00174         extern  _DDRA
+               00175         extern  _TRISA
+               00176         extern  _DDRB
+               00177         extern  _TRISB
+               00178         extern  _DDRC
+               00179         extern  _TRISC
+               00180         extern  _DDRD
+               00181         extern  _TRISD
+               00182         extern  _DDRE
+               00183         extern  _TRISE
+               00184         extern  _OSCTUNE
+               00185         extern  _PIE1
+               00186         extern  _PIR1
+               00187         extern  _IPR1
+               00188         extern  _PIE2
+               00189         extern  _PIR2
+               00190         extern  _IPR2
+               00191         extern  _EECON1
+               00192         extern  _EECON2
+               00193         extern  _EEDATA
+               00194         extern  _EEADR
+               00195         extern  _RCSTA
+               00196         extern  _TXSTA
+               00197         extern  _TXREG
+               00198         extern  _RCREG
+               00199         extern  _SPBRG
+               00200         extern  _SPBRGH
+               00201         extern  _T3CON
+               00202         extern  _TMR3
+               00203         extern  _TMR3L
+               00204         extern  _TMR3H
+               00205         extern  _CMCON
+               00206         extern  _CVRCON
+               00207         extern  _CCP1AS
+               00208         extern  _ECCP1AS
+               00209         extern  _CCP1DEL
+               00210         extern  _ECCP1DEL
+               00211         extern  _BAUDCON
+               00212         extern  _BAUDCTL
+               00213         extern  _CCP2CON
+               00214         extern  _CCPR2
+               00215         extern  _CCPR2L
+               00216         extern  _CCPR2H
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00217         extern  _CCP1CON
+               00218         extern  _ECCP1CON
+               00219         extern  _CCPR1
+               00220         extern  _CCPR1L
+               00221         extern  _CCPR1H
+               00222         extern  _ADCON2
+               00223         extern  _ADCON1
+               00224         extern  _ADCON0
+               00225         extern  _ADRES
+               00226         extern  _ADRESL
+               00227         extern  _ADRESH
+               00228         extern  _SSPCON2
+               00229         extern  _SSPCON1
+               00230         extern  _SSPSTAT
+               00231         extern  _SSPADD
+               00232         extern  _SSPBUF
+               00233         extern  _T2CON
+               00234         extern  _PR2
+               00235         extern  _TMR2
+               00236         extern  _T1CON
+               00237         extern  _TMR1
+               00238         extern  _TMR1L
+               00239         extern  _TMR1H
+               00240         extern  _RCON
+               00241         extern  _WDTCON
+               00242         extern  _HLVDCON
+               00243         extern  _LVDCON
+               00244         extern  _OSCCON
+               00245         extern  _T0CON
+               00246         extern  _TMR0
+               00247         extern  _TMR0L
+               00248         extern  _TMR0H
+               00249         extern  _STATUS
+               00250         extern  _FSR2L
+               00251         extern  _FSR2H
+               00252         extern  _PLUSW2
+               00253         extern  _PREINC2
+               00254         extern  _POSTDEC2
+               00255         extern  _POSTINC2
+               00256         extern  _INDF2
+               00257         extern  _BSR
+               00258         extern  _FSR1L
+               00259         extern  _FSR1H
+               00260         extern  _PLUSW1
+               00261         extern  _PREINC1
+               00262         extern  _POSTDEC1
+               00263         extern  _POSTINC1
+               00264         extern  _INDF1
+               00265         extern  _WREG
+               00266         extern  _FSR0L
+               00267         extern  _FSR0H
+               00268         extern  _PLUSW0
+               00269         extern  _PREINC0
+               00270         extern  _POSTDEC0
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00271         extern  _POSTINC0
+               00272         extern  _INDF0
+               00273         extern  _INTCON3
+               00274         extern  _INTCON2
+               00275         extern  _INTCON
+               00276         extern  _PROD
+               00277         extern  _PRODL
+               00278         extern  _PRODH
+               00279         extern  _TABLAT
+               00280         extern  _TBLPTR
+               00281         extern  _TBLPTRL
+               00282         extern  _TBLPTRH
+               00283         extern  _TBLPTRU
+               00284         extern  _PC
+               00285         extern  _PCL
+               00286         extern  _PCLATH
+               00287         extern  _PCLATU
+               00288         extern  _STKPTR
+               00289         extern  _TOS
+               00290         extern  _TOSL
+               00291         extern  _TOSH
+               00292         extern  _TOSU
+               00293         extern  _printf
+               00294         extern  _memset
+               00295         extern  __mulint
+               00296         extern  __divsint
+               00297 
+               00298 ;--------------------------------------------------------
+               00299 ;       Equates to used internal registers
+               00300 ;--------------------------------------------------------
+  00000FD8     00301 STATUS  equ     0xfd8
+  00000FF9     00302 PCL     equ     0xff9
+  00000FFA     00303 PCLATH  equ     0xffa
+  00000FFB     00304 PCLATU  equ     0xffb
+  00000FF2     00305 INTCON  equ     0xff2
+  00000FE8     00306 WREG    equ     0xfe8
+  00000FFD     00307 TOSL    equ     0xffd
+  00000FFE     00308 TOSH    equ     0xffe
+  00000FFF     00309 TOSU    equ     0xfff
+  00000FE9     00310 FSR0L   equ     0xfe9
+  00000FEA     00311 FSR0H   equ     0xfea
+  00000FE1     00312 FSR1L   equ     0xfe1
+  00000FD9     00313 FSR2L   equ     0xfd9
+  00000FEF     00314 INDF0   equ     0xfef
+  00000FEE     00315 POSTINC0        equ     0xfee
+  00000FE6     00316 POSTINC1        equ     0xfe6
+  00000FE5     00317 POSTDEC1        equ     0xfe5
+  00000FE4     00318 PREINC1 equ     0xfe4
+  00000FDB     00319 PLUSW2  equ     0xfdb
+  00000FF3     00320 PRODL   equ     0xff3
+  00000FF4     00321 PRODH   equ     0xff4
+               00322 
+               00323 
+               00324         idata
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00325 _bDebug db      0x01
+               00326 _bPidEnabled    db      0x01
+               00327 _stSampling_enc_states_1_61     db      0x00, 0x01, 0xff, 0x00, 0xff, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0xff
+               00328         db      0x00, 0xff, 0x01, 0x00
+               00329 _stSampling_width1_1_61 db      0x00, 0x00
+               00330 _stSampling_width2_1_61 db      0x00, 0x00
+               00331 _stSampling_enc_position_a_1_61 db      0x00, 0x00
+               00332 _stSampling_enc_position_b_1_61 db      0x00, 0x00
+               00333 _stSampling_tiempo_1_61 db      0x00, 0x00
+               00334 _stAveraged_nErrors_1_72        db      0x00, 0x00
+               00335 _readEncoders_counter_1_82      db      0x00
+               00336 
+               00337 
+               00338 ; Internal registers
+               00339 .registers      udata_ovr       0x0000
+               00340 r0x00   res     1
+               00341 r0x01   res     1
+               00342 r0x02   res     1
+               00343 r0x03   res     1
+               00344 r0x04   res     1
+               00345 r0x05   res     1
+               00346 r0x06   res     1
+               00347 r0x07   res     1
+               00348 r0x08   res     1
+               00349 r0x09   res     1
+               00350 r0x0a   res     1
+               00351 r0x0b   res     1
+               00352 r0x0c   res     1
+               00353 r0x0d   res     1
+               00354 
+               00355 udata_motores_0 udata
+               00356 _current_state  res     3
+               00357 
+               00358 udata_motores_1 udata
+               00359 _encoder        res     26
+               00360 
+               00361 udata_motores_2 udata
+               00362 _stAveraged_errors1_1_72        res     6
+               00363 
+               00364 udata_motores_3 udata
+               00365 _stAveraged_errors2_1_72        res     6
+               00366 
+               00367 udata_motores_4 udata
+               00368 _TimerTimeout   res     1
+               00369 
+               00370 ;--------------------------------------------------------
+               00371 ; global & static initialisations
+               00372 ;--------------------------------------------------------
+               00373 ; I code from now on!
+               00374 ; ; Starting pCode block
+               00375 S_motores__getEncoderDir        code
+0000 00376 _getEncoderDir:
+               00377         .line   354; motores.c  unsigned char getEncoderDir(unsigned char motor)
+0000 CFD9 FFE5 00378         MOVFF   FSR2L, POSTDEC1
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0004 CFE1 FFD9 00379         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 00380         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 00381         MOVFF   r0x01, POSTDEC1
+0010 0E02      00382         MOVLW   0x02
+0012 CFDB F000 00383         MOVFF   PLUSW2, r0x00
+               00384 ; ;multiply lit val:0x0d by variable r0x00 and store in r0x00
+               00385         .line   356; motores.c  return encoder[motor].pulseDir;
+0016 5000      00386         MOVF    r0x00, W
+0018 0D0D      00387         MULLW   0x0d
+001A 50F4      00388         MOVF    PRODH, W
+001C 6E00      00389         MOVWF   r0x01
+001E CFF3 F000 00390         MOVFF   PRODL, r0x00
+0022 0E00      00391         MOVLW   LOW(_encoder)
+0024 2600      00392         ADDWF   r0x00, F
+0026 0E00      00393         MOVLW   HIGH(_encoder)
+0028 2200      00394         ADDWFC  r0x01, F
+002A C000 FFE9 00395         MOVFF   r0x00, FSR0L
+002E C000 FFEA 00396         MOVFF   r0x01, FSR0H
+0032 CFEE F000 00397         MOVFF   POSTINC0, r0x00
+0036 CFEF F000 00398         MOVFF   INDF0, r0x01
+003A 5000      00399         MOVF    r0x00, W
+003C CFE4 F000 00400         MOVFF   PREINC1, r0x01
+0040 CFE4 F000 00401         MOVFF   PREINC1, r0x00
+0044 CFE4 FFD9 00402         MOVFF   PREINC1, FSR2L
+0048 0012      00403         RETURN  
+               00404 
+               00405 ; ; Starting pCode block
+               00406 S_motores__getEncoderWidth      code
+0000 00407 _getEncoderWidth:
+               00408         .line   349; motores.c  int getEncoderWidth(unsigned char motor)
+0000 CFD9 FFE5 00409         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00410         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 00411         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 00412         MOVFF   r0x01, POSTDEC1
+0010 0E02      00413         MOVLW   0x02
+0012 CFDB F000 00414         MOVFF   PLUSW2, r0x00
+               00415 ; ;multiply lit val:0x0d by variable r0x00 and store in r0x00
+               00416         .line   351; motores.c  return encoder[motor].inSpeed;
+0016 5000      00417         MOVF    r0x00, W
+0018 0D0D      00418         MULLW   0x0d
+001A 50F4      00419         MOVF    PRODH, W
+001C 6E00      00420         MOVWF   r0x01
+001E CFF3 F000 00421         MOVFF   PRODL, r0x00
+0022 0E00      00422         MOVLW   LOW(_encoder)
+0024 2600      00423         ADDWF   r0x00, F
+0026 0E00      00424         MOVLW   HIGH(_encoder)
+0028 2200      00425         ADDWFC  r0x01, F
+002A 0E04      00426         MOVLW   0x04
+002C 2600      00427         ADDWF   r0x00, F
+002E B0D8      00428         BTFSC   STATUS, 0
+0030 2A00      00429         INCF    r0x01, F
+0032 C000 FFE9 00430         MOVFF   r0x00, FSR0L
+0036 C000 FFEA 00431         MOVFF   r0x01, FSR0H
+003A CFEE F000 00432         MOVFF   POSTINC0, r0x00
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+003E CFEF F000 00433         MOVFF   INDF0, r0x01
+0042 C000 FFF3 00434         MOVFF   r0x01, PRODL
+0046 5000      00435         MOVF    r0x00, W
+0048 CFE4 F000 00436         MOVFF   PREINC1, r0x01
+004C CFE4 F000 00437         MOVFF   PREINC1, r0x00
+0050 CFE4 FFD9 00438         MOVFF   PREINC1, FSR2L
+0054 0012      00439         RETURN  
+               00440 
+               00441 ; ; Starting pCode block
+               00442 S_motores__motorChangeDir       code
+0000 00443 _motorChangeDir:
+               00444         .line   327; motores.c  int motorChangeDir (unsigned char dir, unsigned char motor)
+0000 CFD9 FFE5 00445         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00446         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 00447         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 00448         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 00449         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 00450         MOVFF   r0x03, POSTDEC1
+0018 C000 FFE5 00451         MOVFF   r0x04, POSTDEC1
+001C C000 FFE5 00452         MOVFF   r0x05, POSTDEC1
+0020 C000 FFE5 00453         MOVFF   r0x06, POSTDEC1
+0024 0E02      00454         MOVLW   0x02
+0026 CFDB F000 00455         MOVFF   PLUSW2, r0x00
+002A 0E03      00456         MOVLW   0x03
+002C CFDB F000 00457         MOVFF   PLUSW2, r0x01
+               00458         .line   329; motores.c  int ret=0;
+0030 6A00      00459         CLRF    r0x02
+0032 6A00      00460         CLRF    r0x03
+               00461         .line   331; motores.c  printf ("motorChangeDir\n\r");
+0034 0E00      00462         MOVLW   UPPER(___str_2)
+0036 6E00      00463         MOVWF   r0x06
+0038 0E00      00464         MOVLW   HIGH(___str_2)
+003A 6E00      00465         MOVWF   r0x05
+003C 0E00      00466         MOVLW   LOW(___str_2)
+003E 6E00      00467         MOVWF   r0x04
+0040 5000      00468         MOVF    r0x06, W
+0042 6EE5      00469         MOVWF   POSTDEC1
+0044 5000      00470         MOVF    r0x05, W
+0046 6EE5      00471         MOVWF   POSTDEC1
+0048 5000      00472         MOVF    r0x04, W
+004A 6EE5      00473         MOVWF   POSTDEC1
+004C EC00 F000 00474         CALL    _printf
+0050 0E03      00475         MOVLW   0x03
+0052 26E1      00476         ADDWF   FSR1L, F
+               00477         .line   332; motores.c  switch (motor)
+0054 5000      00478         MOVF    r0x01, W
+0056 E000      00479         BZ      _00346_DS_
+0058 5000      00480         MOVF    r0x01, W
+005A 0A01      00481         XORLW   0x01
+005C E000      00482         BZ      _00347_DS_
+005E D000      00483         BRA     _00348_DS_
+0060 00484 _00346_DS_:
+               00485         .line   335; motores.c  MOTOR1_DIR=!dir;
+0060 5000      00486         MOVF    r0x00, W
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0062 80D8      00487         BSF     STATUS, 0
+0064 66E8      00488         TSTFSZ  WREG
+0066 90D8      00489         BCF     STATUS, 0
+0068 6A00      00490         CLRF    r0x01
+006A 3600      00491         RLCF    r0x01, F
+006C 5000      00492         MOVF    r0x01, W
+006E 0B01      00493         ANDLW   0x01
+0070 44E8      00494         RLNCF   WREG, W
+0072 6EF4      00495         MOVWF   PRODH
+0074 5000      00496         MOVF    _PORTAbits, W
+0076 0BFD      00497         ANDLW   0xfd
+0078 10F4      00498         IORWF   PRODH, W
+007A 6E00      00499         MOVWF   _PORTAbits
+               00500         .line   336; motores.c  break;
+007C D000      00501         BRA     _00349_DS_
+007E 00502 _00347_DS_:
+               00503         .line   339; motores.c  MOTOR2_DIR=dir;
+007E 5000      00504         MOVF    r0x00, W
+0080 0B01      00505         ANDLW   0x01
+0082 6EF4      00506         MOVWF   PRODH
+0084 5000      00507         MOVF    _PORTAbits, W
+0086 0BFE      00508         ANDLW   0xfe
+0088 10F4      00509         IORWF   PRODH, W
+008A 6E00      00510         MOVWF   _PORTAbits
+               00511         .line   340; motores.c  break;
+008C D000      00512         BRA     _00349_DS_
+008E 00513 _00348_DS_:
+               00514         .line   343; motores.c  ret=1;
+008E 0E01      00515         MOVLW   0x01
+0090 6E00      00516         MOVWF   r0x02
+0092 6A00      00517         CLRF    r0x03
+0094 00518 _00349_DS_:
+               00519         .line   346; motores.c  return ret;
+0094 C000 FFF3 00520         MOVFF   r0x03, PRODL
+0098 5000      00521         MOVF    r0x02, W
+009A CFE4 F000 00522         MOVFF   PREINC1, r0x06
+009E CFE4 F000 00523         MOVFF   PREINC1, r0x05
+00A2 CFE4 F000 00524         MOVFF   PREINC1, r0x04
+00A6 CFE4 F000 00525         MOVFF   PREINC1, r0x03
+00AA CFE4 F000 00526         MOVFF   PREINC1, r0x02
+00AE CFE4 F000 00527         MOVFF   PREINC1, r0x01
+00B2 CFE4 F000 00528         MOVFF   PREINC1, r0x00
+00B6 CFE4 FFD9 00529         MOVFF   PREINC1, FSR2L
+00BA 0012      00530         RETURN  
+               00531 
+               00532 ; ; Starting pCode block
+               00533 S_motores__motorInvertDir       code
+0000 00534 _motorInvertDir:
+               00535         .line   305; motores.c  int motorInvertDir (unsigned char motor)
+0000 CFD9 FFE5 00536         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00537         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 00538         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 00539         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 00540         MOVFF   r0x02, POSTDEC1
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 11
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0014 C000 FFE5 00541         MOVFF   r0x03, POSTDEC1
+0018 C000 FFE5 00542         MOVFF   r0x04, POSTDEC1
+001C C000 FFE5 00543         MOVFF   r0x05, POSTDEC1
+0020 0E02      00544         MOVLW   0x02
+0022 CFDB F000 00545         MOVFF   PLUSW2, r0x00
+               00546         .line   307; motores.c  int ret=0;
+0026 6A00      00547         CLRF    r0x01
+0028 6A00      00548         CLRF    r0x02
+               00549         .line   309; motores.c  printf ("motorInvertDir\n\r");
+002A 0E00      00550         MOVLW   UPPER(___str_1)
+002C 6E00      00551         MOVWF   r0x05
+002E 0E00      00552         MOVLW   HIGH(___str_1)
+0030 6E00      00553         MOVWF   r0x04
+0032 0E00      00554         MOVLW   LOW(___str_1)
+0034 6E00      00555         MOVWF   r0x03
+0036 5000      00556         MOVF    r0x05, W
+0038 6EE5      00557         MOVWF   POSTDEC1
+003A 5000      00558         MOVF    r0x04, W
+003C 6EE5      00559         MOVWF   POSTDEC1
+003E 5000      00560         MOVF    r0x03, W
+0040 6EE5      00561         MOVWF   POSTDEC1
+0042 EC00 F000 00562         CALL    _printf
+0046 0E03      00563         MOVLW   0x03
+0048 26E1      00564         ADDWF   FSR1L, F
+               00565         .line   310; motores.c  switch (motor)
+004A 5000      00566         MOVF    r0x00, W
+004C E000      00567         BZ      _00326_DS_
+004E 5000      00568         MOVF    r0x00, W
+0050 0A01      00569         XORLW   0x01
+0052 E000      00570         BZ      _00327_DS_
+0054 D000      00571         BRA     _00328_DS_
+0056 00572 _00326_DS_:
+               00573         .line   313; motores.c  MOTOR1_DIR=~MOTOR1_DIR;
+0056 8200      00574         BSF     _PORTAbits, 1
+               00575         .line   314; motores.c  break;
+0058 D000      00576         BRA     _00329_DS_
+005A 00577 _00327_DS_:
+               00578         .line   317; motores.c  MOTOR2_DIR=~MOTOR2_DIR;
+005A 8000      00579         BSF     _PORTAbits, 0
+               00580         .line   318; motores.c  break;
+005C D000      00581         BRA     _00329_DS_
+005E 00582 _00328_DS_:
+               00583         .line   321; motores.c  ret=1;
+005E 0E01      00584         MOVLW   0x01
+0060 6E00      00585         MOVWF   r0x01
+0062 6A00      00586         CLRF    r0x02
+0064 00587 _00329_DS_:
+               00588         .line   324; motores.c  return ret;
+0064 C000 FFF3 00589         MOVFF   r0x02, PRODL
+0068 5000      00590         MOVF    r0x01, W
+006A CFE4 F000 00591         MOVFF   PREINC1, r0x05
+006E CFE4 F000 00592         MOVFF   PREINC1, r0x04
+0072 CFE4 F000 00593         MOVFF   PREINC1, r0x03
+0076 CFE4 F000 00594         MOVFF   PREINC1, r0x02
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 12
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+007A CFE4 F000 00595         MOVFF   PREINC1, r0x01
+007E CFE4 F000 00596         MOVFF   PREINC1, r0x00
+0082 CFE4 FFD9 00597         MOVFF   PREINC1, FSR2L
+0086 0012      00598         RETURN  
+               00599 
+               00600 ; ; Starting pCode block
+               00601 S_motores__motorDir     code
+0000 00602 _motorDir:
+               00603         .line   287; motores.c  unsigned char motorDir (unsigned char motor)
+0000 CFD9 FFE5 00604         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00605         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 00606         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 00607         MOVFF   r0x01, POSTDEC1
+0010 0E02      00608         MOVLW   0x02
+0012 CFDB F000 00609         MOVFF   PLUSW2, r0x00
+               00610         .line   289; motores.c  unsigned char ret=0;
+0016 6A00      00611         CLRF    r0x01
+               00612         .line   291; motores.c  switch (motor)
+0018 5000      00613         MOVF    r0x00, W
+001A E000      00614         BZ      _00307_DS_
+001C 5000      00615         MOVF    r0x00, W
+001E 0A01      00616         XORLW   0x01
+0020 E000      00617         BZ      _00308_DS_
+0022 D000      00618         BRA     _00309_DS_
+0024 00619 _00307_DS_:
+               00620         .line   294; motores.c  ret=!MOTOR1_DIR;
+0024 6A00      00621         CLRF    r0x00
+0026 B200      00622         BTFSC   _PORTAbits, 1
+0028 2A00      00623         INCF    r0x00, F
+002A 5000      00624         MOVF    r0x00, W
+002C 80D8      00625         BSF     STATUS, 0
+002E 66E8      00626         TSTFSZ  WREG
+0030 90D8      00627         BCF     STATUS, 0
+0032 6A00      00628         CLRF    r0x01
+0034 3600      00629         RLCF    r0x01, F
+               00630         .line   295; motores.c  break;
+0036 D000      00631         BRA     _00309_DS_
+0038 00632 _00308_DS_:
+               00633         .line   298; motores.c  ret=MOTOR2_DIR;
+0038 6A00      00634         CLRF    r0x00
+003A B000      00635         BTFSC   _PORTAbits, 0
+003C 2A00      00636         INCF    r0x00, F
+003E C000 F000 00637         MOVFF   r0x00, r0x01
+0042 00638 _00309_DS_:
+               00639         .line   302; motores.c  return ret;
+0042 5000      00640         MOVF    r0x01, W
+0044 CFE4 F000 00641         MOVFF   PREINC1, r0x01
+0048 CFE4 F000 00642         MOVFF   PREINC1, r0x00
+004C CFE4 FFD9 00643         MOVFF   PREINC1, FSR2L
+0050 0012      00644         RETURN  
+               00645 
+               00646 ; ; Starting pCode block
+               00647 S_motores__setMotorsDebug       code
+0000 00648 _setMotorsDebug:
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 13
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00649         .line   282; motores.c  void setMotorsDebug (char debug)
+0000 CFD9 FFE5 00650         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00651         MOVFF   FSR1L, FSR2L
+0008 0E02      00652         MOVLW   0x02
+000A CFDB F000 00653         MOVFF   PLUSW2, _bDebug
+               00654         .line   284; motores.c  bDebug=debug;
+000E CFE4 FFD9 00655         MOVFF   PREINC1, FSR2L
+0012 0012      00656         RETURN  
+               00657 
+               00658 ; ; Starting pCode block
+               00659 S_motores__motorSpeed   code
+0000 00660 _motorSpeed:
+               00661         .line   276; motores.c  void motorSpeed (int speed, unsigned char motor)
+0000 CFD9 FFE5 00662         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00663         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 00664         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 00665         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 00666         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 00667         MOVFF   r0x03, POSTDEC1
+0018 0E02      00668         MOVLW   0x02
+001A CFDB F000 00669         MOVFF   PLUSW2, r0x00
+001E 0E03      00670         MOVLW   0x03
+0020 CFDB F000 00671         MOVFF   PLUSW2, r0x01
+0024 0E04      00672         MOVLW   0x04
+0026 CFDB F000 00673         MOVFF   PLUSW2, r0x02
+               00674 ; ;multiply lit val:0x0d by variable r0x02 and store in r0x02
+               00675         .line   279; motores.c  encoder[motor].outSpeed=(speed*2);
+002A 5000      00676         MOVF    r0x02, W
+002C 0D0D      00677         MULLW   0x0d
+002E 50F4      00678         MOVF    PRODH, W
+0030 6E00      00679         MOVWF   r0x03
+0032 CFF3 F000 00680         MOVFF   PRODL, r0x02
+0036 0E00      00681         MOVLW   LOW(_encoder)
+0038 2600      00682         ADDWF   r0x02, F
+003A 0E00      00683         MOVLW   HIGH(_encoder)
+003C 2200      00684         ADDWFC  r0x03, F
+003E 0E06      00685         MOVLW   0x06
+0040 2600      00686         ADDWF   r0x02, F
+0042 B0D8      00687         BTFSC   STATUS, 0
+0044 2A00      00688         INCF    r0x03, F
+0046 5000      00689         MOVF    r0x01, W
+0048 6EE5      00690         MOVWF   POSTDEC1
+004A 5000      00691         MOVF    r0x00, W
+004C 6EE5      00692         MOVWF   POSTDEC1
+004E 0E00      00693         MOVLW   0x00
+0050 6EE5      00694         MOVWF   POSTDEC1
+0052 0E02      00695         MOVLW   0x02
+0054 6EE5      00696         MOVWF   POSTDEC1
+0056 EC00 F000 00697         CALL    __mulint
+005A 6E00      00698         MOVWF   r0x00
+005C CFF3 F000 00699         MOVFF   PRODL, r0x01
+0060 0E04      00700         MOVLW   0x04
+0062 26E1      00701         ADDWF   FSR1L, F
+0064 C000 FFE9 00702         MOVFF   r0x02, FSR0L
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 14
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0068 C000 FFEA 00703         MOVFF   r0x03, FSR0H
+006C C000 FFEE 00704         MOVFF   r0x00, POSTINC0
+0070 C000 FFEF 00705         MOVFF   r0x01, INDF0
+0074 CFE4 F000 00706         MOVFF   PREINC1, r0x03
+0078 CFE4 F000 00707         MOVFF   PREINC1, r0x02
+007C CFE4 F000 00708         MOVFF   PREINC1, r0x01
+0080 CFE4 F000 00709         MOVFF   PREINC1, r0x00
+0084 CFE4 FFD9 00710         MOVFF   PREINC1, FSR2L
+0088 0012      00711         RETURN  
+               00712 
+               00713 ; ; Starting pCode block
+               00714 S_motores__setPidEnabled        code
+0000 00715 _setPidEnabled:
+               00716         .line   272; motores.c  void setPidEnabled (char enabled)
+0000 CFD9 FFE5 00717         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00718         MOVFF   FSR1L, FSR2L
+0008 0E02      00719         MOVLW   0x02
+000A CFDB F000 00720         MOVFF   PLUSW2, _bPidEnabled
+               00721         .line   274; motores.c  bPidEnabled = enabled;
+000E CFE4 FFD9 00722         MOVFF   PREINC1, FSR2L
+0012 0012      00723         RETURN  
+               00724 
+               00725 ; ; Starting pCode block
+               00726 S_motores__initializeMotors     code
+0000 00727 _initializeMotors:
+               00728         .line   227; motores.c  void initializeMotors(void)
+0000 CFD9 FFE5 00729         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00730         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 00731         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 00732         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 00733         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 00734         MOVFF   r0x03, POSTDEC1
+0018 C000 FFE5 00735         MOVFF   r0x04, POSTDEC1
+001C C000 FFE5 00736         MOVFF   r0x05, POSTDEC1
+               00737         .line   230; motores.c  ADCON1 |= 0x0F; // Set all I/O pins to digital
+0020 0E0F      00738         MOVLW   0x0f
+0022 1200      00739         IORWF   _ADCON1, F
+               00740         .line   231; motores.c  UCFG = 0x14; // Enable pullup resistors; full speed mode
+0024 0E14      00741         MOVLW   0x14
+0026 6E00      00742         MOVWF   _UCFG
+               00743         .line   232; motores.c  PORTEbits.RDPU=1;    //Resistencias pull-up en PORTD activas
+0028 8E00      00744         BSF     _PORTEbits, 7
+               00745         .line   234; motores.c  MOTOR1_DIR_TRIS=0;   //Bits de direccion motor 1 salidas
+002A 9000      00746         BCF     _TRISAbits, 0
+               00747         .line   235; motores.c  MOTOR1_PWM_TRIS=0;   //Canal PWM motor 1 salidas
+002C 9200      00748         BCF     _TRISCbits, 1
+               00749         .line   236; motores.c  MOTOR1_CHANA_TRIS=1;
+002E 8600      00750         BSF     _TRISDbits, 3
+               00751         .line   237; motores.c  MOTOR1_CHANB_TRIS=1;
+0030 8400      00752         BSF     _TRISDbits, 2
+               00753         .line   239; motores.c  MOTOR2_DIR_TRIS=0;   //Bits de direccion motor 2 salidas
+0032 9200      00754         BCF     _TRISAbits, 1
+               00755         .line   240; motores.c  MOTOR2_PWM_TRIS=0;   //Canal PWM motor 2 salidas
+0034 9400      00756         BCF     _TRISCbits, 2
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 15
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00757         .line   241; motores.c  MOTOR2_CHANA_TRIS=1;
+0036 8000      00758         BSF     _TRISDbits, 0
+               00759         .line   242; motores.c  MOTOR2_CHANB_TRIS=1;
+0038 8200      00760         BSF     _TRISDbits, 1
+               00761         .line   252; motores.c  PR2 = BIN(01111100) ;
+003A 0E7C      00762         MOVLW   0x7c
+003C 6E00      00763         MOVWF   _PR2
+               00764         .line   254; motores.c  T2CON = BIN(00000101);
+003E 0E05      00765         MOVLW   0x05
+0040 6E00      00766         MOVWF   _T2CON
+               00767         .line   255; motores.c  CCPR1L = 0;
+0042 6A00      00768         CLRF    _CCPR1L
+               00769         .line   256; motores.c  CCPR2L = 0;
+0044 6A00      00770         CLRF    _CCPR2L
+               00771         .line   257; motores.c  CCP1CON = BIN(00111100) ;
+0046 0E3C      00772         MOVLW   0x3c
+0048 6E00      00773         MOVWF   _CCP1CON
+               00774         .line   258; motores.c  CCP2CON = BIN(00111100) ;
+004A 0E3C      00775         MOVLW   0x3c
+004C 6E00      00776         MOVWF   _CCP2CON
+               00777         .line   260; motores.c  memset (encoder,0,sizeof (encoder)*TOTAL_MOTORES);
+004E 0E00      00778         MOVLW   LOW(_encoder)
+0050 6E00      00779         MOVWF   r0x00
+0052 0E00      00780         MOVLW   HIGH(_encoder)
+0054 6E00      00781         MOVWF   r0x01
+0056 0E00      00782         MOVLW   0x00
+0058 6EE5      00783         MOVWF   POSTDEC1
+005A 0E34      00784         MOVLW   0x34
+005C 6EE5      00785         MOVWF   POSTDEC1
+005E 0E00      00786         MOVLW   0x00
+0060 6EE5      00787         MOVWF   POSTDEC1
+0062 5000      00788         MOVF    r0x01, W
+0064 6EE5      00789         MOVWF   POSTDEC1
+0066 5000      00790         MOVF    r0x00, W
+0068 6EE5      00791         MOVWF   POSTDEC1
+006A EC00 F000 00792         CALL    _memset
+006E 0E05      00793         MOVLW   0x05
+0070 26E1      00794         ADDWF   FSR1L, F
+               00795         .line   261; motores.c  TimerTimeout=1;
+0072 0E01      00796         MOVLW   0x01
+0074 0000      00797         BANKSEL _TimerTimeout
+0076 6F00      00798         MOVWF   _TimerTimeout, B
+               00799         .line   262; motores.c  encoder[MOTOR_1].AntChana=MOTOR1_CHANA;
+0078 6A00      00800         CLRF    r0x00
+007A B600      00801         BTFSC   _PORTDbits, 3
+007C 2A00      00802         INCF    r0x00, F
+007E 6A00      00803         CLRF    r0x01
+0080 5000      00804         MOVF    r0x00, W
+0082 0000      00805         BANKSEL (_encoder + 2)
+0084 6F00      00806         MOVWF   (_encoder + 2), B
+0086 5000      00807         MOVF    r0x01, W
+0088 0000      00808         BANKSEL (_encoder + 3)
+008A 6F00      00809         MOVWF   (_encoder + 3), B
+               00810         .line   263; motores.c  encoder[MOTOR_2].AntChana=MOTOR2_CHANA;
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 16
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+008C 6A00      00811         CLRF    r0x00
+008E B000      00812         BTFSC   _PORTDbits, 0
+0090 2A00      00813         INCF    r0x00, F
+0092 6A00      00814         CLRF    r0x01
+0094 5000      00815         MOVF    r0x00, W
+0096 0000      00816         BANKSEL (_encoder + 15)
+0098 6F00      00817         MOVWF   (_encoder + 15), B
+009A 5000      00818         MOVF    r0x01, W
+009C 0000      00819         BANKSEL (_encoder + 16)
+009E 6F00      00820         MOVWF   (_encoder + 16), B
+               00821         .line   265; motores.c  motorChangeDir (ADELANTE,MOTOR_1);
+00A0 0E00      00822         MOVLW   0x00
+00A2 6EE5      00823         MOVWF   POSTDEC1
+00A4 0E01      00824         MOVLW   0x01
+00A6 6EE5      00825         MOVWF   POSTDEC1
+00A8 EC00 F000 00826         CALL    _motorChangeDir
+00AC 52E6      00827         MOVF    POSTINC1, F
+00AE 52E6      00828         MOVF    POSTINC1, F
+               00829         .line   266; motores.c  motorChangeDir (ADELANTE,MOTOR_2);
+00B0 0E01      00830         MOVLW   0x01
+00B2 6EE5      00831         MOVWF   POSTDEC1
+00B4 0E01      00832         MOVLW   0x01
+00B6 6EE5      00833         MOVWF   POSTDEC1
+00B8 EC00 F000 00834         CALL    _motorChangeDir
+00BC 52E6      00835         MOVF    POSTINC1, F
+00BE 52E6      00836         MOVF    POSTINC1, F
+               00837         .line   268; motores.c  current_state=&stSampling;
+00C0 0E00      00838         MOVLW   LOW(_stSampling)
+00C2 0000      00839         BANKSEL _current_state
+00C4 6F00      00840         MOVWF   _current_state, B
+00C6 0E00      00841         MOVLW   HIGH(_stSampling)
+00C8 0000      00842         BANKSEL (_current_state + 1)
+00CA 6F00      00843         MOVWF   (_current_state + 1), B
+00CC 0E00      00844         MOVLW   UPPER(_stSampling)
+00CE 0000      00845         BANKSEL (_current_state + 2)
+00D0 6F00      00846         MOVWF   (_current_state + 2), B
+00D2 0000      00847         BANKSEL (_current_state + 2)
+               00848         .line   269; motores.c  printf ("Initialize Motors %x\n\r",(void *)current_state);
+00D4 5100      00849         MOVF    (_current_state + 2), W, B
+00D6 6E00      00850         MOVWF   r0x02
+00D8 0000      00851         BANKSEL (_current_state + 1)
+00DA 5100      00852         MOVF    (_current_state + 1), W, B
+00DC 6E00      00853         MOVWF   r0x01
+00DE 0000      00854         BANKSEL _current_state
+00E0 5100      00855         MOVF    _current_state, W, B
+00E2 6E00      00856         MOVWF   r0x00
+00E4 0E00      00857         MOVLW   UPPER(___str_0)
+00E6 6E00      00858         MOVWF   r0x05
+00E8 0E00      00859         MOVLW   HIGH(___str_0)
+00EA 6E00      00860         MOVWF   r0x04
+00EC 0E00      00861         MOVLW   LOW(___str_0)
+00EE 6E00      00862         MOVWF   r0x03
+00F0 5000      00863         MOVF    r0x02, W
+00F2 6EE5      00864         MOVWF   POSTDEC1
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 17
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+00F4 5000      00865         MOVF    r0x01, W
+00F6 6EE5      00866         MOVWF   POSTDEC1
+00F8 5000      00867         MOVF    r0x00, W
+00FA 6EE5      00868         MOVWF   POSTDEC1
+00FC 5000      00869         MOVF    r0x05, W
+00FE 6EE5      00870         MOVWF   POSTDEC1
+0100 5000      00871         MOVF    r0x04, W
+0102 6EE5      00872         MOVWF   POSTDEC1
+0104 5000      00873         MOVF    r0x03, W
+0106 6EE5      00874         MOVWF   POSTDEC1
+0108 EC00 F000 00875         CALL    _printf
+010C 0E06      00876         MOVLW   0x06
+010E 26E1      00877         ADDWF   FSR1L, F
+0110 CFE4 F000 00878         MOVFF   PREINC1, r0x05
+0114 CFE4 F000 00879         MOVFF   PREINC1, r0x04
+0118 CFE4 F000 00880         MOVFF   PREINC1, r0x03
+011C CFE4 F000 00881         MOVFF   PREINC1, r0x02
+0120 CFE4 F000 00882         MOVFF   PREINC1, r0x01
+0124 CFE4 F000 00883         MOVFF   PREINC1, r0x00
+0128 CFE4 FFD9 00884         MOVFF   PREINC1, FSR2L
+012C 0012      00885         RETURN  
+               00886 
+               00887 ; ; Starting pCode block
+               00888 S_motores__readEncoders code
+0000 00889 _readEncoders:
+               00890         .line   216; motores.c  void readEncoders(void)
+0000 CFD9 FFE5 00891         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00892         MOVFF   FSR1L, FSR2L
+0008 0000      00893         BANKSEL _readEncoders_counter_1_82
+               00894         .line   220; motores.c  if (++counter>=TimerTimeout)
+000A 2B00      00895         INCF    _readEncoders_counter_1_82, F, B
+000C 0000      00896         BANKSEL _TimerTimeout
+000E 5100      00897         MOVF    _TimerTimeout, W, B
+0010 0000      00898         BANKSEL _readEncoders_counter_1_82
+0012 5D00      00899         SUBWF   _readEncoders_counter_1_82, W, B
+0014 E300      00900         BNC     _00276_DS_
+               00901         .line   222; motores.c  (*current_state)();
+0016 CFF2 FFE5 00902         MOVFF   INTCON, POSTDEC1
+001A 9EF2      00903         BCF     INTCON, 7
+001C 0005      00904         PUSH    
+001E 0E00      00905         MOVLW   LOW(_00282_DS_)
+0020 6EFD      00906         MOVWF   TOSL
+0022 0E00      00907         MOVLW   HIGH(_00282_DS_)
+0024 6EFE      00908         MOVWF   TOSH
+0026 0E00      00909         MOVLW   UPPER(_00282_DS_)
+0028 6EFF      00910         MOVWF   TOSU
+002A BEE4      00911         BTFSC   PREINC1, 7
+002C 8EF2      00912         BSF     INTCON, 7
+002E C000 FFFB 00913         MOVFF   (_current_state + 2), PCLATU
+0032 C000 FFFA 00914         MOVFF   (_current_state + 1), PCLATH
+0036 0000      00915         BANKSEL _current_state
+0038 5100      00916         MOVF    _current_state, W, B
+003A 6EF9      00917         MOVWF   PCL
+003C 00918 _00282_DS_:
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 18
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+003C 0000      00919         BANKSEL _readEncoders_counter_1_82
+               00920         .line   223; motores.c  counter=0;
+003E 6B00      00921         CLRF    _readEncoders_counter_1_82, B
+0040 00922 _00276_DS_:
+0040 CFE4 FFD9 00923         MOVFF   PREINC1, FSR2L
+0044 0012      00924         RETURN  
+               00925 
+               00926 ; ; Starting pCode block
+               00927 S_motores__stAveraged   code
+0000 00928 _stAveraged:
+               00929         .line   134; motores.c  void stAveraged(void)
+0000 CFD9 FFE5 00930         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00931         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 00932         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 00933         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 00934         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 00935         MOVFF   r0x03, POSTDEC1
+0018 C000 FFE5 00936         MOVFF   r0x04, POSTDEC1
+001C C000 FFE5 00937         MOVFF   r0x05, POSTDEC1
+0020 C000 FFE5 00938         MOVFF   r0x06, POSTDEC1
+0024 C000 FFE5 00939         MOVFF   r0x07, POSTDEC1
+0028 C000 FFE5 00940         MOVFF   r0x08, POSTDEC1
+002C C000 FFE5 00941         MOVFF   r0x09, POSTDEC1
+0030 C000 FFE5 00942         MOVFF   r0x0a, POSTDEC1
+0034 C000 FFE5 00943         MOVFF   r0x0b, POSTDEC1
+0038 C000 FFE5 00944         MOVFF   r0x0c, POSTDEC1
+003C C000 FFE5 00945         MOVFF   r0x0d, POSTDEC1
+               00946         .line   143; motores.c  width1=encoder[MOTOR_1].inSpeed;
+0040 C000 F000 00947         MOVFF   (_encoder + 4), r0x00
+0044 C000 F000 00948         MOVFF   (_encoder + 5), r0x01
+               00949         .line   144; motores.c  width2=encoder[MOTOR_2].inSpeed;
+0048 C000 F000 00950         MOVFF   (_encoder + 17), r0x02
+004C C000 F000 00951         MOVFF   (_encoder + 18), r0x03
+               00952         .line   146; motores.c  outSpeed1=(encoder[MOTOR_1].outSpeed);
+0050 C000 F000 00953         MOVFF   (_encoder + 6), r0x04
+0054 C000 F000 00954         MOVFF   (_encoder + 7), r0x05
+               00955         .line   147; motores.c  outSpeed2=(encoder[MOTOR_2].outSpeed);
+0058 C000 F000 00956         MOVFF   (_encoder + 19), r0x06
+005C C000 F000 00957         MOVFF   (_encoder + 20), r0x07
+               00958         .line   149; motores.c  if  (outSpeed1 < 0 )
+0060 80D8      00959         BSF     STATUS, 0
+0062 AE00      00960         BTFSS   r0x05, 7
+0064 90D8      00961         BCF     STATUS, 0
+0066 E300      00962         BNC     _00166_DS_
+               00963         .line   151; motores.c  outSpeed1*=-1;
+0068 1E00      00964         COMF    r0x05, F
+006A 6C00      00965         NEGF    r0x04
+006C B4D8      00966         BTFSC   STATUS, 2
+006E 2A00      00967         INCF    r0x05, F
+               00968         .line   152; motores.c  if (motorDir(MOTOR_1)==ADELANTE)
+0070 0E00      00969         MOVLW   0x00
+0072 6EE5      00970         MOVWF   POSTDEC1
+0074 EC00 F000 00971         CALL    _motorDir
+0078 6E00      00972         MOVWF   r0x08
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 19
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+007A 52E6      00973         MOVF    POSTINC1, F
+007C 5000      00974         MOVF    r0x08, W
+007E 0A01      00975         XORLW   0x01
+0080 E100      00976         BNZ     _00167_DS_
+               00977         .line   154; motores.c  CCPR1L=0;
+0082 6A00      00978         CLRF    _CCPR1L
+0084 0000      00979         BANKSEL _stAveraged_nErrors_1_72
+               00980         .line   155; motores.c  nErrors=0;
+0086 6B00      00981         CLRF    _stAveraged_nErrors_1_72, B
+0088 0000      00982         BANKSEL (_stAveraged_nErrors_1_72 + 1)
+008A 6B00      00983         CLRF    (_stAveraged_nErrors_1_72 + 1), B
+               00984         .line   156; motores.c  current_state=&stWaitForMotor1Bak;
+008C 0E00      00985         MOVLW   LOW(_stWaitForMotor1Bak)
+008E 0000      00986         BANKSEL _current_state
+0090 6F00      00987         MOVWF   _current_state, B
+0092 0E00      00988         MOVLW   HIGH(_stWaitForMotor1Bak)
+0094 0000      00989         BANKSEL (_current_state + 1)
+0096 6F00      00990         MOVWF   (_current_state + 1), B
+0098 0E00      00991         MOVLW   UPPER(_stWaitForMotor1Bak)
+009A 0000      00992         BANKSEL (_current_state + 2)
+009C 6F00      00993         MOVWF   (_current_state + 2), B
+               00994         .line   157; motores.c  return;
+009E D000      00995         BRA     _00191_DS_
+00A0 00996 _00166_DS_:
+               00997         .line   160; motores.c  else if (outSpeed1>0 && motorDir(MOTOR_1)==ATRAS)
+00A0 5000      00998         MOVF    r0x05, W
+00A2 0F80      00999         ADDLW   0x80
+00A4 0F80      01000         ADDLW   0x80
+00A6 E100      01001         BNZ     _00258_DS_
+00A8 0E01      01002         MOVLW   0x01
+00AA 5C00      01003         SUBWF   r0x04, W
+00AC 01004 _00258_DS_:
+00AC E300      01005         BNC     _00167_DS_
+00AE 0E00      01006         MOVLW   0x00
+00B0 6EE5      01007         MOVWF   POSTDEC1
+00B2 EC00 F000 01008         CALL    _motorDir
+00B6 6E00      01009         MOVWF   r0x08
+00B8 52E6      01010         MOVF    POSTINC1, F
+00BA 5000      01011         MOVF    r0x08, W
+00BC E100      01012         BNZ     _00167_DS_
+               01013         .line   162; motores.c  CCPR1L=0;
+00BE 6A00      01014         CLRF    _CCPR1L
+00C0 0000      01015         BANKSEL _stAveraged_nErrors_1_72
+               01016         .line   163; motores.c  nErrors=0;
+00C2 6B00      01017         CLRF    _stAveraged_nErrors_1_72, B
+00C4 0000      01018         BANKSEL (_stAveraged_nErrors_1_72 + 1)
+00C6 6B00      01019         CLRF    (_stAveraged_nErrors_1_72 + 1), B
+               01020         .line   164; motores.c  current_state=&stWaitForMotor1Forward;
+00C8 0E00      01021         MOVLW   LOW(_stWaitForMotor1Forward)
+00CA 0000      01022         BANKSEL _current_state
+00CC 6F00      01023         MOVWF   _current_state, B
+00CE 0E00      01024         MOVLW   HIGH(_stWaitForMotor1Forward)
+00D0 0000      01025         BANKSEL (_current_state + 1)
+00D2 6F00      01026         MOVWF   (_current_state + 1), B
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 20
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+00D4 0E00      01027         MOVLW   UPPER(_stWaitForMotor1Forward)
+00D6 0000      01028         BANKSEL (_current_state + 2)
+00D8 6F00      01029         MOVWF   (_current_state + 2), B
+               01030         .line   165; motores.c  return;
+00DA D000      01031         BRA     _00191_DS_
+00DC 01032 _00167_DS_:
+               01033         .line   168; motores.c  if  (outSpeed2 < 0 )
+00DC 80D8      01034         BSF     STATUS, 0
+00DE AE00      01035         BTFSS   r0x07, 7
+00E0 90D8      01036         BCF     STATUS, 0
+00E2 E300      01037         BNC     _00174_DS_
+               01038         .line   170; motores.c  outSpeed2*=-1;
+00E4 1E00      01039         COMF    r0x07, F
+00E6 6C00      01040         NEGF    r0x06
+00E8 B4D8      01041         BTFSC   STATUS, 2
+00EA 2A00      01042         INCF    r0x07, F
+               01043         .line   171; motores.c  if (motorDir(MOTOR_2)==ADELANTE)
+00EC 0E01      01044         MOVLW   0x01
+00EE 6EE5      01045         MOVWF   POSTDEC1
+00F0 EC00 F000 01046         CALL    _motorDir
+00F4 6E00      01047         MOVWF   r0x08
+00F6 52E6      01048         MOVF    POSTINC1, F
+00F8 5000      01049         MOVF    r0x08, W
+00FA 0A01      01050         XORLW   0x01
+00FC E100      01051         BNZ     _00175_DS_
+               01052         .line   173; motores.c  CCPR2L=0;
+00FE 6A00      01053         CLRF    _CCPR2L
+0100 0000      01054         BANKSEL _stAveraged_nErrors_1_72
+               01055         .line   174; motores.c  nErrors=0;
+0102 6B00      01056         CLRF    _stAveraged_nErrors_1_72, B
+0104 0000      01057         BANKSEL (_stAveraged_nErrors_1_72 + 1)
+0106 6B00      01058         CLRF    (_stAveraged_nErrors_1_72 + 1), B
+               01059         .line   175; motores.c  current_state=&stWaitForMotor2Bak;
+0108 0E00      01060         MOVLW   LOW(_stWaitForMotor2Bak)
+010A 0000      01061         BANKSEL _current_state
+010C 6F00      01062         MOVWF   _current_state, B
+010E 0E00      01063         MOVLW   HIGH(_stWaitForMotor2Bak)
+0110 0000      01064         BANKSEL (_current_state + 1)
+0112 6F00      01065         MOVWF   (_current_state + 1), B
+0114 0E00      01066         MOVLW   UPPER(_stWaitForMotor2Bak)
+0116 0000      01067         BANKSEL (_current_state + 2)
+0118 6F00      01068         MOVWF   (_current_state + 2), B
+               01069         .line   176; motores.c  return;
+011A D000      01070         BRA     _00191_DS_
+011C 01071 _00174_DS_:
+               01072         .line   179; motores.c  else if ( outSpeed2>0 && motorDir(MOTOR_2)==ATRAS)
+011C 5000      01073         MOVF    r0x07, W
+011E 0F80      01074         ADDLW   0x80
+0120 0F80      01075         ADDLW   0x80
+0122 E100      01076         BNZ     _00262_DS_
+0124 0E01      01077         MOVLW   0x01
+0126 5C00      01078         SUBWF   r0x06, W
+0128 01079 _00262_DS_:
+0128 E300      01080         BNC     _00175_DS_
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 21
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+012A 0E01      01081         MOVLW   0x01
+012C 6EE5      01082         MOVWF   POSTDEC1
+012E EC00 F000 01083         CALL    _motorDir
+0132 6E00      01084         MOVWF   r0x08
+0134 52E6      01085         MOVF    POSTINC1, F
+0136 5000      01086         MOVF    r0x08, W
+0138 E100      01087         BNZ     _00175_DS_
+               01088         .line   181; motores.c  CCPR2L=0;
+013A 6A00      01089         CLRF    _CCPR2L
+013C 0000      01090         BANKSEL _stAveraged_nErrors_1_72
+               01091         .line   182; motores.c  nErrors=0;
+013E 6B00      01092         CLRF    _stAveraged_nErrors_1_72, B
+0140 0000      01093         BANKSEL (_stAveraged_nErrors_1_72 + 1)
+0142 6B00      01094         CLRF    (_stAveraged_nErrors_1_72 + 1), B
+               01095         .line   183; motores.c  current_state=&stWaitForMotor2Forward;
+0144 0E00      01096         MOVLW   LOW(_stWaitForMotor2Forward)
+0146 0000      01097         BANKSEL _current_state
+0148 6F00      01098         MOVWF   _current_state, B
+014A 0E00      01099         MOVLW   HIGH(_stWaitForMotor2Forward)
+014C 0000      01100         BANKSEL (_current_state + 1)
+014E 6F00      01101         MOVWF   (_current_state + 1), B
+0150 0E00      01102         MOVLW   UPPER(_stWaitForMotor2Forward)
+0152 0000      01103         BANKSEL (_current_state + 2)
+0154 6F00      01104         MOVWF   (_current_state + 2), B
+               01105         .line   184; motores.c  return;
+0156 D000      01106         BRA     _00191_DS_
+0158 01107 _00175_DS_:
+               01108         .line   187; motores.c  err1 = outSpeed1-width1;
+0158 5000      01109         MOVF    r0x00, W
+015A 5C00      01110         SUBWF   r0x04, W
+015C 6E00      01111         MOVWF   r0x00
+015E 5000      01112         MOVF    r0x01, W
+0160 5800      01113         SUBWFB  r0x05, W
+0162 6E00      01114         MOVWF   r0x01
+0164 0000      01115         BANKSEL (_stAveraged_nErrors_1_72 + 1)
+               01116         .line   188; motores.c  errors1[nErrors]=err1;
+0166 5100      01117         MOVF    (_stAveraged_nErrors_1_72 + 1), W, B
+0168 6EE5      01118         MOVWF   POSTDEC1
+016A 0000      01119         BANKSEL _stAveraged_nErrors_1_72
+016C 5100      01120         MOVF    _stAveraged_nErrors_1_72, W, B
+016E 6EE5      01121         MOVWF   POSTDEC1
+0170 0E00      01122         MOVLW   0x00
+0172 6EE5      01123         MOVWF   POSTDEC1
+0174 0E02      01124         MOVLW   0x02
+0176 6EE5      01125         MOVWF   POSTDEC1
+0178 EC00 F000 01126         CALL    __mulint
+017C 6E00      01127         MOVWF   r0x08
+017E CFF3 F000 01128         MOVFF   PRODL, r0x09
+0182 0E04      01129         MOVLW   0x04
+0184 26E1      01130         ADDWF   FSR1L, F
+0186 0E00      01131         MOVLW   LOW(_stAveraged_errors1_1_72)
+0188 2600      01132         ADDWF   r0x08, F
+018A 0E00      01133         MOVLW   HIGH(_stAveraged_errors1_1_72)
+018C 2200      01134         ADDWFC  r0x09, F
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 22
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+018E C000 FFE9 01135         MOVFF   r0x08, FSR0L
+0192 C000 FFEA 01136         MOVFF   r0x09, FSR0H
+0196 C000 FFEE 01137         MOVFF   r0x00, POSTINC0
+019A C000 FFEF 01138         MOVFF   r0x01, INDF0
+               01139         .line   190; motores.c  err2 = outSpeed2-width2;
+019E 5000      01140         MOVF    r0x02, W
+01A0 5C00      01141         SUBWF   r0x06, W
+01A2 6E00      01142         MOVWF   r0x02
+01A4 5000      01143         MOVF    r0x03, W
+01A6 5800      01144         SUBWFB  r0x07, W
+01A8 6E00      01145         MOVWF   r0x03
+01AA 0000      01146         BANKSEL (_stAveraged_nErrors_1_72 + 1)
+               01147         .line   191; motores.c  errors2[nErrors]=err2;
+01AC 5100      01148         MOVF    (_stAveraged_nErrors_1_72 + 1), W, B
+01AE 6EE5      01149         MOVWF   POSTDEC1
+01B0 0000      01150         BANKSEL _stAveraged_nErrors_1_72
+01B2 5100      01151         MOVF    _stAveraged_nErrors_1_72, W, B
+01B4 6EE5      01152         MOVWF   POSTDEC1
+01B6 0E00      01153         MOVLW   0x00
+01B8 6EE5      01154         MOVWF   POSTDEC1
+01BA 0E02      01155         MOVLW   0x02
+01BC 6EE5      01156         MOVWF   POSTDEC1
+01BE EC00 F000 01157         CALL    __mulint
+01C2 6E00      01158         MOVWF   r0x08
+01C4 CFF3 F000 01159         MOVFF   PRODL, r0x09
+01C8 0E04      01160         MOVLW   0x04
+01CA 26E1      01161         ADDWF   FSR1L, F
+01CC 0E00      01162         MOVLW   LOW(_stAveraged_errors2_1_72)
+01CE 2600      01163         ADDWF   r0x08, F
+01D0 0E00      01164         MOVLW   HIGH(_stAveraged_errors2_1_72)
+01D2 2200      01165         ADDWFC  r0x09, F
+01D4 C000 FFE9 01166         MOVFF   r0x08, FSR0L
+01D8 C000 FFEA 01167         MOVFF   r0x09, FSR0H
+01DC C000 FFEE 01168         MOVFF   r0x02, POSTINC0
+01E0 C000 FFEF 01169         MOVFF   r0x03, INDF0
+01E4 0000      01170         BANKSEL _stAveraged_nErrors_1_72
+               01171         .line   193; motores.c  if (++nErrors == TOTAL_ERRORS)
+01E6 3F00      01172         INCFSZ  _stAveraged_nErrors_1_72, F, B
+01E8 D000      01173         BRA     _10371_DS_
+01EA 0000      01174         BANKSEL (_stAveraged_nErrors_1_72 + 1)
+01EC 2B00      01175         INCF    (_stAveraged_nErrors_1_72 + 1), F, B
+01EE 01176 _10371_DS_:
+01EE 0000      01177         BANKSEL _stAveraged_nErrors_1_72
+01F0 5100      01178         MOVF    _stAveraged_nErrors_1_72, W, B
+01F2 0A03      01179         XORLW   0x03
+01F4 E100      01180         BNZ     _00263_DS_
+01F6 0000      01181         BANKSEL (_stAveraged_nErrors_1_72 + 1)
+01F8 5100      01182         MOVF    (_stAveraged_nErrors_1_72 + 1), W, B
+01FA E000      01183         BZ      _00264_DS_
+01FC 01184 _00263_DS_:
+01FC D000      01185         BRA     _00188_DS_
+01FE 01186 _00264_DS_:
+01FE 0000      01187         BANKSEL _stAveraged_nErrors_1_72
+               01188         .line   195; motores.c  nErrors=0;
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 23
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0200 6B00      01189         CLRF    _stAveraged_nErrors_1_72, B
+0202 0000      01190         BANKSEL (_stAveraged_nErrors_1_72 + 1)
+0204 6B00      01191         CLRF    (_stAveraged_nErrors_1_72 + 1), B
+               01192         .line   196; motores.c  for (n=0;n<TOTAL_ERRORS;n++)
+0206 6A00      01193         CLRF    r0x08
+0208 6A00      01194         CLRF    r0x09
+020A 6A00      01195         CLRF    r0x0a
+020C 6A00      01196         CLRF    r0x0b
+020E 01197 _00189_DS_:
+               01198         .line   198; motores.c  err1+=errors1[n];
+020E 0E00      01199         MOVLW   LOW(_stAveraged_errors1_1_72)
+0210 2400      01200         ADDWF   r0x0a, W
+0212 6E00      01201         MOVWF   r0x0c
+0214 0E00      01202         MOVLW   HIGH(_stAveraged_errors1_1_72)
+0216 2000      01203         ADDWFC  r0x0b, W
+0218 6E00      01204         MOVWF   r0x0d
+021A C000 FFE9 01205         MOVFF   r0x0c, FSR0L
+021E C000 FFEA 01206         MOVFF   r0x0d, FSR0H
+0222 CFEE F000 01207         MOVFF   POSTINC0, r0x0c
+0226 CFEF F000 01208         MOVFF   INDF0, r0x0d
+022A 5000      01209         MOVF    r0x0c, W
+022C 2600      01210         ADDWF   r0x00, F
+022E 5000      01211         MOVF    r0x0d, W
+0230 2200      01212         ADDWFC  r0x01, F
+               01213         .line   199; motores.c  err2+=errors2[n];
+0232 0E00      01214         MOVLW   LOW(_stAveraged_errors2_1_72)
+0234 2400      01215         ADDWF   r0x0a, W
+0236 6E00      01216         MOVWF   r0x0c
+0238 0E00      01217         MOVLW   HIGH(_stAveraged_errors2_1_72)
+023A 2000      01218         ADDWFC  r0x0b, W
+023C 6E00      01219         MOVWF   r0x0d
+023E C000 FFE9 01220         MOVFF   r0x0c, FSR0L
+0242 C000 FFEA 01221         MOVFF   r0x0d, FSR0H
+0246 CFEE F000 01222         MOVFF   POSTINC0, r0x0c
+024A CFEF F000 01223         MOVFF   INDF0, r0x0d
+024E 5000      01224         MOVF    r0x0c, W
+0250 2600      01225         ADDWF   r0x02, F
+0252 5000      01226         MOVF    r0x0d, W
+0254 2200      01227         ADDWFC  r0x03, F
+               01228         .line   196; motores.c  for (n=0;n<TOTAL_ERRORS;n++)
+0256 0E02      01229         MOVLW   0x02
+0258 2600      01230         ADDWF   r0x0a, F
+025A B0D8      01231         BTFSC   STATUS, 0
+025C 2A00      01232         INCF    r0x0b, F
+025E 4A00      01233         INFSNZ  r0x08, F
+0260 2A00      01234         INCF    r0x09, F
+0262 5000      01235         MOVF    r0x09, W
+0264 0F80      01236         ADDLW   0x80
+0266 0F80      01237         ADDLW   0x80
+0268 E100      01238         BNZ     _00265_DS_
+026A 0E03      01239         MOVLW   0x03
+026C 5C00      01240         SUBWF   r0x08, W
+026E 01241 _00265_DS_:
+026E E300      01242         BNC     _00189_DS_
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 24
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               01243         .line   202; motores.c  err1/=TOTAL_ERRORS;
+0270 0E00      01244         MOVLW   0x00
+0272 6EE5      01245         MOVWF   POSTDEC1
+0274 0E03      01246         MOVLW   0x03
+0276 6EE5      01247         MOVWF   POSTDEC1
+0278 5000      01248         MOVF    r0x01, W
+027A 6EE5      01249         MOVWF   POSTDEC1
+027C 5000      01250         MOVF    r0x00, W
+027E 6EE5      01251         MOVWF   POSTDEC1
+0280 EC00 F000 01252         CALL    __divsint
+0284 6E00      01253         MOVWF   r0x00
+0286 CFF3 F000 01254         MOVFF   PRODL, r0x01
+028A 0E04      01255         MOVLW   0x04
+028C 26E1      01256         ADDWF   FSR1L, F
+               01257         .line   203; motores.c  err2/=TOTAL_ERRORS;
+028E 0E00      01258         MOVLW   0x00
+0290 6EE5      01259         MOVWF   POSTDEC1
+0292 0E03      01260         MOVLW   0x03
+0294 6EE5      01261         MOVWF   POSTDEC1
+0296 5000      01262         MOVF    r0x03, W
+0298 6EE5      01263         MOVWF   POSTDEC1
+029A 5000      01264         MOVF    r0x02, W
+029C 6EE5      01265         MOVWF   POSTDEC1
+029E EC00 F000 01266         CALL    __divsint
+02A2 6E00      01267         MOVWF   r0x02
+02A4 CFF3 F000 01268         MOVFF   PRODL, r0x03
+02A8 0E04      01269         MOVLW   0x04
+02AA 26E1      01270         ADDWF   FSR1L, F
+               01271         .line   205; motores.c  if (err1<0 && err1<-LIMIT)      err1=-LIMIT;
+02AC 80D8      01272         BSF     STATUS, 0
+02AE AE00      01273         BTFSS   r0x01, 7
+02B0 90D8      01274         BCF     STATUS, 0
+02B2 E300      01275         BNC     _00178_DS_
+02B4 5000      01276         MOVF    r0x01, W
+02B6 0F80      01277         ADDLW   0x80
+02B8 0F81      01278         ADDLW   0x81
+02BA E100      01279         BNZ     _00266_DS_
+02BC 0EF6      01280         MOVLW   0xf6
+02BE 5C00      01281         SUBWF   r0x00, W
+02C0 01282 _00266_DS_:
+02C0 E200      01283         BC      _00178_DS_
+02C2 0EF6      01284         MOVLW   0xf6
+02C4 6E00      01285         MOVWF   r0x00
+02C6 0EFF      01286         MOVLW   0xff
+02C8 6E00      01287         MOVWF   r0x01
+02CA 01288 _00178_DS_:
+               01289         .line   206; motores.c  if (err2<0 && err2<-LIMIT)      err2=-LIMIT;
+02CA 80D8      01290         BSF     STATUS, 0
+02CC AE00      01291         BTFSS   r0x03, 7
+02CE 90D8      01292         BCF     STATUS, 0
+02D0 E300      01293         BNC     _00181_DS_
+02D2 5000      01294         MOVF    r0x03, W
+02D4 0F80      01295         ADDLW   0x80
+02D6 0F81      01296         ADDLW   0x81
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 25
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+02D8 E100      01297         BNZ     _00267_DS_
+02DA 0EF6      01298         MOVLW   0xf6
+02DC 5C00      01299         SUBWF   r0x02, W
+02DE 01300 _00267_DS_:
+02DE E200      01301         BC      _00181_DS_
+02E0 0EF6      01302         MOVLW   0xf6
+02E2 6E00      01303         MOVWF   r0x02
+02E4 0EFF      01304         MOVLW   0xff
+02E6 6E00      01305         MOVWF   r0x03
+02E8 01306 _00181_DS_:
+               01307         .line   207; motores.c  if (err1 > LIMIT)       err1=LIMIT;
+02E8 5000      01308         MOVF    r0x01, W
+02EA 0F80      01309         ADDLW   0x80
+02EC 0F80      01310         ADDLW   0x80
+02EE E100      01311         BNZ     _00268_DS_
+02F0 0E0B      01312         MOVLW   0x0b
+02F2 5C00      01313         SUBWF   r0x00, W
+02F4 01314 _00268_DS_:
+02F4 E300      01315         BNC     _00184_DS_
+02F6 0E0A      01316         MOVLW   0x0a
+02F8 6E00      01317         MOVWF   r0x00
+02FA 6A00      01318         CLRF    r0x01
+02FC 01319 _00184_DS_:
+               01320         .line   208; motores.c  if (err2 > LIMIT)       err2=LIMIT;
+02FC 5000      01321         MOVF    r0x03, W
+02FE 0F80      01322         ADDLW   0x80
+0300 0F80      01323         ADDLW   0x80
+0302 E100      01324         BNZ     _00269_DS_
+0304 0E0B      01325         MOVLW   0x0b
+0306 5C00      01326         SUBWF   r0x02, W
+0308 01327 _00269_DS_:
+0308 E300      01328         BNC     _00186_DS_
+030A 0E0A      01329         MOVLW   0x0a
+030C 6E00      01330         MOVWF   r0x02
+030E 6A00      01331         CLRF    r0x03
+0310 01332 _00186_DS_:
+               01333         .line   210; motores.c  CCPR1L = ( outSpeed1==0 ) ? 0 : CCPR1L+err1;
+0310 5000      01334         MOVF    r0x04, W
+0312 1000      01335         IORWF   r0x05, W
+0314 80D8      01336         BSF     STATUS, 0
+0316 66E8      01337         TSTFSZ  WREG
+0318 90D8      01338         BCF     STATUS, 0
+031A 6A00      01339         CLRF    r0x04
+031C 3600      01340         RLCF    r0x04, F
+031E 5000      01341         MOVF    r0x04, W
+0320 E000      01342         BZ      _00193_DS_
+0322 6A00      01343         CLRF    r0x04
+0324 D000      01344         BRA     _00194_DS_
+0326 01345 _00193_DS_:
+0326 5000      01346         MOVF    _CCPR1L, W
+0328 6E00      01347         MOVWF   r0x01
+032A 5000      01348         MOVF    r0x00, W
+032C 2400      01349         ADDWF   r0x01, W
+032E 6E00      01350         MOVWF   r0x04
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 26
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0330 01351 _00194_DS_:
+0330 C000 F000 01352         MOVFF   r0x04, _CCPR1L
+               01353         .line   211; motores.c  CCPR2L = ( outSpeed2==0 ) ? 0 : CCPR2L+err2;
+0334 5000      01354         MOVF    r0x06, W
+0336 1000      01355         IORWF   r0x07, W
+0338 80D8      01356         BSF     STATUS, 0
+033A 66E8      01357         TSTFSZ  WREG
+033C 90D8      01358         BCF     STATUS, 0
+033E 6A00      01359         CLRF    r0x06
+0340 3600      01360         RLCF    r0x06, F
+0342 5000      01361         MOVF    r0x06, W
+0344 E000      01362         BZ      _00195_DS_
+0346 6A00      01363         CLRF    r0x00
+0348 D000      01364         BRA     _00196_DS_
+034A 01365 _00195_DS_:
+034A 5000      01366         MOVF    _CCPR2L, W
+034C 6E00      01367         MOVWF   r0x01
+034E 5000      01368         MOVF    r0x02, W
+0350 2400      01369         ADDWF   r0x01, W
+0352 6E00      01370         MOVWF   r0x00
+0354 01371 _00196_DS_:
+0354 C000 F000 01372         MOVFF   r0x00, _CCPR2L
+0358 01373 _00188_DS_:
+               01374         .line   213; motores.c  current_state=&stSampling;
+0358 0E00      01375         MOVLW   LOW(_stSampling)
+035A 0000      01376         BANKSEL _current_state
+035C 6F00      01377         MOVWF   _current_state, B
+035E 0E00      01378         MOVLW   HIGH(_stSampling)
+0360 0000      01379         BANKSEL (_current_state + 1)
+0362 6F00      01380         MOVWF   (_current_state + 1), B
+0364 0E00      01381         MOVLW   UPPER(_stSampling)
+0366 0000      01382         BANKSEL (_current_state + 2)
+0368 6F00      01383         MOVWF   (_current_state + 2), B
+036A 01384 _00191_DS_:
+036A CFE4 F000 01385         MOVFF   PREINC1, r0x0d
+036E CFE4 F000 01386         MOVFF   PREINC1, r0x0c
+0372 CFE4 F000 01387         MOVFF   PREINC1, r0x0b
+0376 CFE4 F000 01388         MOVFF   PREINC1, r0x0a
+037A CFE4 F000 01389         MOVFF   PREINC1, r0x09
+037E CFE4 F000 01390         MOVFF   PREINC1, r0x08
+0382 CFE4 F000 01391         MOVFF   PREINC1, r0x07
+0386 CFE4 F000 01392         MOVFF   PREINC1, r0x06
+038A CFE4 F000 01393         MOVFF   PREINC1, r0x05
+038E CFE4 F000 01394         MOVFF   PREINC1, r0x04
+0392 CFE4 F000 01395         MOVFF   PREINC1, r0x03
+0396 CFE4 F000 01396         MOVFF   PREINC1, r0x02
+039A CFE4 F000 01397         MOVFF   PREINC1, r0x01
+039E CFE4 F000 01398         MOVFF   PREINC1, r0x00
+03A2 CFE4 FFD9 01399         MOVFF   PREINC1, FSR2L
+03A6 0012      01400         RETURN  
+               01401 
+               01402 ; ; Starting pCode block
+               01403 S_motores__stWaitForMotor2Forward       code
+0000 01404 _stWaitForMotor2Forward:
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 27
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               01405         .line   125; motores.c  void stWaitForMotor2Forward(void)
+0000 CFD9 FFE5 01406         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 01407         MOVFF   FSR1L, FSR2L
+0008 0000      01408         BANKSEL (_encoder + 17)
+               01409         .line   127; motores.c  if (encoder[MOTOR_2].inSpeed==0)
+000A 5100      01410         MOVF    (_encoder + 17), W, B
+000C 0000      01411         BANKSEL (_encoder + 18)
+000E 1100      01412         IORWF   (_encoder + 18), W, B
+0010 E100      01413         BNZ     _00154_DS_
+               01414         .line   128; motores.c  motorChangeDir (ADELANTE,MOTOR_2);
+0012 0E01      01415         MOVLW   0x01
+0014 6EE5      01416         MOVWF   POSTDEC1
+0016 0E01      01417         MOVLW   0x01
+0018 6EE5      01418         MOVWF   POSTDEC1
+001A EC00 F000 01419         CALL    _motorChangeDir
+001E 52E6      01420         MOVF    POSTINC1, F
+0020 52E6      01421         MOVF    POSTINC1, F
+0022 01422 _00154_DS_:
+               01423         .line   130; motores.c  current_state=&stSampling;
+0022 0E00      01424         MOVLW   LOW(_stSampling)
+0024 0000      01425         BANKSEL _current_state
+0026 6F00      01426         MOVWF   _current_state, B
+0028 0E00      01427         MOVLW   HIGH(_stSampling)
+002A 0000      01428         BANKSEL (_current_state + 1)
+002C 6F00      01429         MOVWF   (_current_state + 1), B
+002E 0E00      01430         MOVLW   UPPER(_stSampling)
+0030 0000      01431         BANKSEL (_current_state + 2)
+0032 6F00      01432         MOVWF   (_current_state + 2), B
+0034 CFE4 FFD9 01433         MOVFF   PREINC1, FSR2L
+0038 0012      01434         RETURN  
+               01435 
+               01436 ; ; Starting pCode block
+               01437 S_motores__stWaitForMotor1Forward       code
+0000 01438 _stWaitForMotor1Forward:
+               01439         .line   114; motores.c  void stWaitForMotor1Forward(void)
+0000 CFD9 FFE5 01440         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 01441         MOVFF   FSR1L, FSR2L
+0008 0000      01442         BANKSEL (_encoder + 4)
+               01443         .line   116; motores.c  if (encoder[MOTOR_1].inSpeed==0)
+000A 5100      01444         MOVF    (_encoder + 4), W, B
+000C 0000      01445         BANKSEL (_encoder + 5)
+000E 1100      01446         IORWF   (_encoder + 5), W, B
+0010 E100      01447         BNZ     _00147_DS_
+               01448         .line   117; motores.c  motorChangeDir (ADELANTE,MOTOR_1);
+0012 0E00      01449         MOVLW   0x00
+0014 6EE5      01450         MOVWF   POSTDEC1
+0016 0E01      01451         MOVLW   0x01
+0018 6EE5      01452         MOVWF   POSTDEC1
+001A EC00 F000 01453         CALL    _motorChangeDir
+001E 52E6      01454         MOVF    POSTINC1, F
+0020 52E6      01455         MOVF    POSTINC1, F
+0022 01456 _00147_DS_:
+               01457         .line   119; motores.c  current_state=&stSampling;
+0022 0E00      01458         MOVLW   LOW(_stSampling)
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 28
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0024 0000      01459         BANKSEL _current_state
+0026 6F00      01460         MOVWF   _current_state, B
+0028 0E00      01461         MOVLW   HIGH(_stSampling)
+002A 0000      01462         BANKSEL (_current_state + 1)
+002C 6F00      01463         MOVWF   (_current_state + 1), B
+002E 0E00      01464         MOVLW   UPPER(_stSampling)
+0030 0000      01465         BANKSEL (_current_state + 2)
+0032 6F00      01466         MOVWF   (_current_state + 2), B
+0034 CFE4 FFD9 01467         MOVFF   PREINC1, FSR2L
+0038 0012      01468         RETURN  
+               01469 
+               01470 ; ; Starting pCode block
+               01471 S_motores__stWaitForMotor2Bak   code
+0000 01472 _stWaitForMotor2Bak:
+               01473         .line   103; motores.c  void stWaitForMotor2Bak(void)
+0000 CFD9 FFE5 01474         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 01475         MOVFF   FSR1L, FSR2L
+0008 0000      01476         BANKSEL (_encoder + 17)
+               01477         .line   105; motores.c  if (encoder[MOTOR_2].inSpeed==0)
+000A 5100      01478         MOVF    (_encoder + 17), W, B
+000C 0000      01479         BANKSEL (_encoder + 18)
+000E 1100      01480         IORWF   (_encoder + 18), W, B
+0010 E100      01481         BNZ     _00140_DS_
+               01482         .line   106; motores.c  motorChangeDir (ATRAS,MOTOR_2);
+0012 0E01      01483         MOVLW   0x01
+0014 6EE5      01484         MOVWF   POSTDEC1
+0016 0E00      01485         MOVLW   0x00
+0018 6EE5      01486         MOVWF   POSTDEC1
+001A EC00 F000 01487         CALL    _motorChangeDir
+001E 52E6      01488         MOVF    POSTINC1, F
+0020 52E6      01489         MOVF    POSTINC1, F
+0022 01490 _00140_DS_:
+               01491         .line   108; motores.c  current_state=&stSampling;
+0022 0E00      01492         MOVLW   LOW(_stSampling)
+0024 0000      01493         BANKSEL _current_state
+0026 6F00      01494         MOVWF   _current_state, B
+0028 0E00      01495         MOVLW   HIGH(_stSampling)
+002A 0000      01496         BANKSEL (_current_state + 1)
+002C 6F00      01497         MOVWF   (_current_state + 1), B
+002E 0E00      01498         MOVLW   UPPER(_stSampling)
+0030 0000      01499         BANKSEL (_current_state + 2)
+0032 6F00      01500         MOVWF   (_current_state + 2), B
+0034 CFE4 FFD9 01501         MOVFF   PREINC1, FSR2L
+0038 0012      01502         RETURN  
+               01503 
+               01504 ; ; Starting pCode block
+               01505 S_motores__stWaitForMotor1Bak   code
+0000 01506 _stWaitForMotor1Bak:
+               01507         .line   92; motores.c   void stWaitForMotor1Bak(void)
+0000 CFD9 FFE5 01508         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 01509         MOVFF   FSR1L, FSR2L
+0008 0000      01510         BANKSEL (_encoder + 4)
+               01511         .line   94; motores.c   if (encoder[MOTOR_1].inSpeed==0)
+000A 5100      01512         MOVF    (_encoder + 4), W, B
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 29
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+000C 0000      01513         BANKSEL (_encoder + 5)
+000E 1100      01514         IORWF   (_encoder + 5), W, B
+0010 E100      01515         BNZ     _00133_DS_
+               01516         .line   95; motores.c   motorChangeDir (ATRAS,MOTOR_1);
+0012 0E00      01517         MOVLW   0x00
+0014 6EE5      01518         MOVWF   POSTDEC1
+0016 0E00      01519         MOVLW   0x00
+0018 6EE5      01520         MOVWF   POSTDEC1
+001A EC00 F000 01521         CALL    _motorChangeDir
+001E 52E6      01522         MOVF    POSTINC1, F
+0020 52E6      01523         MOVF    POSTINC1, F
+0022 01524 _00133_DS_:
+               01525         .line   97; motores.c   current_state=&stSampling;
+0022 0E00      01526         MOVLW   LOW(_stSampling)
+0024 0000      01527         BANKSEL _current_state
+0026 6F00      01528         MOVWF   _current_state, B
+0028 0E00      01529         MOVLW   HIGH(_stSampling)
+002A 0000      01530         BANKSEL (_current_state + 1)
+002C 6F00      01531         MOVWF   (_current_state + 1), B
+002E 0E00      01532         MOVLW   UPPER(_stSampling)
+0030 0000      01533         BANKSEL (_current_state + 2)
+0032 6F00      01534         MOVWF   (_current_state + 2), B
+0034 CFE4 FFD9 01535         MOVFF   PREINC1, FSR2L
+0038 0012      01536         RETURN  
+               01537 
+               01538 ; ; Starting pCode block
+               01539 S_motores__stSampling   code
+0000 01540 _stSampling:
+               01541         .line   35; motores.c   void stSampling(void)
+0000 CFD9 FFE5 01542         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 01543         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 01544         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 01545         MOVFF   r0x01, POSTDEC1
+0010 0000      01546         BANKSEL _stSampling_enc_position_a_1_61
+               01547         .line   44; motores.c   enc_position_a <<=2;
+0012 5100      01548         MOVF    _stSampling_enc_position_a_1_61, W, B
+0014 0000      01549         BANKSEL _stSampling_enc_position_a_1_61
+0016 2700      01550         ADDWF   _stSampling_enc_position_a_1_61, F, B
+0018 0000      01551         BANKSEL (_stSampling_enc_position_a_1_61 + 1)
+001A 3700      01552         RLCF    (_stSampling_enc_position_a_1_61 + 1), F, B
+001C 90D8      01553         BCF     STATUS, 0
+001E 0000      01554         BANKSEL _stSampling_enc_position_a_1_61
+0020 3700      01555         RLCF    _stSampling_enc_position_a_1_61, F, B
+0022 0000      01556         BANKSEL (_stSampling_enc_position_a_1_61 + 1)
+0024 3700      01557         RLCF    (_stSampling_enc_position_a_1_61 + 1), F, B
+               01558         .line   45; motores.c   enc_position_a |= ((PORTD & 0x0c)>>2);
+0026 0E0C      01559         MOVLW   0x0c
+0028 1400      01560         ANDWF   _PORTD, W
+002A 6E00      01561         MOVWF   r0x00
+002C 4000      01562         RRNCF   r0x00, W
+002E 40E8      01563         RRNCF   WREG, W
+0030 0B3F      01564         ANDLW   0x3f
+0032 6E00      01565         MOVWF   r0x00
+0034 6A00      01566         CLRF    r0x01
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 30
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0036 5000      01567         MOVF    r0x00, W
+0038 0000      01568         BANKSEL _stSampling_enc_position_a_1_61
+003A 1300      01569         IORWF   _stSampling_enc_position_a_1_61, F, B
+003C 5000      01570         MOVF    r0x01, W
+003E 0000      01571         BANKSEL (_stSampling_enc_position_a_1_61 + 1)
+0040 1300      01572         IORWF   (_stSampling_enc_position_a_1_61 + 1), F, B
+               01573         .line   46; motores.c   width1+=enc_states[ (enc_position_a & 0x0f)];
+0042 0E0F      01574         MOVLW   0x0f
+0044 0000      01575         BANKSEL _stSampling_enc_position_a_1_61
+0046 1500      01576         ANDWF   _stSampling_enc_position_a_1_61, W, B
+0048 6E00      01577         MOVWF   r0x00
+004A 6A00      01578         CLRF    r0x01
+004C 0E00      01579         MOVLW   LOW(_stSampling_enc_states_1_61)
+004E 2600      01580         ADDWF   r0x00, F
+0050 0E00      01581         MOVLW   HIGH(_stSampling_enc_states_1_61)
+0052 2200      01582         ADDWFC  r0x01, F
+0054 C000 FFE9 01583         MOVFF   r0x00, FSR0L
+0058 C000 FFEA 01584         MOVFF   r0x01, FSR0H
+005C CFEF F000 01585         MOVFF   INDF0, r0x00
+0060 6A00      01586         CLRF    r0x01
+0062 BE00      01587         BTFSC   r0x00, 7
+0064 6800      01588         SETF    r0x01
+0066 5000      01589         MOVF    r0x00, W
+0068 0000      01590         BANKSEL _stSampling_width1_1_61
+006A 2700      01591         ADDWF   _stSampling_width1_1_61, F, B
+006C 5000      01592         MOVF    r0x01, W
+006E 0000      01593         BANKSEL (_stSampling_width1_1_61 + 1)
+0070 2300      01594         ADDWFC  (_stSampling_width1_1_61 + 1), F, B
+0072 0000      01595         BANKSEL _stSampling_enc_position_b_1_61
+               01596         .line   48; motores.c   enc_position_b <<=2;
+0074 5100      01597         MOVF    _stSampling_enc_position_b_1_61, W, B
+0076 0000      01598         BANKSEL _stSampling_enc_position_b_1_61
+0078 2700      01599         ADDWF   _stSampling_enc_position_b_1_61, F, B
+007A 0000      01600         BANKSEL (_stSampling_enc_position_b_1_61 + 1)
+007C 3700      01601         RLCF    (_stSampling_enc_position_b_1_61 + 1), F, B
+007E 90D8      01602         BCF     STATUS, 0
+0080 0000      01603         BANKSEL _stSampling_enc_position_b_1_61
+0082 3700      01604         RLCF    _stSampling_enc_position_b_1_61, F, B
+0084 0000      01605         BANKSEL (_stSampling_enc_position_b_1_61 + 1)
+0086 3700      01606         RLCF    (_stSampling_enc_position_b_1_61 + 1), F, B
+               01607         .line   49; motores.c   enc_position_b |= (PORTD & 0x03);
+0088 0E03      01608         MOVLW   0x03
+008A 1400      01609         ANDWF   _PORTD, W
+008C 6E00      01610         MOVWF   r0x00
+008E 6A00      01611         CLRF    r0x01
+0090 5000      01612         MOVF    r0x00, W
+0092 0000      01613         BANKSEL _stSampling_enc_position_b_1_61
+0094 1300      01614         IORWF   _stSampling_enc_position_b_1_61, F, B
+0096 5000      01615         MOVF    r0x01, W
+0098 0000      01616         BANKSEL (_stSampling_enc_position_b_1_61 + 1)
+009A 1300      01617         IORWF   (_stSampling_enc_position_b_1_61 + 1), F, B
+               01618         .line   50; motores.c   width2+=enc_states[ (enc_position_b & 0x0f)];
+009C 0E0F      01619         MOVLW   0x0f
+009E 0000      01620         BANKSEL _stSampling_enc_position_b_1_61
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 31
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+00A0 1500      01621         ANDWF   _stSampling_enc_position_b_1_61, W, B
+00A2 6E00      01622         MOVWF   r0x00
+00A4 6A00      01623         CLRF    r0x01
+00A6 0E00      01624         MOVLW   LOW(_stSampling_enc_states_1_61)
+00A8 2600      01625         ADDWF   r0x00, F
+00AA 0E00      01626         MOVLW   HIGH(_stSampling_enc_states_1_61)
+00AC 2200      01627         ADDWFC  r0x01, F
+00AE C000 FFE9 01628         MOVFF   r0x00, FSR0L
+00B2 C000 FFEA 01629         MOVFF   r0x01, FSR0H
+00B6 CFEF F000 01630         MOVFF   INDF0, r0x00
+00BA 6A00      01631         CLRF    r0x01
+00BC BE00      01632         BTFSC   r0x00, 7
+00BE 6800      01633         SETF    r0x01
+00C0 5000      01634         MOVF    r0x00, W
+00C2 0000      01635         BANKSEL _stSampling_width2_1_61
+00C4 2700      01636         ADDWF   _stSampling_width2_1_61, F, B
+00C6 5000      01637         MOVF    r0x01, W
+00C8 0000      01638         BANKSEL (_stSampling_width2_1_61 + 1)
+00CA 2300      01639         ADDWFC  (_stSampling_width2_1_61 + 1), F, B
+00CC 0000      01640         BANKSEL _stSampling_tiempo_1_61
+               01641         .line   52; motores.c   if (++tiempo>=120) // 120 milisegundos = 480
+00CE 3F00      01642         INCFSZ  _stSampling_tiempo_1_61, F, B
+00D0 D000      01643         BRA     _20372_DS_
+00D2 0000      01644         BANKSEL (_stSampling_tiempo_1_61 + 1)
+00D4 2B00      01645         INCF    (_stSampling_tiempo_1_61 + 1), F, B
+00D6 01646 _20372_DS_:
+00D6 0000      01647         BANKSEL (_stSampling_tiempo_1_61 + 1)
+00D8 5100      01648         MOVF    (_stSampling_tiempo_1_61 + 1), W, B
+00DA 0F80      01649         ADDLW   0x80
+00DC 0F80      01650         ADDLW   0x80
+00DE E100      01651         BNZ     _00127_DS_
+00E0 0E78      01652         MOVLW   0x78
+00E2 0000      01653         BANKSEL _stSampling_tiempo_1_61
+00E4 5D00      01654         SUBWF   _stSampling_tiempo_1_61, W, B
+00E6 01655 _00127_DS_:
+00E6 A0D8      01656         BTFSS   STATUS, 0
+00E8 D000      01657         BRA     _00114_DS_
+00EA 0000      01658         BANKSEL (_stSampling_width1_1_61 + 1)
+               01659         .line   78; motores.c   encoder[MOTOR_1].inSpeed=abs(width1);
+00EC 5100      01660         MOVF    (_stSampling_width1_1_61 + 1), W, B
+00EE 6EE5      01661         MOVWF   POSTDEC1
+00F0 0000      01662         BANKSEL _stSampling_width1_1_61
+00F2 5100      01663         MOVF    _stSampling_width1_1_61, W, B
+00F4 6EE5      01664         MOVWF   POSTDEC1
+00F6 EC00 F000 01665         CALL    _abs
+00FA 6E00      01666         MOVWF   r0x00
+00FC CFF3 F000 01667         MOVFF   PRODL, r0x01
+0100 52E6      01668         MOVF    POSTINC1, F
+0102 52E6      01669         MOVF    POSTINC1, F
+0104 5000      01670         MOVF    r0x00, W
+0106 0000      01671         BANKSEL (_encoder + 4)
+0108 6F00      01672         MOVWF   (_encoder + 4), B
+010A 5000      01673         MOVF    r0x01, W
+010C 0000      01674         BANKSEL (_encoder + 5)
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 32
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+010E 6F00      01675         MOVWF   (_encoder + 5), B
+0110 0000      01676         BANKSEL (_stSampling_width2_1_61 + 1)
+               01677         .line   79; motores.c   encoder[MOTOR_2].inSpeed=abs(width2);
+0112 5100      01678         MOVF    (_stSampling_width2_1_61 + 1), W, B
+0114 6EE5      01679         MOVWF   POSTDEC1
+0116 0000      01680         BANKSEL _stSampling_width2_1_61
+0118 5100      01681         MOVF    _stSampling_width2_1_61, W, B
+011A 6EE5      01682         MOVWF   POSTDEC1
+011C EC00 F000 01683         CALL    _abs
+0120 6E00      01684         MOVWF   r0x00
+0122 CFF3 F000 01685         MOVFF   PRODL, r0x01
+0126 52E6      01686         MOVF    POSTINC1, F
+0128 52E6      01687         MOVF    POSTINC1, F
+012A 5000      01688         MOVF    r0x00, W
+012C 0000      01689         BANKSEL (_encoder + 17)
+012E 6F00      01690         MOVWF   (_encoder + 17), B
+0130 5000      01691         MOVF    r0x01, W
+0132 0000      01692         BANKSEL (_encoder + 18)
+0134 6F00      01693         MOVWF   (_encoder + 18), B
+0136 0000      01694         BANKSEL _stSampling_tiempo_1_61
+               01695         .line   80; motores.c   tiempo=0;
+0138 6B00      01696         CLRF    _stSampling_tiempo_1_61, B
+013A 0000      01697         BANKSEL (_stSampling_tiempo_1_61 + 1)
+013C 6B00      01698         CLRF    (_stSampling_tiempo_1_61 + 1), B
+013E 0000      01699         BANKSEL _stSampling_width1_1_61
+               01700         .line   81; motores.c   width1=0;
+0140 6B00      01701         CLRF    _stSampling_width1_1_61, B
+0142 0000      01702         BANKSEL (_stSampling_width1_1_61 + 1)
+0144 6B00      01703         CLRF    (_stSampling_width1_1_61 + 1), B
+0146 0000      01704         BANKSEL _stSampling_width2_1_61
+               01705         .line   82; motores.c   width2=0;
+0148 6B00      01706         CLRF    _stSampling_width2_1_61, B
+014A 0000      01707         BANKSEL (_stSampling_width2_1_61 + 1)
+014C 6B00      01708         CLRF    (_stSampling_width2_1_61 + 1), B
+               01709         .line   84; motores.c   current_state=&stAveraged;
+014E 0E00      01710         MOVLW   LOW(_stAveraged)
+0150 0000      01711         BANKSEL _current_state
+0152 6F00      01712         MOVWF   _current_state, B
+0154 0E00      01713         MOVLW   HIGH(_stAveraged)
+0156 0000      01714         BANKSEL (_current_state + 1)
+0158 6F00      01715         MOVWF   (_current_state + 1), B
+015A 0E00      01716         MOVLW   UPPER(_stAveraged)
+015C 0000      01717         BANKSEL (_current_state + 2)
+015E 6F00      01718         MOVWF   (_current_state + 2), B
+0160 D000      01719         BRA     _00116_DS_
+0162 01720 _00114_DS_:
+               01721         .line   87; motores.c   current_state=&stSampling;
+0162 0E00      01722         MOVLW   LOW(_stSampling)
+0164 0000      01723         BANKSEL _current_state
+0166 6F00      01724         MOVWF   _current_state, B
+0168 0E00      01725         MOVLW   HIGH(_stSampling)
+016A 0000      01726         BANKSEL (_current_state + 1)
+016C 6F00      01727         MOVWF   (_current_state + 1), B
+016E 0E00      01728         MOVLW   UPPER(_stSampling)
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 33
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0170 0000      01729         BANKSEL (_current_state + 2)
+0172 6F00      01730         MOVWF   (_current_state + 2), B
+0174 01731 _00116_DS_:
+0174 CFE4 F000 01732         MOVFF   PREINC1, r0x01
+0178 CFE4 F000 01733         MOVFF   PREINC1, r0x00
+017C CFE4 FFD9 01734         MOVFF   PREINC1, FSR2L
+0180 0012      01735         RETURN  
+               01736 
+               01737 ; ; Starting pCode block
+               01738 S_motores__abs  code
+0000 01739 _abs:
+               01740         .line   28; motores.c   int abs(int j)
+0000 CFD9 FFE5 01741         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 01742         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 01743         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 01744         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 01745         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 01746         MOVFF   r0x03, POSTDEC1
+0018 0E02      01747         MOVLW   0x02
+001A CFDB F000 01748         MOVFF   PLUSW2, r0x00
+001E 0E03      01749         MOVLW   0x03
+0020 CFDB F000 01750         MOVFF   PLUSW2, r0x01
+               01751         .line   30; motores.c   return (j >= 0) ? j : -j;
+0024 80D8      01752         BSF     STATUS, 0
+0026 AE00      01753         BTFSS   r0x01, 7
+0028 90D8      01754         BCF     STATUS, 0
+002A 6A00      01755         CLRF    r0x02
+002C 3600      01756         RLCF    r0x02, F
+002E 5000      01757         MOVF    r0x02, W
+0030 80D8      01758         BSF     STATUS, 0
+0032 66E8      01759         TSTFSZ  WREG
+0034 90D8      01760         BCF     STATUS, 0
+0036 6A00      01761         CLRF    r0x02
+0038 3600      01762         RLCF    r0x02, F
+003A 5000      01763         MOVF    r0x02, W
+003C E000      01764         BZ      _00107_DS_
+003E C000 F000 01765         MOVFF   r0x00, r0x02
+0042 C000 F000 01766         MOVFF   r0x01, r0x03
+0046 D000      01767         BRA     _00108_DS_
+0048 01768 _00107_DS_:
+0048 1C00      01769         COMF    r0x01, W
+004A 6E00      01770         MOVWF   r0x03
+004C 1C00      01771         COMF    r0x00, W
+004E 6E00      01772         MOVWF   r0x02
+0050 4A00      01773         INFSNZ  r0x02, F
+0052 2A00      01774         INCF    r0x03, F
+0054 01775 _00108_DS_:
+0054 C000 FFF3 01776         MOVFF   r0x03, PRODL
+0058 5000      01777         MOVF    r0x02, W
+005A CFE4 F000 01778         MOVFF   PREINC1, r0x03
+005E CFE4 F000 01779         MOVFF   PREINC1, r0x02
+0062 CFE4 F000 01780         MOVFF   PREINC1, r0x01
+0066 CFE4 F000 01781         MOVFF   PREINC1, r0x00
+006A CFE4 FFD9 01782         MOVFF   PREINC1, FSR2L
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 34
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+006E 0012      01783         RETURN  
+               01784 
+               01785 ; ; Starting pCode block
+0070 01786 ___str_0:
+0070 6E49 7469 01787         DB      0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c, 0x69, 0x7a, 0x65, 0x20, 0x4d
+     6169 696C 
+     657A 4D20 
+007C 746F 726F 01788         DB      0x6f, 0x74, 0x6f, 0x72, 0x73, 0x20, 0x25, 0x78, 0x0a, 0x0d, 0x00
+     2073 7825 
+     0D0A 0000 
+               01789 ; ; Starting pCode block
+0088 01790 ___str_1:
+0088 6F6D 6F74 01791         DB      0x6d, 0x6f, 0x74, 0x6f, 0x72, 0x49, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x44
+     4972 766E 
+     7265 4474 
+0094 7269 0D0A 01792         DB      0x69, 0x72, 0x0a, 0x0d, 0x00
+     0000      
+               01793 ; ; Starting pCode block
+009A 01794 ___str_2:
+009A 6F6D 6F74 01795         DB      0x6d, 0x6f, 0x74, 0x6f, 0x72, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x44
+     4372 6168 
+     676E 4465 
+00A6 7269 0D0A 01796         DB      0x69, 0x72, 0x0a, 0x0d, 0x00
+     0000      
+               01797 
+               01798 
+               01799 ; Statistics:
+               01800 ; code size:     2794 (0x0aea) bytes ( 2.13%)
+               01801 ;                1397 (0x0575) words
+               01802 ; udata size:      42 (0x002a) bytes ( 2.34%)
+               01803 ; access size:     14 (0x000e) bytes
+               01804 
+               01805 
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 35
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+FSR0H                             00000FEA
+FSR0L                             00000FE9
+FSR1L                             00000FE1
+FSR2L                             00000FD9
+INDF0                             00000FEF
+INTCON                            00000FF2
+PCL                               00000FF9
+PCLATH                            00000FFA
+PCLATU                            00000FFB
+PLUSW2                            00000FDB
+POSTDEC1                          00000FE5
+POSTINC0                          00000FEE
+POSTINC1                          00000FE6
+PREINC1                           00000FE4
+PRODH                             00000FF4
+PRODL                             00000FF3
+STATUS                            00000FD8
+TOSH                              00000FFE
+TOSL                              00000FFD
+TOSU                              00000FFF
+WREG                              00000FE8
+_00107_DS_                        00000048
+_00108_DS_                        00000054
+_00114_DS_                        00000162
+_00116_DS_                        00000174
+_00127_DS_                        000000E6
+_00133_DS_                        00000022
+_00140_DS_                        00000022
+_00147_DS_                        00000022
+_00154_DS_                        00000022
+_00166_DS_                        000000A0
+_00167_DS_                        000000DC
+_00174_DS_                        0000011C
+_00175_DS_                        00000158
+_00178_DS_                        000002CA
+_00181_DS_                        000002E8
+_00184_DS_                        000002FC
+_00186_DS_                        00000310
+_00188_DS_                        00000358
+_00189_DS_                        0000020E
+_00191_DS_                        0000036A
+_00193_DS_                        00000326
+_00194_DS_                        00000330
+_00195_DS_                        0000034A
+_00196_DS_                        00000354
+_00258_DS_                        000000AC
+_00262_DS_                        00000128
+_00263_DS_                        000001FC
+_00264_DS_                        000001FE
+_00265_DS_                        0000026E
+_00266_DS_                        000002C0
+_00267_DS_                        000002DE
+_00268_DS_                        000002F4
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 36
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+_00269_DS_                        00000308
+_00276_DS_                        00000040
+_00282_DS_                        0000003C
+_00307_DS_                        00000024
+_00308_DS_                        00000038
+_00309_DS_                        00000042
+_00326_DS_                        00000056
+_00327_DS_                        0000005A
+_00328_DS_                        0000005E
+_00329_DS_                        00000064
+_00346_DS_                        00000060
+_00347_DS_                        0000007E
+_00348_DS_                        0000008E
+_00349_DS_                        00000094
+_10371_DS_                        000001EE
+_20372_DS_                        000000D6
+_ADCON0                           00000000
+_ADCON0bits                       00000000
+_ADCON1                           00000000
+_ADCON1bits                       00000000
+_ADCON2                           00000000
+_ADCON2bits                       00000000
+_ADRES                            00000000
+_ADRESH                           00000000
+_ADRESL                           00000000
+_BAUDCON                          00000000
+_BAUDCONbits                      00000000
+_BAUDCTL                          00000000
+_BAUDCTLbits                      00000000
+_BSR                              00000000
+_CCP1AS                           00000000
+_CCP1ASbits                       00000000
+_CCP1CON                          00000000
+_CCP1CONbits                      00000000
+_CCP1DEL                          00000000
+_CCP1DELbits                      00000000
+_CCP2CON                          00000000
+_CCP2CONbits                      00000000
+_CCPR1                            00000000
+_CCPR1H                           00000000
+_CCPR1L                           00000000
+_CCPR2                            00000000
+_CCPR2H                           00000000
+_CCPR2L                           00000000
+_CMCON                            00000000
+_CMCONbits                        00000000
+_CVRCON                           00000000
+_CVRCONbits                       00000000
+_DDRA                             00000000
+_DDRAbits                         00000000
+_DDRB                             00000000
+_DDRBbits                         00000000
+_DDRC                             00000000
+_DDRCbits                         00000000
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 37
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+_DDRD                             00000000
+_DDRDbits                         00000000
+_DDRE                             00000000
+_DDREbits                         00000000
+_ECCP1AS                          00000000
+_ECCP1ASbits                      00000000
+_ECCP1CON                         00000000
+_ECCP1CONbits                     00000000
+_ECCP1DEL                         00000000
+_ECCP1DELbits                     00000000
+_EEADR                            00000000
+_EECON1                           00000000
+_EECON1bits                       00000000
+_EECON2                           00000000
+_EEDATA                           00000000
+_FSR0H                            00000000
+_FSR0L                            00000000
+_FSR1H                            00000000
+_FSR1L                            00000000
+_FSR2H                            00000000
+_FSR2L                            00000000
+_HLVDCON                          00000000
+_HLVDCONbits                      00000000
+_INDF0                            00000000
+_INDF1                            00000000
+_INDF2                            00000000
+_INTCON                           00000000
+_INTCON2                          00000000
+_INTCON2bits                      00000000
+_INTCON3                          00000000
+_INTCON3bits                      00000000
+_INTCONbits                       00000000
+_IPR1                             00000000
+_IPR1bits                         00000000
+_IPR2                             00000000
+_IPR2bits                         00000000
+_LATA                             00000000
+_LATAbits                         00000000
+_LATB                             00000000
+_LATBbits                         00000000
+_LATC                             00000000
+_LATCbits                         00000000
+_LATD                             00000000
+_LATDbits                         00000000
+_LATE                             00000000
+_LATEbits                         00000000
+_LVDCON                           00000000
+_LVDCONbits                       00000000
+_OSCCON                           00000000
+_OSCCONbits                       00000000
+_OSCTUNE                          00000000
+_OSCTUNEbits                      00000000
+_PC                               00000000
+_PCL                              00000000
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 38
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+_PCLATH                           00000000
+_PCLATU                           00000000
+_PIE1                             00000000
+_PIE1bits                         00000000
+_PIE2                             00000000
+_PIE2bits                         00000000
+_PIR1                             00000000
+_PIR1bits                         00000000
+_PIR2                             00000000
+_PIR2bits                         00000000
+_PLUSW0                           00000000
+_PLUSW1                           00000000
+_PLUSW2                           00000000
+_PORTA                            00000000
+_PORTAbits                        00000000
+_PORTB                            00000000
+_PORTBbits                        00000000
+_PORTC                            00000000
+_PORTCbits                        00000000
+_PORTD                            00000000
+_PORTDbits                        00000000
+_PORTE                            00000000
+_PORTEbits                        00000000
+_POSTDEC0                         00000000
+_POSTDEC1                         00000000
+_POSTDEC2                         00000000
+_POSTINC0                         00000000
+_POSTINC1                         00000000
+_POSTINC2                         00000000
+_PR2                              00000000
+_PREINC0                          00000000
+_PREINC1                          00000000
+_PREINC2                          00000000
+_PROD                             00000000
+_PRODH                            00000000
+_PRODL                            00000000
+_RCON                             00000000
+_RCONbits                         00000000
+_RCREG                            00000000
+_RCSTA                            00000000
+_RCSTAbits                        00000000
+_SPBRG                            00000000
+_SPBRGH                           00000000
+_SPPCFG                           00000000
+_SPPCFGbits                       00000000
+_SPPCON                           00000000
+_SPPCONbits                       00000000
+_SPPDATA                          00000000
+_SPPEPS                           00000000
+_SPPEPSbits                       00000000
+_SSPADD                           00000000
+_SSPBUF                           00000000
+_SSPCON1                          00000000
+_SSPCON1bits                      00000000
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 39
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+_SSPCON2                          00000000
+_SSPCON2bits                      00000000
+_SSPSTAT                          00000000
+_SSPSTATbits                      00000000
+_STATUS                           00000000
+_STATUSbits                       00000000
+_STKPTR                           00000000
+_STKPTRbits                       00000000
+_T0CON                            00000000
+_T0CONbits                        00000000
+_T1CON                            00000000
+_T1CONbits                        00000000
+_T2CON                            00000000
+_T2CONbits                        00000000
+_T3CON                            00000000
+_T3CONbits                        00000000
+_TABLAT                           00000000
+_TBLPTR                           00000000
+_TBLPTRH                          00000000
+_TBLPTRL                          00000000
+_TBLPTRU                          00000000
+_TMR0                             00000000
+_TMR0H                            00000000
+_TMR0L                            00000000
+_TMR1                             00000000
+_TMR1H                            00000000
+_TMR1L                            00000000
+_TMR2                             00000000
+_TMR3                             00000000
+_TMR3H                            00000000
+_TMR3L                            00000000
+_TOS                              00000000
+_TOSH                             00000000
+_TOSL                             00000000
+_TOSU                             00000000
+_TRISA                            00000000
+_TRISAbits                        00000000
+_TRISB                            00000000
+_TRISBbits                        00000000
+_TRISC                            00000000
+_TRISCbits                        00000000
+_TRISD                            00000000
+_TRISDbits                        00000000
+_TRISE                            00000000
+_TRISEbits                        00000000
+_TXREG                            00000000
+_TXSTA                            00000000
+_TXSTAbits                        00000000
+_TimerTimeout                     00000000
+_UADDR                            00000000
+_UADDRbits                        00000000
+_UCFG                             00000000
+_UCFGbits                         00000000
+_UCON                             00000000
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 40
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+_UCONbits                         00000000
+_UEIE                             00000000
+_UEIEbits                         00000000
+_UEIR                             00000000
+_UEIRbits                         00000000
+_UEP0                             00000000
+_UEP0bits                         00000000
+_UEP1                             00000000
+_UEP10                            00000000
+_UEP10bits                        00000000
+_UEP11                            00000000
+_UEP11bits                        00000000
+_UEP12                            00000000
+_UEP12bits                        00000000
+_UEP13                            00000000
+_UEP13bits                        00000000
+_UEP14                            00000000
+_UEP14bits                        00000000
+_UEP15                            00000000
+_UEP15bits                        00000000
+_UEP1bits                         00000000
+_UEP2                             00000000
+_UEP2bits                         00000000
+_UEP3                             00000000
+_UEP3bits                         00000000
+_UEP4                             00000000
+_UEP4bits                         00000000
+_UEP5                             00000000
+_UEP5bits                         00000000
+_UEP6                             00000000
+_UEP6bits                         00000000
+_UEP7                             00000000
+_UEP7bits                         00000000
+_UEP8                             00000000
+_UEP8bits                         00000000
+_UEP9                             00000000
+_UEP9bits                         00000000
+_UFRM                             00000000
+_UFRMH                            00000000
+_UFRMHbits                        00000000
+_UFRML                            00000000
+_UFRMLbits                        00000000
+_UIE                              00000000
+_UIEbits                          00000000
+_UIR                              00000000
+_UIRbits                          00000000
+_USTAT                            00000000
+_USTATbits                        00000000
+_WDTCON                           00000000
+_WDTCONbits                       00000000
+_WREG                             00000000
+__18F4455                         00000001
+___str_0                          00000070
+___str_1                          00000088
+gpasm-0.13.7 beta               motores.asm 9-1-2014  01:28:50           PAGE 41
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+___str_2                          0000009A
+__divsint                         00000000
+__mulint                          00000000
+_abs                              00000000
+_bDebug                           00000000
+_bPidEnabled                      00000001
+_current_state                    00000000
+_encoder                          00000000
+_getEncoderDir                    00000000
+_getEncoderWidth                  00000000
+_initializeMotors                 00000000
+_memset                           00000000
+_motorChangeDir                   00000000
+_motorDir                         00000000
+_motorInvertDir                   00000000
+_motorSpeed                       00000000
+_printf                           00000000
+_readEncoders                     00000000
+_readEncoders_counter_1_82        0000001E
+_setMotorsDebug                   00000000
+_setPidEnabled                    00000000
+_stAveraged                       00000000
+_stAveraged_errors1_1_72          00000000
+_stAveraged_errors2_1_72          00000000
+_stAveraged_nErrors_1_72          0000001C
+_stSampling                       00000000
+_stSampling_enc_position_a_1_61   00000016
+_stSampling_enc_position_b_1_61   00000018
+_stSampling_enc_states_1_61       00000002
+_stSampling_tiempo_1_61           0000001A
+_stSampling_width1_1_61           00000012
+_stSampling_width2_1_61           00000014
+_stWaitForMotor1Bak               00000000
+_stWaitForMotor1Forward           00000000
+_stWaitForMotor2Bak               00000000
+_stWaitForMotor2Forward           00000000
+_stdin                            00000000
+_stdout                           00000000
+r0x00                             00000000
+r0x01                             00000001
+r0x02                             00000002
+r0x03                             00000003
+r0x04                             00000004
+r0x05                             00000005
+r0x06                             00000006
+r0x07                             00000007
+r0x08                             00000008
+r0x09                             00000009
+r0x0a                             0000000A
+r0x0b                             0000000B
+r0x0c                             0000000C
+r0x0d                             0000000D
+
+
+Errors   :       0
+Warnings :       0 reported,       0 suppressed
+Messages :       0 reported,       0 suppressed
+

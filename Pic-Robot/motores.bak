@@ -1,0 +1,274 @@
+
+#include <pic18f4455.h>
+#include <stdio.h>
+#include "motores.h"
+#include <string.h>
+#include "common.h"
+#include "delay.h"
+
+#define BIN(x)                              \
+  (  ((0x##x##L & 0x00000001L) ? 0x01 : 0)  \
+   | ((0x##x##L & 0x00000010L) ? 0x02 : 0)  \
+   | ((0x##x##L & 0x00000100L) ? 0x04 : 0)  \
+   | ((0x##x##L & 0x00001000L) ? 0x08 : 0)  \
+   | ((0x##x##L & 0x00010000L) ? 0x10 : 0)  \
+   | ((0x##x##L & 0x00100000L) ? 0x20 : 0)  \
+   | ((0x##x##L & 0x01000000L) ? 0x40 : 0)  \
+   | ((0x##x##L & 0x10000000L) ? 0x80 : 0))
+
+unsigned char counter;  // Increment value of cnt on every interrupt
+unsigned char TimerTimeout;
+char bDebug=1;
+
+static struct encoder_t encoder[2];
+static char bPidEnabled=TRUE;
+
+void readEncoders(void)
+{
+	static char enc_states[] = {0,1,-1,0,-1,0,0,1,1,0,0,-1,0,-1,1,0};
+	static int errors1[TOTAL_ERRORS];
+	static int errors2[TOTAL_ERRORS];
+	static int enc_position_a=0;
+	static int enc_position_b=0;
+	static int width1=0;
+	static int width2=0;
+	static int tiempo=0;
+	static int status=0;
+	static int nErrors=0;
+	 
+	int err1,err2;
+	int limit1,limit2;
+	int n;
+	int outSpeed1,outSpeed2;
+		
+	counter++;
+	//Una muestra cada milisegundo/4
+	if (counter>=TimerTimeout)
+	{
+		counter=0;
+		switch (status)
+		{
+			case ST_SAMPLING:
+				enc_position_a <<=2;
+				enc_position_a |= ((PORTD & 0x0c)>>2);
+				width1+=enc_states[ (enc_position_a & 0x0f)];
+
+				enc_position_b <<=2;
+				enc_position_b |= (PORTD & 0x03);
+				width2+=enc_states[ (enc_position_b & 0x0f)];
+
+				if (++tiempo>=120) // 120 milisegundos = 480
+				{
+					status=ST_AVERAGED;
+					tiempo=0;
+				}
+			break;
+
+			case ST_AVERAGED:
+
+				if (width1<0)
+					width1*=-1;
+
+				if (width2<0)
+					width2*=-1;
+
+				encoder[MOTOR_1].inSpeed=width1;
+				encoder[MOTOR_2].inSpeed=width2;
+
+				outSpeed1=(encoder[MOTOR_1].outSpeed);
+				outSpeed2=(encoder[MOTOR_2].outSpeed);
+
+				if  (outSpeed1 < 0)
+				{
+					motorChangeDir (ATRAS,MOTOR_1);
+					outSpeed1*=-1;
+				}
+				else
+					motorChangeDir (ADELANTE,MOTOR_1);
+
+//				if  (encoder[MOTOR_2].outSpeed < 0)
+				if  (outSpeed2 < 0)
+				{
+					motorChangeDir (ATRAS,MOTOR_2);
+					outSpeed2*=-1;
+				}
+				else
+					motorChangeDir (ADELANTE,MOTOR_2);
+
+				err1 = outSpeed1-width1;
+				errors1[nErrors]=err1;
+
+				err2 = outSpeed2-width2;
+				errors2[nErrors]=err2;
+
+				if (nErrors++ == TOTAL_ERRORS)
+				{
+					nErrors=0;
+					for (n=0;n<TOTAL_ERRORS;n++)
+					{
+						err1+=errors1[n];
+						err2+=errors2[n];
+					}
+
+					err1/=TOTAL_ERRORS;
+					limit1=(err1*30)/100;
+					err2/=TOTAL_ERRORS;
+					limit2=(err2*30)/100;
+					if (bDebug)
+					{
+//						printf ("\xc");
+/*						printf ("\r\nwidth2=%d ",width2);
+						printf ("*err2=%d ",err2);
+						printf ("limit=%d ",limit1);
+
+						printf ("\r\nwidth1=%d ",width1);
+						printf ("*err1=%d ",err1);
+						printf ("limit=%d ",limit2);*/
+					}
+
+					if (err1 > limit1 || err1<limit1)
+						err1=limit1;
+					if (err2 > limit2 || err2<limit2)
+						err2=limit2;
+
+					if (bPidEnabled==TRUE)
+					{
+						CCPR1L = ( outSpeed1==0 ) ? 0 : CCPR1L+err1;
+						CCPR2L = ( outSpeed2==0 ) ? 0 : CCPR2L+err2;
+					}
+					else
+					{
+						CCPR1L = ( outSpeed1==0 ) ? 0 : CCPR1L;
+						CCPR2L = ( outSpeed2==0 ) ? 0 : CCPR2L;
+					}
+/*
+					if (bDebug)
+					{
+						printf ("\r\nerr1=%d ",err1);
+						printf ("err2=%d ",err2);
+					}
+
+					if (bDebug)
+					{
+						printf ("outSpeed=%d ",outSpeed1);
+						printf ("CCPR1L=%d ",CCPR1L);
+						printf ("outSpeed2=%d ",outSpeed2);
+						printf ("CCPR2L=%d ",CCPR2L);
+					}*/
+				}
+
+				width1=0;
+				width2=0;
+				status=ST_SAMPLING;
+			break;
+		}
+			
+//			if (err1 > 5)
+//				err1=5;
+			
+//			if (err1 < -5)
+//				err1=-5;		
+//			if (encoder[MOTOR_1].outSpeed)
+//				CCPR1L+=err1;
+
+//			err2=(((CCPR2L+1)*(encoder[MOTOR_2].outSpeed-width2))/(width2+1));
+//			printf ("CCPR2L=%d err2=%d ",CCPR2L,err2);
+			
+//			if (err2 > 5)
+//				err2=5;
+			
+//			if (err2 < -5)
+//				err2=-5;
+//			if (encoder[MOTOR_2].outSpeed)
+//				CCPR2L+=err2;
+                                       
+//			printf ("outspeed_a = %d outspeed_b = %d motor1=%d motor2=%d\n\r",encoder[MOTOR_1].outSpeed,encoder[MOTOR_2].outSpeed,width1,width2);
+	}
+} 
+
+void initializeMotors(void)
+{
+   ADCON1 |= 0x0F; // Set all I/O pins to digital
+   UCFG = 0x14; // Enable pullup resistors; full speed mode
+   PORTEbits.RDPU=1;    //Resistencias pull-up en PORTD activas
+
+   MOTOR1_DIR_TRIS=0;   //Bits de direccion motor 1 salidas
+   MOTOR1_PWM_TRIS=0;   //Canal PWM motor 1 salidas   
+   MOTOR1_CHANA_TRIS=1;
+   MOTOR1_CHANB_TRIS=1;
+   
+   MOTOR2_DIR_TRIS=0;   //Bits de direccion motor 2 salidas
+   MOTOR2_PWM_TRIS=0;   //Canal PWM motor 2 salidas
+   MOTOR2_CHANA_TRIS=1;
+   MOTOR2_CHANB_TRIS=1;
+	
+	motorChangeDir (1,MOTOR_1);
+	motorChangeDir (1,MOTOR_2);
+      
+   /*
+   * PWM registers configuration
+   * Fosc = 20000000 Hz
+   * Fpwm = 10000.00 Hz (Requested : 10000.00 Hz)
+   * Duty Cycle = 100 %
+   * Resolution is 10 bits
+   * Prescaler is 4
+   */
+   PR2 = BIN(01111100) ;
+//   T2CON = 0b00000101 ;
+   T2CON = BIN(00000101);
+   CCPR1L = 0;
+   CCPR2L = 0;
+   CCP1CON = BIN(00111100) ;
+   CCP2CON = BIN(00111100) ;
+   
+   memset (encoder,0,sizeof (encoder)*TOTAL_MOTORES);         
+   TimerTimeout=1;
+   counter = 0;    // Initialize cnt
+   encoder[MOTOR_1].AntChana=MOTOR1_CHANA;
+   encoder[MOTOR_2].AntChana=MOTOR2_CHANA;
+}
+
+void setPidEnabled (char enabled)
+{
+	bPidEnabled = enabled;
+}
+void motorSpeed (int speed, unsigned char motor)
+{
+ //  speed&=0x7f;
+  encoder[motor].outSpeed=(speed*2);
+}
+
+void setMotorsDebug (char debug)
+{
+	bDebug=debug;
+}
+
+int motorChangeDir (unsigned char dir, unsigned char motor)
+{
+   int ret=0;	
+   switch (motor)
+   {
+      case MOTOR_1:
+         MOTOR1_DIR=!dir;
+      break;
+      
+      case MOTOR_2:
+         MOTOR2_DIR=dir;
+      break;
+      
+      default:
+         ret=1;
+   }
+	
+   return ret;
+}
+
+int getEncoderWidth(unsigned char motor)
+{
+   return encoder[motor].inSpeed;
+}
+
+unsigned char getEncoderDir(unsigned char motor)
+{
+   return encoder[motor].pulseDir;
+}

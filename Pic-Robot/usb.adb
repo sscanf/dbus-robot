@@ -1,0 +1,17 @@
+M:usb
+S:G$deviceDescriptor$0$0({18}DA18d,SC:U),D,0,0
+S:G$configDescriptor$0$0({41}ST_configStruct:S),D,0,0
+S:G$HIDReport$0$0({47}DA47d,SC:U),D,0,0
+S:G$stringDescriptor0$0$0({4}DA4d,SC:U),D,0,0
+S:G$stringDescriptor1$0$0({24}DA24d,SC:U),D,0,0
+S:G$stringDescriptor2$0$0({38}DA38d,SC:U),D,0,0
+S:Fusb$__str_0$0$0({22}DA22d,SC:S),D,0,0
+S:Fusb$__str_1$0$0({25}DA25d,SC:S),D,0,0
+S:Fusb$__str_2$0$0({27}DA27d,SC:S),D,0,0
+S:Fusb$__str_3$0$0({32}DA32d,SC:S),D,0,0
+S:Fusb$__str_4$0$0({29}DA29d,SC:S),D,0,0
+S:Fusb$__str_5$0$0({20}DA20d,SC:S),D,0,0
+S:Fusb$__str_6$0$0({31}DA31d,SC:S),D,0,0
+S:Fusb$__str_7$0$0({13}DA13d,SC:S),D,0,0
+S:Fusb$__str_8$0$0({28}DA28d,SC:S),D,0,0
+S:G$dataEEPROM$0$0({48}DA24d,SI:U),D,0,0

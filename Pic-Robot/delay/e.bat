@@ -1,0 +1,9 @@
+@del *.bak
+@del *.$$$
+@del *.err
+@del *.lst
+@del *.as
+@del *.sdb
+@del *.sym
+@del *.cod
+@del *.obj

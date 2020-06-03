@@ -1,0 +1,3766 @@
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00001 ;--------------------------------------------------------
+               00002 ; File Created by SDCC : free open source ANSI-C Compiler
+               00003 ; Version 3.4.0 #8981 (Apr  5 2014) (Linux)
+               00004 ; This file was generated Mon Sep  1 01:28:48 2014
+               00005 ;--------------------------------------------------------
+               00006 ; PIC16 port for the Microchip 16-bit core micros
+               00007 ;--------------------------------------------------------
+               00008 
+               00009         .ident "SDCC version 3.4.0 #8981 [pic16 port]"
+               00010         .file   "usb.c"
+               00011         list    p=18f4455
+               00012         radix   dec
+               00013 
+               00014 
+               00015 ;--------------------------------------------------------
+               00016 ; public variables in this module
+               00017 ;--------------------------------------------------------
+               00018         global  _deviceAddress
+               00019         global  _HIDTxReport
+               00020         global  _HIDRxReport
+               00021         global  _EnableUSBModule
+               00022         global  _ProcessUSBTransactions
+               00023         global  _deviceState
+               00024         global  _remoteWakeup
+               00025         global  _selfPowered
+               00026         global  _currentConfiguration
+               00027         global  _ctrlTransferStage
+               00028         global  _HIDPostProcess
+               00029         global  _requestHandled
+               00030         global  _outPtr
+               00031         global  _inPtr
+               00032         global  _wCount
+               00033         global  _hidIdleRate
+               00034         global  _hidProtocol
+               00035         global  _hidRxLen
+               00036         global  _ep0Bo
+               00037         global  _ep0Bi
+               00038         global  _ep1Bo
+               00039         global  _ep1Bi
+               00040         global  _SetupPacket
+               00041         global  _controlTransferBuffer
+               00042         global  _HIDRxBuffer
+               00043         global  _HIDTxBuffer
+               00044         global  _HIDInitEndpoint
+               00045         global  _HIDGetReport
+               00046         global  _HIDSetReport
+               00047         global  _ProcessHIDRequest
+               00048         global  _ProcessStandardRequest
+               00049         global  _InDataStage
+               00050         global  _OutDataStage
+               00051         global  _SetupStage
+               00052         global  _WaitForSetupStage
+               00053         global  _ProcessControlTransfer
+               00054         global  _UnSuspend
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00055         global  _StartOfFrame
+               00056         global  _Stall
+               00057         global  _Suspend
+               00058         global  _BusReset
+               00059         global  _deviceDescriptor
+               00060         global  _configDescriptor
+               00061         global  _HIDReport
+               00062         global  _stringDescriptor0
+               00063         global  _stringDescriptor1
+               00064         global  _stringDescriptor2
+               00065         global  _dataEEPROM
+               00066 
+               00067 ;--------------------------------------------------------
+               00068 ; extern variables in this module
+               00069 ;--------------------------------------------------------
+               00070         extern  __gptrget1
+               00071         extern  __gptrput1
+               00072         extern  _SPPCFGbits
+               00073         extern  _SPPEPSbits
+               00074         extern  _SPPCONbits
+               00075         extern  _UFRMLbits
+               00076         extern  _UFRMHbits
+               00077         extern  _UIRbits
+               00078         extern  _UIEbits
+               00079         extern  _UEIRbits
+               00080         extern  _UEIEbits
+               00081         extern  _USTATbits
+               00082         extern  _UCONbits
+               00083         extern  _UADDRbits
+               00084         extern  _UCFGbits
+               00085         extern  _UEP0bits
+               00086         extern  _UEP1bits
+               00087         extern  _UEP2bits
+               00088         extern  _UEP3bits
+               00089         extern  _UEP4bits
+               00090         extern  _UEP5bits
+               00091         extern  _UEP6bits
+               00092         extern  _UEP7bits
+               00093         extern  _UEP8bits
+               00094         extern  _UEP9bits
+               00095         extern  _UEP10bits
+               00096         extern  _UEP11bits
+               00097         extern  _UEP12bits
+               00098         extern  _UEP13bits
+               00099         extern  _UEP14bits
+               00100         extern  _UEP15bits
+               00101         extern  _PORTAbits
+               00102         extern  _PORTBbits
+               00103         extern  _PORTCbits
+               00104         extern  _PORTDbits
+               00105         extern  _PORTEbits
+               00106         extern  _LATAbits
+               00107         extern  _LATBbits
+               00108         extern  _LATCbits
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00109         extern  _LATDbits
+               00110         extern  _LATEbits
+               00111         extern  _DDRAbits
+               00112         extern  _TRISAbits
+               00113         extern  _DDRBbits
+               00114         extern  _TRISBbits
+               00115         extern  _DDRCbits
+               00116         extern  _TRISCbits
+               00117         extern  _DDRDbits
+               00118         extern  _TRISDbits
+               00119         extern  _DDREbits
+               00120         extern  _TRISEbits
+               00121         extern  _OSCTUNEbits
+               00122         extern  _PIE1bits
+               00123         extern  _PIR1bits
+               00124         extern  _IPR1bits
+               00125         extern  _PIE2bits
+               00126         extern  _PIR2bits
+               00127         extern  _IPR2bits
+               00128         extern  _EECON1bits
+               00129         extern  _RCSTAbits
+               00130         extern  _TXSTAbits
+               00131         extern  _T3CONbits
+               00132         extern  _CMCONbits
+               00133         extern  _CVRCONbits
+               00134         extern  _CCP1ASbits
+               00135         extern  _ECCP1ASbits
+               00136         extern  _CCP1DELbits
+               00137         extern  _ECCP1DELbits
+               00138         extern  _BAUDCONbits
+               00139         extern  _BAUDCTLbits
+               00140         extern  _CCP2CONbits
+               00141         extern  _CCP1CONbits
+               00142         extern  _ECCP1CONbits
+               00143         extern  _ADCON2bits
+               00144         extern  _ADCON1bits
+               00145         extern  _ADCON0bits
+               00146         extern  _SSPCON2bits
+               00147         extern  _SSPCON1bits
+               00148         extern  _SSPSTATbits
+               00149         extern  _T2CONbits
+               00150         extern  _T1CONbits
+               00151         extern  _RCONbits
+               00152         extern  _WDTCONbits
+               00153         extern  _HLVDCONbits
+               00154         extern  _LVDCONbits
+               00155         extern  _OSCCONbits
+               00156         extern  _T0CONbits
+               00157         extern  _STATUSbits
+               00158         extern  _INTCON3bits
+               00159         extern  _INTCON2bits
+               00160         extern  _INTCONbits
+               00161         extern  _STKPTRbits
+               00162         extern  _stdin
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00163         extern  _stdout
+               00164         extern  _SPPDATA
+               00165         extern  _SPPCFG
+               00166         extern  _SPPEPS
+               00167         extern  _SPPCON
+               00168         extern  _UFRM
+               00169         extern  _UFRML
+               00170         extern  _UFRMH
+               00171         extern  _UIR
+               00172         extern  _UIE
+               00173         extern  _UEIR
+               00174         extern  _UEIE
+               00175         extern  _USTAT
+               00176         extern  _UCON
+               00177         extern  _UADDR
+               00178         extern  _UCFG
+               00179         extern  _UEP0
+               00180         extern  _UEP1
+               00181         extern  _UEP2
+               00182         extern  _UEP3
+               00183         extern  _UEP4
+               00184         extern  _UEP5
+               00185         extern  _UEP6
+               00186         extern  _UEP7
+               00187         extern  _UEP8
+               00188         extern  _UEP9
+               00189         extern  _UEP10
+               00190         extern  _UEP11
+               00191         extern  _UEP12
+               00192         extern  _UEP13
+               00193         extern  _UEP14
+               00194         extern  _UEP15
+               00195         extern  _PORTA
+               00196         extern  _PORTB
+               00197         extern  _PORTC
+               00198         extern  _PORTD
+               00199         extern  _PORTE
+               00200         extern  _LATA
+               00201         extern  _LATB
+               00202         extern  _LATC
+               00203         extern  _LATD
+               00204         extern  _LATE
+               00205         extern  _DDRA
+               00206         extern  _TRISA
+               00207         extern  _DDRB
+               00208         extern  _TRISB
+               00209         extern  _DDRC
+               00210         extern  _TRISC
+               00211         extern  _DDRD
+               00212         extern  _TRISD
+               00213         extern  _DDRE
+               00214         extern  _TRISE
+               00215         extern  _OSCTUNE
+               00216         extern  _PIE1
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00217         extern  _PIR1
+               00218         extern  _IPR1
+               00219         extern  _PIE2
+               00220         extern  _PIR2
+               00221         extern  _IPR2
+               00222         extern  _EECON1
+               00223         extern  _EECON2
+               00224         extern  _EEDATA
+               00225         extern  _EEADR
+               00226         extern  _RCSTA
+               00227         extern  _TXSTA
+               00228         extern  _TXREG
+               00229         extern  _RCREG
+               00230         extern  _SPBRG
+               00231         extern  _SPBRGH
+               00232         extern  _T3CON
+               00233         extern  _TMR3
+               00234         extern  _TMR3L
+               00235         extern  _TMR3H
+               00236         extern  _CMCON
+               00237         extern  _CVRCON
+               00238         extern  _CCP1AS
+               00239         extern  _ECCP1AS
+               00240         extern  _CCP1DEL
+               00241         extern  _ECCP1DEL
+               00242         extern  _BAUDCON
+               00243         extern  _BAUDCTL
+               00244         extern  _CCP2CON
+               00245         extern  _CCPR2
+               00246         extern  _CCPR2L
+               00247         extern  _CCPR2H
+               00248         extern  _CCP1CON
+               00249         extern  _ECCP1CON
+               00250         extern  _CCPR1
+               00251         extern  _CCPR1L
+               00252         extern  _CCPR1H
+               00253         extern  _ADCON2
+               00254         extern  _ADCON1
+               00255         extern  _ADCON0
+               00256         extern  _ADRES
+               00257         extern  _ADRESL
+               00258         extern  _ADRESH
+               00259         extern  _SSPCON2
+               00260         extern  _SSPCON1
+               00261         extern  _SSPSTAT
+               00262         extern  _SSPADD
+               00263         extern  _SSPBUF
+               00264         extern  _T2CON
+               00265         extern  _PR2
+               00266         extern  _TMR2
+               00267         extern  _T1CON
+               00268         extern  _TMR1
+               00269         extern  _TMR1L
+               00270         extern  _TMR1H
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00271         extern  _RCON
+               00272         extern  _WDTCON
+               00273         extern  _HLVDCON
+               00274         extern  _LVDCON
+               00275         extern  _OSCCON
+               00276         extern  _T0CON
+               00277         extern  _TMR0
+               00278         extern  _TMR0L
+               00279         extern  _TMR0H
+               00280         extern  _STATUS
+               00281         extern  _FSR2L
+               00282         extern  _FSR2H
+               00283         extern  _PLUSW2
+               00284         extern  _PREINC2
+               00285         extern  _POSTDEC2
+               00286         extern  _POSTINC2
+               00287         extern  _INDF2
+               00288         extern  _BSR
+               00289         extern  _FSR1L
+               00290         extern  _FSR1H
+               00291         extern  _PLUSW1
+               00292         extern  _PREINC1
+               00293         extern  _POSTDEC1
+               00294         extern  _POSTINC1
+               00295         extern  _INDF1
+               00296         extern  _WREG
+               00297         extern  _FSR0L
+               00298         extern  _FSR0H
+               00299         extern  _PLUSW0
+               00300         extern  _PREINC0
+               00301         extern  _POSTDEC0
+               00302         extern  _POSTINC0
+               00303         extern  _INDF0
+               00304         extern  _INTCON3
+               00305         extern  _INTCON2
+               00306         extern  _INTCON
+               00307         extern  _PROD
+               00308         extern  _PRODL
+               00309         extern  _PRODH
+               00310         extern  _TABLAT
+               00311         extern  _TBLPTR
+               00312         extern  _TBLPTRL
+               00313         extern  _TBLPTRH
+               00314         extern  _TBLPTRU
+               00315         extern  _PC
+               00316         extern  _PCL
+               00317         extern  _PCLATH
+               00318         extern  _PCLATU
+               00319         extern  _STKPTR
+               00320         extern  _TOS
+               00321         extern  _TOSL
+               00322         extern  _TOSH
+               00323         extern  _TOSU
+               00324         extern  _printf
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00325         extern  _GetInputReport
+               00326         extern  _SetupOutputReport
+               00327         extern  _SetOutputReport
+               00328         extern  _GetFeatureReport
+               00329         extern  _SetupFeatureReport
+               00330         extern  _SetFeatureReport
+               00331 
+               00332 ;--------------------------------------------------------
+               00333 ;       Equates to used internal registers
+               00334 ;--------------------------------------------------------
+  00000FD8     00335 STATUS  equ     0xfd8
+  00000FE8     00336 WREG    equ     0xfe8
+  00000FE9     00337 FSR0L   equ     0xfe9
+  00000FEA     00338 FSR0H   equ     0xfea
+  00000FE1     00339 FSR1L   equ     0xfe1
+  00000FD9     00340 FSR2L   equ     0xfd9
+  00000FEF     00341 INDF0   equ     0xfef
+  00000FE6     00342 POSTINC1        equ     0xfe6
+  00000FE5     00343 POSTDEC1        equ     0xfe5
+  00000FE4     00344 PREINC1 equ     0xfe4
+  00000FDB     00345 PLUSW2  equ     0xfdb
+  00000FF3     00346 PRODL   equ     0xff3
+  00000FF4     00347 PRODH   equ     0xff4
+               00348 
+               00349 
+               00350 ; Internal registers
+               00351 .registers      udata_ovr       0x0000
+               00352 r0x00   res     1
+               00353 r0x01   res     1
+               00354 r0x02   res     1
+               00355 r0x03   res     1
+               00356 r0x04   res     1
+               00357 r0x05   res     1
+               00358 r0x06   res     1
+               00359 r0x07   res     1
+               00360 r0x08   res     1
+               00361 r0x09   res     1
+               00362 
+               00363 
+               00364 usbram5 udata
+               00365 _HIDTxBuffer    res     32
+               00366 _HIDRxBuffer    res     32
+               00367 _SetupPacket    res     64
+               00368 _controlTransferBuffer  res     32
+               00369 
+               00370 udata_usb_0     udata
+               00371 _deviceAddress  res     1
+               00372 
+               00373 udata_usb_1     udata
+               00374 _hidRxLen       res     1
+               00375 
+               00376 udata_usb_2     udata
+               00377 _requestHandled res     1
+               00378 
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00379 udata_usb_3     udata
+               00380 _outPtr res     3
+               00381 
+               00382 udata_usb_4     udata
+               00383 _wCount res     2
+               00384 
+               00385 udata_usb_5     udata
+               00386 _HIDPostProcess res     1
+               00387 
+               00388 udata_usb_6     udata
+               00389 _hidIdleRate    res     1
+               00390 
+               00391 udata_usb_7     udata
+               00392 _hidProtocol    res     1
+               00393 
+               00394 udata_usb_8     udata
+               00395 _inPtr  res     3
+               00396 
+               00397 udata_usb_9     udata
+               00398 _selfPowered    res     1
+               00399 
+               00400 udata_usb_10    udata
+               00401 _remoteWakeup   res     1
+               00402 
+               00403 udata_usb_11    udata
+               00404 _deviceState    res     1
+               00405 
+               00406 udata_usb_12    udata
+               00407 _currentConfiguration   res     1
+               00408 
+               00409 udata_usb_13    udata
+               00410 _ctrlTransferStage      res     1
+               00411 
+               00412 
+               00413 ustat_usb_00    udata   0X0400
+               00414 _ep0Bo          res     4
+               00415 _ep0Bi          res     4
+               00416 _ep1Bo          res     4
+               00417 _ep1Bi          res     4
+               00418 
+               00419 ;--------------------------------------------------------
+               00420 ; global & static initialisations
+               00421 ;--------------------------------------------------------
+               00422 ; ; Starting pCode block for absolute Ival
+               00423 S_usb__dataEEPROM       code    0XF00000
+F00000 00424 _dataEEPROM:
+F00000 0000 0001 00425         DB      0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00, 0x05, 0x00
+     0002 0003 
+     0004 0005 
+F0000C 0006 0007 00426         DB      0x06, 0x00, 0x07, 0x00, 0x30, 0x00, 0x31, 0x00, 0x32, 0x00, 0x33, 0x00
+     0030 0031 
+     0032 0033 
+F00018 0034 0035 00427         DB      0x34, 0x00, 0x35, 0x00, 0x36, 0x00, 0x37, 0x00, 0x38, 0x00, 0x39, 0x00
+     0036 0037 
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+     0038 0039 
+F00024 0061 0062 00428         DB      0x61, 0x00, 0x62, 0x00, 0x63, 0x00, 0x64, 0x00, 0x65, 0x00, 0x66, 0x00
+     0063 0064 
+     0065 0066 
+               00429 
+               00430 ; I code from now on!
+               00431 ; ; Starting pCode block
+               00432 S_usb__ProcessUSBTransactions   code
+0000 00433 _ProcessUSBTransactions:
+               00434         .line   1109; usb.c     void ProcessUSBTransactions(void)
+0000 CFD9 FFE5 00435         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00436         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 00437         MOVFF   r0x00, POSTDEC1
+000C 0000      00438         BANKSEL _deviceState
+               00439         .line   1113; usb.c     if(deviceState == DETACHED)
+000E 5100      00440         MOVF    _deviceState, W, B
+               00441         .line   1114; usb.c     return;
+0010 E000      00442         BZ      _00863_DS_
+               00443         .line   1117; usb.c     if(UIRbits.ACTVIF && UIEbits.ACTVIE)
+0012 A400      00444         BTFSS   _UIRbits, 2
+0014 D000      00445         BRA     _00839_DS_
+0016 A400      00446         BTFSS   _UIEbits, 2
+0018 D000      00447         BRA     _00839_DS_
+               00448         .line   1118; usb.c     UnSuspend();
+001A EC00 F000 00449         CALL    _UnSuspend
+001E 00450 _00839_DS_:
+               00451         .line   1122; usb.c     if(UCONbits.SUSPND == 1)
+001E 6A00      00452         CLRF    r0x00
+0020 B200      00453         BTFSC   _UCONbits, 1
+0022 2A00      00454         INCF    r0x00, F
+0024 5000      00455         MOVF    r0x00, W
+0026 0A01      00456         XORLW   0x01
+               00457         .line   1123; usb.c     return;
+0028 E000      00458         BZ      _00863_DS_
+               00459         .line   1126; usb.c     if (UIRbits.URSTIF && UIEbits.URSTIE)
+002A A000      00460         BTFSS   _UIRbits, 0
+002C D000      00461         BRA     _00844_DS_
+002E A000      00462         BTFSS   _UIEbits, 0
+0030 D000      00463         BRA     _00844_DS_
+               00464         .line   1128; usb.c     BusReset();
+0032 EC00 F000 00465         CALL    _BusReset
+0036 00466 _00844_DS_:
+               00467         .line   1131; usb.c     if (UIRbits.IDLEIF && UIEbits.IDLEIE)
+0036 A800      00468         BTFSS   _UIRbits, 4
+0038 D000      00469         BRA     _00847_DS_
+003A A800      00470         BTFSS   _UIEbits, 4
+003C D000      00471         BRA     _00847_DS_
+               00472         .line   1134; usb.c     Suspend();
+003E EC00 F000 00473         CALL    _Suspend
+0042 00474 _00847_DS_:
+               00475         .line   1136; usb.c     if (UIRbits.SOFIF && UIEbits.SOFIE)
+0042 AC00      00476         BTFSS   _UIRbits, 6
+0044 D000      00477         BRA     _00850_DS_
+0046 AC00      00478         BTFSS   _UIEbits, 6
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0048 D000      00479         BRA     _00850_DS_
+               00480         .line   1138; usb.c     StartOfFrame();
+004A EC00 F000 00481         CALL    _StartOfFrame
+004E 00482 _00850_DS_:
+               00483         .line   1140; usb.c     if (UIRbits.STALLIF && UIEbits.STALLIE)
+004E AA00      00484         BTFSS   _UIRbits, 5
+0050 D000      00485         BRA     _00853_DS_
+0052 AA00      00486         BTFSS   _UIEbits, 5
+0054 D000      00487         BRA     _00853_DS_
+               00488         .line   1142; usb.c     Stall();
+0056 EC00 F000 00489         CALL    _Stall
+005A 00490 _00853_DS_:
+               00491         .line   1145; usb.c     if (UIRbits.UERRIF && UIEbits.UERRIE)
+005A A200      00492         BTFSS   _UIRbits, 1
+005C D000      00493         BRA     _00856_DS_
+005E A200      00494         BTFSS   _UIEbits, 1
+0060 D000      00495         BRA     _00856_DS_
+               00496         .line   1150; usb.c     UIRbits.UERRIF = 0;
+0062 9200      00497         BCF     _UIRbits, 1
+0064 00498 _00856_DS_:
+               00499         .line   1154; usb.c     if (deviceState < DEFAULT)
+0064 0E03      00500         MOVLW   0x03
+0066 0000      00501         BANKSEL _deviceState
+0068 5D00      00502         SUBWF   _deviceState, W, B
+               00503         .line   1155; usb.c     return;
+006A E300      00504         BNC     _00863_DS_
+               00505         .line   1158; usb.c     if(UIRbits.TRNIF && UIEbits.TRNIE)
+006C A600      00506         BTFSS   _UIRbits, 3
+006E D000      00507         BRA     _00863_DS_
+0070 A600      00508         BTFSS   _UIEbits, 3
+0072 D000      00509         BRA     _00863_DS_
+               00510         .line   1160; usb.c     ProcessControlTransfer();
+0074 EC00 F000 00511         CALL    _ProcessControlTransfer
+               00512         .line   1163; usb.c     UIRbits.TRNIF = 0;
+0078 9600      00513         BCF     _UIRbits, 3
+007A 00514 _00863_DS_:
+007A CFE4 F000 00515         MOVFF   PREINC1, r0x00
+007E CFE4 FFD9 00516         MOVFF   PREINC1, FSR2L
+0082 0012      00517         RETURN  
+               00518 
+               00519 ; ; Starting pCode block
+               00520 S_usb__BusReset code
+0000 00521 _BusReset:
+               00522         .line   1081; usb.c     void BusReset()
+0000 CFD9 FFE5 00523         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00524         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 00525         MOVFF   r0x00, POSTDEC1
+               00526         .line   1083; usb.c     UEIR  = 0x00;
+000C 6A00      00527         CLRF    _UEIR
+               00528         .line   1084; usb.c     UIR   = 0x00;
+000E 6A00      00529         CLRF    _UIR
+               00530         .line   1085; usb.c     UEIE  = 0x9f;
+0010 0E9F      00531         MOVLW   0x9f
+0012 6E00      00532         MOVWF   _UEIE
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 11
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00533         .line   1086; usb.c     UIE   = 0x7b;
+0014 0E7B      00534         MOVLW   0x7b
+0016 6E00      00535         MOVWF   _UIE
+               00536         .line   1087; usb.c     UADDR = 0x00;
+0018 6A00      00537         CLRF    _UADDR
+               00538         .line   1090; usb.c     UEP0 = 0x16;
+001A 0E16      00539         MOVLW   0x16
+001C 6E00      00540         MOVWF   _UEP0
+001E 00541 _00819_DS_:
+               00542         .line   1093; usb.c     while (UIRbits.TRNIF == 1)
+001E 6A00      00543         CLRF    r0x00
+0020 B600      00544         BTFSC   _UIRbits, 3
+0022 2A00      00545         INCF    r0x00, F
+0024 5000      00546         MOVF    r0x00, W
+0026 0A01      00547         XORLW   0x01
+0028 E100      00548         BNZ     _00821_DS_
+               00549         .line   1094; usb.c     UIRbits.TRNIF = 0;
+002A 9600      00550         BCF     _UIRbits, 3
+002C D000      00551         BRA     _00819_DS_
+002E 00552 _00821_DS_:
+               00553         .line   1097; usb.c     UCONbits.PKTDIS = 0;
+002E 9800      00554         BCF     _UCONbits, 4
+               00555         .line   1100; usb.c     WaitForSetupStage();
+0030 EC00 F000 00556         CALL    _WaitForSetupStage
+0034 0000      00557         BANKSEL _remoteWakeup
+               00558         .line   1102; usb.c     remoteWakeup = 0;         // Remote wakeup is off by default
+0036 6B00      00559         CLRF    _remoteWakeup, B
+0038 0000      00560         BANKSEL _selfPowered
+               00561         .line   1103; usb.c     selfPowered = 0;          // Self powered is off by default
+003A 6B00      00562         CLRF    _selfPowered, B
+003C 0000      00563         BANKSEL _currentConfiguration
+               00564         .line   1104; usb.c     currentConfiguration = 0; // Clear active configuration
+003E 6B00      00565         CLRF    _currentConfiguration, B
+               00566         .line   1105; usb.c     deviceState = DEFAULT;
+0040 0E03      00567         MOVLW   0x03
+0042 0000      00568         BANKSEL _deviceState
+0044 6F00      00569         MOVWF   _deviceState, B
+0046 CFE4 F000 00570         MOVFF   PREINC1, r0x00
+004A CFE4 FFD9 00571         MOVFF   PREINC1, FSR2L
+004E 0012      00572         RETURN  
+               00573 
+               00574 ; ; Starting pCode block
+               00575 S_usb__Suspend  code
+0000 00576 _Suspend:
+               00577         .line   1051; usb.c     void Suspend(void)
+0000 CFD9 FFE5 00578         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00579         MOVFF   FSR1L, FSR2L
+               00580         .line   1079; usb.c     }
+0008 CFE4 FFD9 00581         MOVFF   PREINC1, FSR2L
+000C 0012      00582         RETURN  
+               00583 
+               00584 ; ; Starting pCode block
+               00585 S_usb__Stall    code
+0000 00586 _Stall:
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 12
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00587         .line   1036; usb.c     void Stall(void)
+0000 CFD9 FFE5 00588         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00589         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 00590         MOVFF   r0x00, POSTDEC1
+               00591         .line   1041; usb.c     if(UEP0bits.EPSTALL == 1)
+000C 6A00      00592         CLRF    r0x00
+000E B000      00593         BTFSC   _UEP0bits, 0
+0010 2A00      00594         INCF    r0x00, F
+0012 5000      00595         MOVF    r0x00, W
+0014 0A01      00596         XORLW   0x01
+0016 E100      00597         BNZ     _00802_DS_
+               00598         .line   1044; usb.c     WaitForSetupStage();
+0018 EC00 F000 00599         CALL    _WaitForSetupStage
+               00600         .line   1045; usb.c     UEP0bits.EPSTALL = 0;
+001C 9000      00601         BCF     _UEP0bits, 0
+001E 00602 _00802_DS_:
+               00603         .line   1047; usb.c     UIRbits.STALLIF = 0;
+001E 9A00      00604         BCF     _UIRbits, 5
+0020 CFE4 F000 00605         MOVFF   PREINC1, r0x00
+0024 CFE4 FFD9 00606         MOVFF   PREINC1, FSR2L
+0028 0012      00607         RETURN  
+               00608 
+               00609 ; ; Starting pCode block
+               00610 S_usb__StartOfFrame     code
+0000 00611 _StartOfFrame:
+               00612         .line   1029; usb.c     void StartOfFrame(void)
+0000 CFD9 FFE5 00613         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00614         MOVFF   FSR1L, FSR2L
+               00615         .line   1032; usb.c     UIRbits.SOFIF = 0;
+0008 9C00      00616         BCF     _UIRbits, 6
+000A CFE4 FFD9 00617         MOVFF   PREINC1, FSR2L
+000E 0012      00618         RETURN  
+               00619 
+               00620 ; ; Starting pCode block
+               00621 S_usb__UnSuspend        code
+0000 00622 _UnSuspend:
+               00623         .line   1016; usb.c     void UnSuspend(void)
+0000 CFD9 FFE5 00624         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00625         MOVFF   FSR1L, FSR2L
+               00626         .line   1022; usb.c     UCONbits.SUSPND = 0;
+0008 9200      00627         BCF     _UCONbits, 1
+               00628         .line   1023; usb.c     UIEbits.ACTVIE = 0;
+000A 9400      00629         BCF     _UIEbits, 2
+               00630         .line   1024; usb.c     UIRbits.ACTVIF = 0;
+000C 9400      00631         BCF     _UIRbits, 2
+000E CFE4 FFD9 00632         MOVFF   PREINC1, FSR2L
+0012 0012      00633         RETURN  
+               00634 
+               00635 ; ; Starting pCode block
+               00636 S_usb__EnableUSBModule  code
+0000 00637 _EnableUSBModule:
+               00638         .line   983; usb.c      void EnableUSBModule(void)
+0000 CFD9 FFE5 00639         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00640         MOVFF   FSR1L, FSR2L
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 13
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00641         .line   987; usb.c      if(UCONbits.USBEN == 0)
+0008 B600      00642         BTFSC   _UCONbits, 3
+000A D000      00643         BRA     _00770_DS_
+               00644         .line   992; usb.c      UCON = 0;
+000C 6A00      00645         CLRF    _UCON
+               00646         .line   993; usb.c      UIE = 0;
+000E 6A00      00647         CLRF    _UIE
+               00648         .line   994; usb.c      UCFGbits.UPUEN=1;
+0010 8800      00649         BSF     _UCFGbits, 4
+               00650         .line   995; usb.c      UCFGbits.FSEN=1;
+0012 8400      00651         BSF     _UCFGbits, 2
+               00652         .line   996; usb.c      UCONbits.USBEN = 1;
+0014 8600      00653         BSF     _UCONbits, 3
+               00654         .line   997; usb.c      deviceState = ATTACHED;
+0016 0E01      00655         MOVLW   0x01
+0018 0000      00656         BANKSEL _deviceState
+001A 6F00      00657         MOVWF   _deviceState, B
+001C 00658 _00770_DS_:
+001C 0000      00659         BANKSEL _deviceState
+               00660         .line   1002; usb.c     if ((deviceState == ATTACHED) && !UCONbits.SE0)
+001E 5100      00661         MOVF    _deviceState, W, B
+0020 0A01      00662         XORLW   0x01
+0022 E100      00663         BNZ     _00774_DS_
+0024 BA00      00664         BTFSC   _UCONbits, 5
+0026 D000      00665         BRA     _00774_DS_
+               00666         .line   1004; usb.c     UIR = 0;
+0028 6A00      00667         CLRF    _UIR
+               00668         .line   1005; usb.c     UIE = 0;
+002A 6A00      00669         CLRF    _UIE
+               00670         .line   1006; usb.c     UIEbits.URSTIE = 1;
+002C 8000      00671         BSF     _UIEbits, 0
+               00672         .line   1007; usb.c     UIEbits.IDLEIE = 1;
+002E 8800      00673         BSF     _UIEbits, 4
+               00674         .line   1008; usb.c     deviceState = POWERED;
+0030 0E02      00675         MOVLW   0x02
+0032 0000      00676         BANKSEL _deviceState
+0034 6F00      00677         MOVWF   _deviceState, B
+0036 00678 _00774_DS_:
+0036 CFE4 FFD9 00679         MOVFF   PREINC1, FSR2L
+003A 0012      00680         RETURN  
+               00681 
+               00682 ; ; Starting pCode block
+               00683 S_usb__ProcessControlTransfer   code
+0000 00684 _ProcessControlTransfer:
+               00685         .line   885; usb.c      void ProcessControlTransfer(void)
+0000 CFD9 FFE5 00686         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00687         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 00688         MOVFF   r0x00, POSTDEC1
+               00689         .line   890; usb.c      if (USTAT == 0)
+000C 5000      00690         MOVF    _USTAT, W
+000E A4D8      00691         BTFSS   STATUS, 2
+0010 D000      00692         BRA     _00705_DS_
+               00693         .line   893; usb.c      byte PID = (ep0Bo.Stat & 0x3C) >> 2; // Pull PID from middle of BD0STAT
+0012 0E3C      00694         MOVLW   0x3c
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 14
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0014 0000      00695         BANKSEL _ep0Bo
+0016 1500      00696         ANDWF   _ep0Bo, W, B
+0018 6E00      00697         MOVWF   r0x00
+001A 4000      00698         RRNCF   r0x00, W
+001C 40E8      00699         RRNCF   WREG, W
+001E 0B3F      00700         ANDLW   0x3f
+0020 6E00      00701         MOVWF   r0x00
+               00702         .line   894; usb.c      if (PID == 0x0D)
+0022 5000      00703         MOVF    r0x00, W
+0024 0A0D      00704         XORLW   0x0d
+0026 E100      00705         BNZ     _00689_DS_
+               00706         .line   896; usb.c      SetupStage();
+0028 EC00 F000 00707         CALL    _SetupStage
+002C D000      00708         BRA     _00707_DS_
+002E 00709 _00689_DS_:
+002E 0000      00710         BANKSEL _ctrlTransferStage
+               00711         .line   897; usb.c      else if (ctrlTransferStage == DATA_OUT_STAGE)
+0030 5100      00712         MOVF    _ctrlTransferStage, W, B
+0032 0A01      00713         XORLW   0x01
+0034 E100      00714         BNZ     _00686_DS_
+               00715         .line   901; usb.c      OutDataStage();
+0036 EC00 F000 00716         CALL    _OutDataStage
+003A 0000      00717         BANKSEL _HIDPostProcess
+               00718         .line   905; usb.c      if (HIDPostProcess)
+003C 5100      00719         MOVF    _HIDPostProcess, W, B
+003E E000      00720         BZ      _00681_DS_
+               00721         .line   908; usb.c      byte reportID = SetupPacket.wValue0;
+0040 C000 F000 00722         MOVFF   (_SetupPacket + 2), r0x00
+0044 0000      00723         BANKSEL (_SetupPacket + 3)
+               00724         .line   912; usb.c      if (SetupPacket.wValue1 == 0x02)
+0046 5100      00725         MOVF    (_SetupPacket + 3), W, B
+0048 0A02      00726         XORLW   0x02
+004A E100      00727         BNZ     _00678_DS_
+               00728         .line   915; usb.c      SetOutputReport(reportID);
+004C 5000      00729         MOVF    r0x00, W
+004E 6EE5      00730         MOVWF   POSTDEC1
+0050 EC00 F000 00731         CALL    _SetOutputReport
+0054 52E6      00732         MOVF    POSTINC1, F
+0056 D000      00733         BRA     _00681_DS_
+0058 00734 _00678_DS_:
+0058 0000      00735         BANKSEL (_SetupPacket + 3)
+               00736         .line   917; usb.c      else if (SetupPacket.wValue1 == 0x03)
+005A 5100      00737         MOVF    (_SetupPacket + 3), W, B
+005C 0A03      00738         XORLW   0x03
+005E E100      00739         BNZ     _00681_DS_
+               00740         .line   920; usb.c      SetFeatureReport(reportID);
+0060 5000      00741         MOVF    r0x00, W
+0062 6EE5      00742         MOVWF   POSTDEC1
+0064 EC00 F000 00743         CALL    _SetFeatureReport
+0068 52E6      00744         MOVF    POSTINC1, F
+006A 00745 _00681_DS_:
+006A 0000      00746         BANKSEL _ep0Bo
+               00747         .line   929; usb.c      if(ep0Bo.Stat & DTS)
+006C AD00      00748         BTFSS   _ep0Bo, 6, B
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 15
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+006E D000      00749         BRA     _00683_DS_
+               00750         .line   930; usb.c      ep0Bo.Stat = UOWN | DTSEN;
+0070 0E88      00751         MOVLW   0x88
+0072 0000      00752         BANKSEL _ep0Bo
+0074 6F00      00753         MOVWF   _ep0Bo, B
+0076 D000      00754         BRA     _00707_DS_
+0078 00755 _00683_DS_:
+               00756         .line   932; usb.c      ep0Bo.Stat = UOWN | DTS | DTSEN;
+0078 0EC8      00757         MOVLW   0xc8
+007A 0000      00758         BANKSEL _ep0Bo
+007C 6F00      00759         MOVWF   _ep0Bo, B
+007E D000      00760         BRA     _00707_DS_
+0080 00761 _00686_DS_:
+               00762         .line   937; usb.c      WaitForSetupStage();
+0080 EC00 F000 00763         CALL    _WaitForSetupStage
+0084 D000      00764         BRA     _00707_DS_
+0086 00765 _00705_DS_:
+               00766         .line   940; usb.c      else if(USTAT == 0x04)
+0086 5000      00767         MOVF    _USTAT, W
+0088 0A04      00768         XORLW   0x04
+008A E100      00769         BNZ     _00707_DS_
+               00770         .line   943; usb.c      if ((UADDR == 0) && (deviceState == ADDRESS))
+008C 5000      00771         MOVF    _UADDR, W
+008E E100      00772         BNZ     _00694_DS_
+0090 0000      00773         BANKSEL _deviceState
+0092 5100      00774         MOVF    _deviceState, W, B
+0094 0A04      00775         XORLW   0x04
+0096 E100      00776         BNZ     _00694_DS_
+               00777         .line   947; usb.c      UADDR = SetupPacket.wValue0;
+0098 C000 F000 00778         MOVFF   (_SetupPacket + 2), _UADDR
+               00779         .line   951; usb.c      if(UADDR == 0)
+009C 5000      00780         MOVF    _UADDR, W
+009E E100      00781         BNZ     _00694_DS_
+               00782         .line   954; usb.c      deviceState = DEFAULT;
+00A0 0E03      00783         MOVLW   0x03
+00A2 0000      00784         BANKSEL _deviceState
+00A4 6F00      00785         MOVWF   _deviceState, B
+00A6 00786 _00694_DS_:
+00A6 0000      00787         BANKSEL _ctrlTransferStage
+               00788         .line   957; usb.c      if (ctrlTransferStage == DATA_IN_STAGE)
+00A8 5100      00789         MOVF    _ctrlTransferStage, W, B
+00AA 0A02      00790         XORLW   0x02
+00AC E100      00791         BNZ     _00700_DS_
+               00792         .line   960; usb.c      InDataStage();
+00AE EC00 F000 00793         CALL    _InDataStage
+00B2 0000      00794         BANKSEL _ep0Bi
+               00795         .line   963; usb.c      if(ep0Bi.Stat & DTS)
+00B4 AD00      00796         BTFSS   _ep0Bi, 6, B
+00B6 D000      00797         BRA     _00697_DS_
+               00798         .line   964; usb.c      ep0Bi.Stat = UOWN | DTSEN;
+00B8 0E88      00799         MOVLW   0x88
+00BA 0000      00800         BANKSEL _ep0Bi
+00BC 6F00      00801         MOVWF   _ep0Bi, B
+00BE D000      00802         BRA     _00707_DS_
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 16
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+00C0 00803 _00697_DS_:
+               00804         .line   966; usb.c      ep0Bi.Stat = UOWN | DTS | DTSEN;
+00C0 0EC8      00805         MOVLW   0xc8
+00C2 0000      00806         BANKSEL _ep0Bi
+00C4 6F00      00807         MOVWF   _ep0Bi, B
+00C6 D000      00808         BRA     _00707_DS_
+00C8 00809 _00700_DS_:
+               00810         .line   971; usb.c      WaitForSetupStage();
+00C8 EC00 F000 00811         CALL    _WaitForSetupStage
+00CC 00812 _00707_DS_:
+00CC CFE4 F000 00813         MOVFF   PREINC1, r0x00
+00D0 CFE4 FFD9 00814         MOVFF   PREINC1, FSR2L
+00D4 0012      00815         RETURN  
+               00816 
+               00817 ; ; Starting pCode block
+               00818 S_usb__WaitForSetupStage        code
+0000 00819 _WaitForSetupStage:
+               00820         .line   872; usb.c      void WaitForSetupStage(void)
+0000 CFD9 FFE5 00821         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00822         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 00823         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 00824         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 00825         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 00826         MOVFF   r0x03, POSTDEC1
+0018 0000      00827         BANKSEL _ctrlTransferStage
+               00828         .line   874; usb.c      ctrlTransferStage = SETUP_STAGE;
+001A 6B00      00829         CLRF    _ctrlTransferStage, B
+               00830         .line   875; usb.c      ep0Bo.Cnt = E0SZ;
+001C 0E20      00831         MOVLW   0x20
+001E 0000      00832         BANKSEL (_ep0Bo + 1)
+0020 6F00      00833         MOVWF   (_ep0Bo + 1), B
+               00834         .line   876; usb.c      ep0Bo.ADDR = PTR16(&SetupPacket);
+0022 0E00      00835         MOVLW   LOW(_SetupPacket)
+0024 6E00      00836         MOVWF   r0x00
+0026 0E00      00837         MOVLW   HIGH(_SetupPacket)
+0028 6E00      00838         MOVWF   r0x01
+002A 6A00      00839         CLRF    r0x02
+002C 6A00      00840         CLRF    r0x03
+002E 6A00      00841         CLRF    r0x02
+0030 6A00      00842         CLRF    r0x03
+0032 5000      00843         MOVF    r0x00, W
+0034 0000      00844         BANKSEL (_ep0Bo + 2)
+0036 6F00      00845         MOVWF   (_ep0Bo + 2), B
+0038 5000      00846         MOVF    r0x01, W
+003A 0000      00847         BANKSEL (_ep0Bo + 3)
+003C 6F00      00848         MOVWF   (_ep0Bo + 3), B
+               00849         .line   877; usb.c      ep0Bo.Stat = UOWN | DTSEN; // Give to SIE, enable data toggle checks
+003E 0E88      00850         MOVLW   0x88
+0040 0000      00851         BANKSEL _ep0Bo
+0042 6F00      00852         MOVWF   _ep0Bo, B
+0044 0000      00853         BANKSEL _ep0Bi
+               00854         .line   878; usb.c      ep0Bi.Stat = 0x00;         // Give control to CPU
+0046 6B00      00855         CLRF    _ep0Bi, B
+0048 CFE4 F000 00856         MOVFF   PREINC1, r0x03
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 17
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+004C CFE4 F000 00857         MOVFF   PREINC1, r0x02
+0050 CFE4 F000 00858         MOVFF   PREINC1, r0x01
+0054 CFE4 F000 00859         MOVFF   PREINC1, r0x00
+0058 CFE4 FFD9 00860         MOVFF   PREINC1, FSR2L
+005C 0012      00861         RETURN  
+               00862 
+               00863 ; ; Starting pCode block
+               00864 S_usb__SetupStage       code
+0000 00865 _SetupStage:
+               00866         .line   804; usb.c      void SetupStage(void)
+0000 CFD9 FFE5 00867         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 00868         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 00869         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 00870         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 00871         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 00872         MOVFF   r0x03, POSTDEC1
+0018 0000      00873         BANKSEL _ep0Bi
+               00874         .line   808; usb.c      ep0Bi.Stat &= ~UOWN;
+001A 5100      00875         MOVF    _ep0Bi, W, B
+001C 6E00      00876         MOVWF   r0x00
+001E 9E00      00877         BCF     r0x00, 7
+0020 5000      00878         MOVF    r0x00, W
+0022 0000      00879         BANKSEL _ep0Bi
+0024 6F00      00880         MOVWF   _ep0Bi, B
+0026 0000      00881         BANKSEL _ep0Bo
+               00882         .line   809; usb.c      ep0Bo.Stat &= ~UOWN;
+0028 5100      00883         MOVF    _ep0Bo, W, B
+002A 6E00      00884         MOVWF   r0x00
+002C 9E00      00885         BCF     r0x00, 7
+002E 5000      00886         MOVF    r0x00, W
+0030 0000      00887         BANKSEL _ep0Bo
+0032 6F00      00888         MOVWF   _ep0Bo, B
+0034 0000      00889         BANKSEL _ctrlTransferStage
+               00890         .line   812; usb.c      ctrlTransferStage = SETUP_STAGE;
+0036 6B00      00891         CLRF    _ctrlTransferStage, B
+0038 0000      00892         BANKSEL _requestHandled
+               00893         .line   813; usb.c      requestHandled = 0; // Default is that request hasn't been handled
+003A 6B00      00894         CLRF    _requestHandled, B
+003C 0000      00895         BANKSEL _HIDPostProcess
+               00896         .line   814; usb.c      HIDPostProcess = 0; // Assume standard request until know otherwise
+003E 6B00      00897         CLRF    _HIDPostProcess, B
+0040 0000      00898         BANKSEL _wCount
+               00899         .line   815; usb.c      wCount = 0;         // No bytes transferred
+0042 6B00      00900         CLRF    _wCount, B
+0044 0000      00901         BANKSEL (_wCount + 1)
+0046 6B00      00902         CLRF    (_wCount + 1), B
+               00903         .line   818; usb.c      ProcessStandardRequest();
+0048 EC00 F000 00904         CALL    _ProcessStandardRequest
+               00905         .line   821; usb.c      ProcessHIDRequest();
+004C EC00 F000 00906         CALL    _ProcessHIDRequest
+0050 0000      00907         BANKSEL _requestHandled
+               00908         .line   825; usb.c      if (!requestHandled)
+0052 5100      00909         MOVF    _requestHandled, W, B
+0054 E100      00910         BNZ     _00648_DS_
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 18
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               00911         .line   828; usb.c      ep0Bo.Cnt = E0SZ;
+0056 0E20      00912         MOVLW   0x20
+0058 0000      00913         BANKSEL (_ep0Bo + 1)
+005A 6F00      00914         MOVWF   (_ep0Bo + 1), B
+               00915         .line   829; usb.c      ep0Bo.ADDR = PTR16(&SetupPacket);
+005C 0E00      00916         MOVLW   LOW(_SetupPacket)
+005E 6E00      00917         MOVWF   r0x00
+0060 0E00      00918         MOVLW   HIGH(_SetupPacket)
+0062 6E00      00919         MOVWF   r0x01
+0064 6A00      00920         CLRF    r0x02
+0066 6A00      00921         CLRF    r0x03
+0068 6A00      00922         CLRF    r0x02
+006A 6A00      00923         CLRF    r0x03
+006C 5000      00924         MOVF    r0x00, W
+006E 0000      00925         BANKSEL (_ep0Bo + 2)
+0070 6F00      00926         MOVWF   (_ep0Bo + 2), B
+0072 5000      00927         MOVF    r0x01, W
+0074 0000      00928         BANKSEL (_ep0Bo + 3)
+0076 6F00      00929         MOVWF   (_ep0Bo + 3), B
+               00930         .line   830; usb.c      ep0Bo.Stat = UOWN | BSTALL;
+0078 0E84      00931         MOVLW   0x84
+007A 0000      00932         BANKSEL _ep0Bo
+007C 6F00      00933         MOVWF   _ep0Bo, B
+               00934         .line   831; usb.c      ep0Bi.Stat = UOWN | BSTALL;
+007E 0E84      00935         MOVLW   0x84
+0080 0000      00936         BANKSEL _ep0Bi
+0082 6F00      00937         MOVWF   _ep0Bi, B
+0084 D000      00938         BRA     _00649_DS_
+0086 00939 _00648_DS_:
+0086 0000      00940         BANKSEL _SetupPacket
+               00941         .line   833; usb.c      else if (SetupPacket.bmRequestType & 0x80)
+0088 AF00      00942         BTFSS   _SetupPacket, 7, B
+008A D000      00943         BRA     _00645_DS_
+008C 0000      00944         BANKSEL (_wCount + 1)
+               00945         .line   836; usb.c      if(SetupPacket.wLength < wCount)
+008E 5100      00946         MOVF    (_wCount + 1), W, B
+0090 0000      00947         BANKSEL (_SetupPacket + 7)
+0092 5D00      00948         SUBWF   (_SetupPacket + 7), W, B
+0094 E100      00949         BNZ     _00665_DS_
+0096 0000      00950         BANKSEL _wCount
+0098 5100      00951         MOVF    _wCount, W, B
+009A 0000      00952         BANKSEL (_SetupPacket + 6)
+009C 5D00      00953         SUBWF   (_SetupPacket + 6), W, B
+009E 00954 _00665_DS_:
+009E E200      00955         BC      _00643_DS_
+               00956         .line   837; usb.c      wCount = SetupPacket.wLength;
+00A0 C000 F000 00957         MOVFF   (_SetupPacket + 6), _wCount
+00A4 C000 F000 00958         MOVFF   (_SetupPacket + 7), (_wCount + 1)
+00A8 00959 _00643_DS_:
+               00960         .line   838; usb.c      InDataStage();
+00A8 EC00 F000 00961         CALL    _InDataStage
+               00962         .line   839; usb.c      ctrlTransferStage = DATA_IN_STAGE;
+00AC 0E02      00963         MOVLW   0x02
+00AE 0000      00964         BANKSEL _ctrlTransferStage
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 19
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+00B0 6F00      00965         MOVWF   _ctrlTransferStage, B
+               00966         .line   841; usb.c      ep0Bo.Cnt = E0SZ;
+00B2 0E20      00967         MOVLW   0x20
+00B4 0000      00968         BANKSEL (_ep0Bo + 1)
+00B6 6F00      00969         MOVWF   (_ep0Bo + 1), B
+               00970         .line   842; usb.c      ep0Bo.ADDR = PTR16(&SetupPacket);
+00B8 0E00      00971         MOVLW   LOW(_SetupPacket)
+00BA 6E00      00972         MOVWF   r0x00
+00BC 0E00      00973         MOVLW   HIGH(_SetupPacket)
+00BE 6E00      00974         MOVWF   r0x01
+00C0 6A00      00975         CLRF    r0x02
+00C2 6A00      00976         CLRF    r0x03
+00C4 6A00      00977         CLRF    r0x02
+00C6 6A00      00978         CLRF    r0x03
+00C8 5000      00979         MOVF    r0x00, W
+00CA 0000      00980         BANKSEL (_ep0Bo + 2)
+00CC 6F00      00981         MOVWF   (_ep0Bo + 2), B
+00CE 5000      00982         MOVF    r0x01, W
+00D0 0000      00983         BANKSEL (_ep0Bo + 3)
+00D2 6F00      00984         MOVWF   (_ep0Bo + 3), B
+               00985         .line   843; usb.c      ep0Bo.Stat = UOWN;
+00D4 0E80      00986         MOVLW   0x80
+00D6 0000      00987         BANKSEL _ep0Bo
+00D8 6F00      00988         MOVWF   _ep0Bo, B
+               00989         .line   846; usb.c      ep0Bi.ADDR = PTR16(&controlTransferBuffer);
+00DA 0E00      00990         MOVLW   LOW(_controlTransferBuffer)
+00DC 6E00      00991         MOVWF   r0x00
+00DE 0E00      00992         MOVLW   HIGH(_controlTransferBuffer)
+00E0 6E00      00993         MOVWF   r0x01
+00E2 6A00      00994         CLRF    r0x02
+00E4 6A00      00995         CLRF    r0x03
+00E6 6A00      00996         CLRF    r0x02
+00E8 6A00      00997         CLRF    r0x03
+00EA 5000      00998         MOVF    r0x00, W
+00EC 0000      00999         BANKSEL (_ep0Bi + 2)
+00EE 6F00      01000         MOVWF   (_ep0Bi + 2), B
+00F0 5000      01001         MOVF    r0x01, W
+00F2 0000      01002         BANKSEL (_ep0Bi + 3)
+00F4 6F00      01003         MOVWF   (_ep0Bi + 3), B
+               01004         .line   848; usb.c      ep0Bi.Stat = UOWN | DTS | DTSEN; 
+00F6 0EC8      01005         MOVLW   0xc8
+00F8 0000      01006         BANKSEL _ep0Bi
+00FA 6F00      01007         MOVWF   _ep0Bi, B
+00FC D000      01008         BRA     _00649_DS_
+00FE 01009 _00645_DS_:
+               01010         .line   853; usb.c      ctrlTransferStage = DATA_OUT_STAGE;
+00FE 0E01      01011         MOVLW   0x01
+0100 0000      01012         BANKSEL _ctrlTransferStage
+0102 6F00      01013         MOVWF   _ctrlTransferStage, B
+0104 0000      01014         BANKSEL (_ep0Bi + 1)
+               01015         .line   856; usb.c      ep0Bi.Cnt = 0;
+0106 6B00      01016         CLRF    (_ep0Bi + 1), B
+               01017         .line   857; usb.c      ep0Bi.Stat = UOWN | DTS | DTSEN;
+0108 0EC8      01018         MOVLW   0xc8
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 20
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+010A 0000      01019         BANKSEL _ep0Bi
+010C 6F00      01020         MOVWF   _ep0Bi, B
+               01021         .line   860; usb.c      ep0Bo.Cnt = E0SZ;
+010E 0E20      01022         MOVLW   0x20
+0110 0000      01023         BANKSEL (_ep0Bo + 1)
+0112 6F00      01024         MOVWF   (_ep0Bo + 1), B
+               01025         .line   861; usb.c      ep0Bo.ADDR = PTR16(&controlTransferBuffer);
+0114 0E00      01026         MOVLW   LOW(_controlTransferBuffer)
+0116 6E00      01027         MOVWF   r0x00
+0118 0E00      01028         MOVLW   HIGH(_controlTransferBuffer)
+011A 6E00      01029         MOVWF   r0x01
+011C 6A00      01030         CLRF    r0x02
+011E 6A00      01031         CLRF    r0x03
+0120 6A00      01032         CLRF    r0x02
+0122 6A00      01033         CLRF    r0x03
+0124 5000      01034         MOVF    r0x00, W
+0126 0000      01035         BANKSEL (_ep0Bo + 2)
+0128 6F00      01036         MOVWF   (_ep0Bo + 2), B
+012A 5000      01037         MOVF    r0x01, W
+012C 0000      01038         BANKSEL (_ep0Bo + 3)
+012E 6F00      01039         MOVWF   (_ep0Bo + 3), B
+               01040         .line   863; usb.c      ep0Bo.Stat = UOWN | DTS | DTSEN;
+0130 0EC8      01041         MOVLW   0xc8
+0132 0000      01042         BANKSEL _ep0Bo
+0134 6F00      01043         MOVWF   _ep0Bo, B
+0136 01044 _00649_DS_:
+               01045         .line   867; usb.c      UCONbits.PKTDIS = 0;
+0136 9800      01046         BCF     _UCONbits, 4
+0138 CFE4 F000 01047         MOVFF   PREINC1, r0x03
+013C CFE4 F000 01048         MOVFF   PREINC1, r0x02
+0140 CFE4 F000 01049         MOVFF   PREINC1, r0x01
+0144 CFE4 F000 01050         MOVFF   PREINC1, r0x00
+0148 CFE4 FFD9 01051         MOVFF   PREINC1, FSR2L
+014C 0012      01052         RETURN  
+               01053 
+               01054 ; ; Starting pCode block
+               01055 S_usb__OutDataStage     code
+0000 01056 _OutDataStage:
+               01057         .line   771; usb.c      void OutDataStage(void)
+0000 CFD9 FFE5 01058         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 01059         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 01060         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 01061         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 01062         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 01063         MOVFF   r0x03, POSTDEC1
+0018 C000 FFE5 01064         MOVFF   r0x04, POSTDEC1
+001C C000 FFE5 01065         MOVFF   r0x05, POSTDEC1
+0020 C000 FFE5 01066         MOVFF   r0x06, POSTDEC1
+0024 C000 FFE5 01067         MOVFF   r0x07, POSTDEC1
+0028 C000 FFE5 01068         MOVFF   r0x08, POSTDEC1
+002C C000 FFE5 01069         MOVFF   r0x09, POSTDEC1
+               01070         .line   775; usb.c      bufferSize = ((0x03 & ep0Bo.Stat) << 8) | ep0Bo.Cnt;
+0030 0E03      01071         MOVLW   0x03
+0032 0000      01072         BANKSEL _ep0Bo
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 21
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0034 1500      01073         ANDWF   _ep0Bo, W, B
+0036 6E00      01074         MOVWF   r0x00
+0038 6A00      01075         CLRF    r0x01
+003A 5000      01076         MOVF    r0x00, W
+003C 6E00      01077         MOVWF   r0x03
+003E 6A00      01078         CLRF    r0x02
+0040 C000 F000 01079         MOVFF   (_ep0Bo + 1), r0x00
+0044 6A00      01080         CLRF    r0x01
+0046 5000      01081         MOVF    r0x02, W
+0048 1200      01082         IORWF   r0x00, F
+004A 5000      01083         MOVF    r0x03, W
+004C 1200      01084         IORWF   r0x01, F
+               01085         .line   782; usb.c      wCount = wCount + bufferSize;
+004E 5000      01086         MOVF    r0x00, W
+0050 0000      01087         BANKSEL _wCount
+0052 2700      01088         ADDWF   _wCount, F, B
+0054 5000      01089         MOVF    r0x01, W
+0056 0000      01090         BANKSEL (_wCount + 1)
+0058 2300      01091         ADDWFC  (_wCount + 1), F, B
+               01092         .line   784; usb.c      outPtr = (byte*)&controlTransferBuffer;
+005A 0E00      01093         MOVLW   HIGH(_controlTransferBuffer)
+005C 0000      01094         BANKSEL (_outPtr + 1)
+005E 6F00      01095         MOVWF   (_outPtr + 1), B
+0060 0E00      01096         MOVLW   LOW(_controlTransferBuffer)
+0062 0000      01097         BANKSEL _outPtr
+0064 6F00      01098         MOVWF   _outPtr, B
+0066 0E80      01099         MOVLW   0x80
+0068 0000      01100         BANKSEL (_outPtr + 2)
+006A 6F00      01101         MOVWF   (_outPtr + 2), B
+               01102         .line   788; usb.c      for (i=0;i<bufferSize;i++)
+006C 6A00      01103         CLRF    r0x02
+006E 6A00      01104         CLRF    r0x03
+0070 01105 _00622_DS_:
+0070 5000      01106         MOVF    r0x01, W
+0072 5C00      01107         SUBWF   r0x03, W
+0074 E100      01108         BNZ     _00635_DS_
+0076 5000      01109         MOVF    r0x00, W
+0078 5C00      01110         SUBWF   r0x02, W
+007A 01111 _00635_DS_:
+007A E200      01112         BC      _00624_DS_
+               01113         .line   793; usb.c      *inPtr++ = *outPtr++;
+007C C000 F000 01114         MOVFF   _inPtr, r0x04
+0080 C000 F000 01115         MOVFF   (_inPtr + 1), r0x05
+0084 C000 F000 01116         MOVFF   (_inPtr + 2), r0x06
+0088 C000 F000 01117         MOVFF   _outPtr, r0x07
+008C C000 F000 01118         MOVFF   (_outPtr + 1), r0x08
+0090 C000 F000 01119         MOVFF   (_outPtr + 2), r0x09
+0094 C000 FFE9 01120         MOVFF   r0x07, FSR0L
+0098 C000 FFF3 01121         MOVFF   r0x08, PRODL
+009C 5000      01122         MOVF    r0x09, W
+009E EC00 F000 01123         CALL    __gptrget1
+00A2 6E00      01124         MOVWF   r0x07
+00A4 0000      01125         BANKSEL _outPtr
+00A6 2B00      01126         INCF    _outPtr, F, B
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 22
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+00A8 E300      01127         BNC     _00636_DS_
+00AA 0000      01128         BANKSEL (_outPtr + 1)
+00AC 3F00      01129         INCFSZ  (_outPtr + 1), F, B
+00AE D000      01130         BRA     _10836_DS_
+00B0 0000      01131         BANKSEL (_outPtr + 2)
+00B2 2B00      01132         INCF    (_outPtr + 2), F, B
+00B4 01133 _10836_DS_:
+00B4 01134 _00636_DS_:
+00B4 C000 FFE5 01135         MOVFF   r0x07, POSTDEC1
+00B8 C000 FFE9 01136         MOVFF   r0x04, FSR0L
+00BC C000 FFF3 01137         MOVFF   r0x05, PRODL
+00C0 5000      01138         MOVF    r0x06, W
+00C2 EC00 F000 01139         CALL    __gptrput1
+00C6 0000      01140         BANKSEL _inPtr
+00C8 2B00      01141         INCF    _inPtr, F, B
+00CA E300      01142         BNC     _00637_DS_
+00CC 0000      01143         BANKSEL (_inPtr + 1)
+00CE 3F00      01144         INCFSZ  (_inPtr + 1), F, B
+00D0 D000      01145         BRA     _20837_DS_
+00D2 0000      01146         BANKSEL (_inPtr + 2)
+00D4 2B00      01147         INCF    (_inPtr + 2), F, B
+00D6 01148 _20837_DS_:
+00D6 01149 _00637_DS_:
+               01150         .line   788; usb.c      for (i=0;i<bufferSize;i++)
+00D6 4A00      01151         INFSNZ  r0x02, F
+00D8 2A00      01152         INCF    r0x03, F
+00DA D000      01153         BRA     _00622_DS_
+00DC 01154 _00624_DS_:
+00DC CFE4 F000 01155         MOVFF   PREINC1, r0x09
+00E0 CFE4 F000 01156         MOVFF   PREINC1, r0x08
+00E4 CFE4 F000 01157         MOVFF   PREINC1, r0x07
+00E8 CFE4 F000 01158         MOVFF   PREINC1, r0x06
+00EC CFE4 F000 01159         MOVFF   PREINC1, r0x05
+00F0 CFE4 F000 01160         MOVFF   PREINC1, r0x04
+00F4 CFE4 F000 01161         MOVFF   PREINC1, r0x03
+00F8 CFE4 F000 01162         MOVFF   PREINC1, r0x02
+00FC CFE4 F000 01163         MOVFF   PREINC1, r0x01
+0100 CFE4 F000 01164         MOVFF   PREINC1, r0x00
+0104 CFE4 FFD9 01165         MOVFF   PREINC1, FSR2L
+0108 0012      01166         RETURN  
+               01167 
+               01168 ; ; Starting pCode block
+               01169 S_usb__InDataStage      code
+0000 01170 _InDataStage:
+               01171         .line   731; usb.c      void InDataStage(void)
+0000 CFD9 FFE5 01172         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 01173         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 01174         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 01175         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 01176         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 01177         MOVFF   r0x03, POSTDEC1
+0018 C000 FFE5 01178         MOVFF   r0x04, POSTDEC1
+001C C000 FFE5 01179         MOVFF   r0x05, POSTDEC1
+0020 C000 FFE5 01180         MOVFF   r0x06, POSTDEC1
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 23
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0024 C000 FFE5 01181         MOVFF   r0x07, POSTDEC1
+0028 C000 FFE5 01182         MOVFF   r0x08, POSTDEC1
+               01183         .line   739; usb.c      if(wCount < E0SZ)
+002C 0E00      01184         MOVLW   0x00
+002E 0000      01185         BANKSEL (_wCount + 1)
+0030 5D00      01186         SUBWF   (_wCount + 1), W, B
+0032 E100      01187         BNZ     _00607_DS_
+0034 0E20      01188         MOVLW   0x20
+0036 0000      01189         BANKSEL _wCount
+0038 5D00      01190         SUBWF   _wCount, W, B
+003A 01191 _00607_DS_:
+003A E200      01192         BC      _00589_DS_
+               01193         .line   740; usb.c      bufferSize = wCount;
+003C C000 F000 01194         MOVFF   _wCount, r0x00
+0040 C000 F000 01195         MOVFF   (_wCount + 1), r0x01
+0044 D000      01196         BRA     _00590_DS_
+0046 01197 _00589_DS_:
+               01198         .line   742; usb.c      bufferSize = E0SZ;
+0046 0E20      01199         MOVLW   0x20
+0048 6E00      01200         MOVWF   r0x00
+004A 6A00      01201         CLRF    r0x01
+004C 01202 _00590_DS_:
+004C 0000      01203         BANKSEL _ep0Bi
+               01204         .line   749; usb.c      ep0Bi.Stat &= ~(BC8 | BC9); // Clear BC8 and BC9
+004E 5100      01205         MOVF    _ep0Bi, W, B
+0050 6E00      01206         MOVWF   r0x02
+0052 0EFC      01207         MOVLW   0xfc
+0054 1600      01208         ANDWF   r0x02, F
+0056 5000      01209         MOVF    r0x02, W
+0058 0000      01210         BANKSEL _ep0Bi
+005A 6F00      01211         MOVWF   _ep0Bi, B
+               01212         .line   750; usb.c      ep0Bi.Stat |= (byte)((bufferSize & 0x0300) >> 8);
+005C 6A00      01213         CLRF    r0x02
+005E 0E03      01214         MOVLW   0x03
+0060 1400      01215         ANDWF   r0x01, W
+0062 6E00      01216         MOVWF   r0x03
+0064 5000      01217         MOVF    r0x03, W
+0066 6E00      01218         MOVWF   r0x02
+0068 6A00      01219         CLRF    r0x03
+006A 0000      01220         BANKSEL _ep0Bi
+006C 5100      01221         MOVF    _ep0Bi, W, B
+006E 1200      01222         IORWF   r0x02, F
+0070 5000      01223         MOVF    r0x02, W
+0072 0000      01224         BANKSEL _ep0Bi
+0074 6F00      01225         MOVWF   _ep0Bi, B
+               01226         .line   751; usb.c      ep0Bi.Cnt = (byte)(bufferSize & 0xFF);
+0076 5000      01227         MOVF    r0x00, W
+0078 6E00      01228         MOVWF   r0x02
+007A 6A00      01229         CLRF    r0x03
+007C 5000      01230         MOVF    r0x02, W
+007E 0000      01231         BANKSEL (_ep0Bi + 1)
+0080 6F00      01232         MOVWF   (_ep0Bi + 1), B
+               01233         .line   752; usb.c      ep0Bi.ADDR = PTR16(&controlTransferBuffer);
+0082 0E00      01234         MOVLW   LOW(_controlTransferBuffer)
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 24
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0084 6E00      01235         MOVWF   r0x02
+0086 0E00      01236         MOVLW   HIGH(_controlTransferBuffer)
+0088 6E00      01237         MOVWF   r0x03
+008A 6A00      01238         CLRF    r0x04
+008C 6A00      01239         CLRF    r0x05
+008E 6A00      01240         CLRF    r0x04
+0090 6A00      01241         CLRF    r0x05
+0092 5000      01242         MOVF    r0x02, W
+0094 0000      01243         BANKSEL (_ep0Bi + 2)
+0096 6F00      01244         MOVWF   (_ep0Bi + 2), B
+0098 5000      01245         MOVF    r0x03, W
+009A 0000      01246         BANKSEL (_ep0Bi + 3)
+009C 6F00      01247         MOVWF   (_ep0Bi + 3), B
+               01248         .line   757; usb.c      wCount = wCount - bufferSize;
+009E 5000      01249         MOVF    r0x00, W
+00A0 0000      01250         BANKSEL _wCount
+00A2 5F00      01251         SUBWF   _wCount, F, B
+00A4 5000      01252         MOVF    r0x01, W
+00A6 0000      01253         BANKSEL (_wCount + 1)
+00A8 5B00      01254         SUBWFB  (_wCount + 1), F, B
+               01255         .line   760; usb.c      inPtr = (byte *)&controlTransferBuffer;
+00AA 0E00      01256         MOVLW   HIGH(_controlTransferBuffer)
+00AC 0000      01257         BANKSEL (_inPtr + 1)
+00AE 6F00      01258         MOVWF   (_inPtr + 1), B
+00B0 0E00      01259         MOVLW   LOW(_controlTransferBuffer)
+00B2 0000      01260         BANKSEL _inPtr
+00B4 6F00      01261         MOVWF   _inPtr, B
+00B6 0E80      01262         MOVLW   0x80
+00B8 0000      01263         BANKSEL (_inPtr + 2)
+00BA 6F00      01264         MOVWF   (_inPtr + 2), B
+               01265         .line   765; usb.c      for (i=0;i<bufferSize;i++)
+00BC 6A00      01266         CLRF    r0x02
+00BE 01267 _00593_DS_:
+00BE C000 F000 01268         MOVFF   r0x02, r0x03
+00C2 6A00      01269         CLRF    r0x04
+00C4 5000      01270         MOVF    r0x01, W
+00C6 5C00      01271         SUBWF   r0x04, W
+00C8 E100      01272         BNZ     _00613_DS_
+00CA 5000      01273         MOVF    r0x00, W
+00CC 5C00      01274         SUBWF   r0x03, W
+00CE 01275 _00613_DS_:
+00CE E200      01276         BC      _00595_DS_
+               01277         .line   766; usb.c      *inPtr++ = *outPtr++;
+00D0 C000 F000 01278         MOVFF   _inPtr, r0x03
+00D4 C000 F000 01279         MOVFF   (_inPtr + 1), r0x04
+00D8 C000 F000 01280         MOVFF   (_inPtr + 2), r0x05
+00DC C000 F000 01281         MOVFF   _outPtr, r0x06
+00E0 C000 F000 01282         MOVFF   (_outPtr + 1), r0x07
+00E4 C000 F000 01283         MOVFF   (_outPtr + 2), r0x08
+00E8 C000 FFE9 01284         MOVFF   r0x06, FSR0L
+00EC C000 FFF3 01285         MOVFF   r0x07, PRODL
+00F0 5000      01286         MOVF    r0x08, W
+00F2 EC00 F000 01287         CALL    __gptrget1
+00F6 6E00      01288         MOVWF   r0x06
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 25
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+00F8 0000      01289         BANKSEL _outPtr
+00FA 2B00      01290         INCF    _outPtr, F, B
+00FC E300      01291         BNC     _00614_DS_
+00FE 0000      01292         BANKSEL (_outPtr + 1)
+0100 3F00      01293         INCFSZ  (_outPtr + 1), F, B
+0102 D000      01294         BRA     _30838_DS_
+0104 0000      01295         BANKSEL (_outPtr + 2)
+0106 2B00      01296         INCF    (_outPtr + 2), F, B
+0108 01297 _30838_DS_:
+0108 01298 _00614_DS_:
+0108 C000 FFE5 01299         MOVFF   r0x06, POSTDEC1
+010C C000 FFE9 01300         MOVFF   r0x03, FSR0L
+0110 C000 FFF3 01301         MOVFF   r0x04, PRODL
+0114 5000      01302         MOVF    r0x05, W
+0116 EC00 F000 01303         CALL    __gptrput1
+011A 0000      01304         BANKSEL _inPtr
+011C 2B00      01305         INCF    _inPtr, F, B
+011E E300      01306         BNC     _00615_DS_
+0120 0000      01307         BANKSEL (_inPtr + 1)
+0122 3F00      01308         INCFSZ  (_inPtr + 1), F, B
+0124 D000      01309         BRA     _40839_DS_
+0126 0000      01310         BANKSEL (_inPtr + 2)
+0128 2B00      01311         INCF    (_inPtr + 2), F, B
+012A 01312 _40839_DS_:
+012A 01313 _00615_DS_:
+               01314         .line   765; usb.c      for (i=0;i<bufferSize;i++)
+012A 2A00      01315         INCF    r0x02, F
+012C D000      01316         BRA     _00593_DS_
+012E 01317 _00595_DS_:
+012E CFE4 F000 01318         MOVFF   PREINC1, r0x08
+0132 CFE4 F000 01319         MOVFF   PREINC1, r0x07
+0136 CFE4 F000 01320         MOVFF   PREINC1, r0x06
+013A CFE4 F000 01321         MOVFF   PREINC1, r0x05
+013E CFE4 F000 01322         MOVFF   PREINC1, r0x04
+0142 CFE4 F000 01323         MOVFF   PREINC1, r0x03
+0146 CFE4 F000 01324         MOVFF   PREINC1, r0x02
+014A CFE4 F000 01325         MOVFF   PREINC1, r0x01
+014E CFE4 F000 01326         MOVFF   PREINC1, r0x00
+0152 CFE4 FFD9 01327         MOVFF   PREINC1, FSR2L
+0156 0012      01328         RETURN  
+               01329 
+               01330 ; ; Starting pCode block
+               01331 S_usb__ProcessStandardRequest   code
+0000 01332 _ProcessStandardRequest:
+               01333         .line   622; usb.c      void ProcessStandardRequest(void)
+0000 CFD9 FFE5 01334         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 01335         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 01336         MOVFF   r0x00, POSTDEC1
+               01337         .line   624; usb.c      byte request = SetupPacket.bRequest;
+000C C000 F000 01338         MOVFF   (_SetupPacket + 1), r0x00
+0010 0000      01339         BANKSEL _SetupPacket
+               01340         .line   626; usb.c      if((SetupPacket.bmRequestType & 0x60) != 0x00)
+0012 5100      01341         MOVF    _SetupPacket, W, B
+0014 0B60      01342         ANDLW   0x60
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 26
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0016 E000      01343         BZ      _00502_DS_
+               01344         .line   629; usb.c      return;
+0018 D000      01345         BRA     _00534_DS_
+001A 01346 _00502_DS_:
+               01347         .line   631; usb.c      if (request == SET_ADDRESS)
+001A 5000      01348         MOVF    r0x00, W
+001C 0A05      01349         XORLW   0x05
+001E E100      01350         BNZ     _00532_DS_
+               01351         .line   640; usb.c      requestHandled = 1;
+0020 0E01      01352         MOVLW   0x01
+0022 0000      01353         BANKSEL _requestHandled
+0024 6F00      01354         MOVWF   _requestHandled, B
+               01355         .line   641; usb.c      deviceState = ADDRESS;
+0026 0E04      01356         MOVLW   0x04
+0028 0000      01357         BANKSEL _deviceState
+002A 6F00      01358         MOVWF   _deviceState, B
+               01359         .line   642; usb.c      deviceAddress = SetupPacket.wValue0;
+002C C000 F000 01360         MOVFF   (_SetupPacket + 2), _deviceAddress
+0030 D000      01361         BRA     _00534_DS_
+0032 01362 _00532_DS_:
+               01363         .line   644; usb.c      else if (request == GET_DESCRIPTOR)
+0032 5000      01364         MOVF    r0x00, W
+0034 0A06      01365         XORLW   0x06
+0036 E100      01366         BNZ     _00529_DS_
+               01367         .line   646; usb.c      GetDescriptor();
+0038 EC00 F000 01368         CALL    _GetDescriptor
+003C D000      01369         BRA     _00534_DS_
+003E 01370 _00529_DS_:
+               01371         .line   648; usb.c      else if (request == SET_CONFIGURATION)
+003E 5000      01372         MOVF    r0x00, W
+0040 0A09      01373         XORLW   0x09
+0042 E100      01374         BNZ     _00526_DS_
+               01375         .line   653; usb.c      requestHandled = 1;
+0044 0E01      01376         MOVLW   0x01
+0046 0000      01377         BANKSEL _requestHandled
+0048 6F00      01378         MOVWF   _requestHandled, B
+               01379         .line   654; usb.c      currentConfiguration = SetupPacket.wValue0;
+004A C000 F000 01380         MOVFF   (_SetupPacket + 2), _currentConfiguration
+004E 0000      01381         BANKSEL _currentConfiguration
+               01382         .line   657; usb.c      if (currentConfiguration == 0)
+0050 5100      01383         MOVF    _currentConfiguration, W, B
+0052 E100      01384         BNZ     _00504_DS_
+               01385         .line   660; usb.c      deviceState = ADDRESS;
+0054 0E04      01386         MOVLW   0x04
+0056 0000      01387         BANKSEL _deviceState
+0058 6F00      01388         MOVWF   _deviceState, B
+005A D000      01389         BRA     _00534_DS_
+005C 01390 _00504_DS_:
+               01391         .line   664; usb.c      deviceState = CONFIGURED;
+005C 0E05      01392         MOVLW   0x05
+005E 0000      01393         BANKSEL _deviceState
+0060 6F00      01394         MOVWF   _deviceState, B
+               01395         .line   667; usb.c      HIDInitEndpoint();
+0062 EC00 F000 01396         CALL    _HIDInitEndpoint
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 27
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0066 D000      01397         BRA     _00534_DS_
+0068 01398 _00526_DS_:
+               01399         .line   673; usb.c      else if (request == GET_CONFIGURATION)
+0068 5000      01400         MOVF    r0x00, W
+006A 0A08      01401         XORLW   0x08
+006C E100      01402         BNZ     _00523_DS_
+               01403         .line   678; usb.c      requestHandled = 1;
+006E 0E01      01404         MOVLW   0x01
+0070 0000      01405         BANKSEL _requestHandled
+0072 6F00      01406         MOVWF   _requestHandled, B
+               01407         .line   679; usb.c      outPtr = (byte*)&currentConfiguration;
+0074 0E00      01408         MOVLW   HIGH(_currentConfiguration)
+0076 0000      01409         BANKSEL (_outPtr + 1)
+0078 6F00      01410         MOVWF   (_outPtr + 1), B
+007A 0E00      01411         MOVLW   LOW(_currentConfiguration)
+007C 0000      01412         BANKSEL _outPtr
+007E 6F00      01413         MOVWF   _outPtr, B
+0080 0E80      01414         MOVLW   0x80
+0082 0000      01415         BANKSEL (_outPtr + 2)
+0084 6F00      01416         MOVWF   (_outPtr + 2), B
+               01417         .line   680; usb.c      wCount = 1;
+0086 0E01      01418         MOVLW   0x01
+0088 0000      01419         BANKSEL _wCount
+008A 6F00      01420         MOVWF   _wCount, B
+008C 0000      01421         BANKSEL (_wCount + 1)
+008E 6B00      01422         CLRF    (_wCount + 1), B
+0090 D000      01423         BRA     _00534_DS_
+0092 01424 _00523_DS_:
+               01425         .line   682; usb.c      else if (request == GET_STATUS)
+0092 5000      01426         MOVF    r0x00, W
+0094 E100      01427         BNZ     _00520_DS_
+               01428         .line   684; usb.c      GetStatus();
+0096 EC00 F000 01429         CALL    _GetStatus
+009A D000      01430         BRA     _00534_DS_
+009C 01431 _00520_DS_:
+               01432         .line   686; usb.c      else if ((request == CLEAR_FEATURE) ||
+009C 5000      01433         MOVF    r0x00, W
+009E 0A01      01434         XORLW   0x01
+00A0 E000      01435         BZ      _00515_DS_
+               01436         .line   687; usb.c      (request == SET_FEATURE))
+00A2 5000      01437         MOVF    r0x00, W
+00A4 0A03      01438         XORLW   0x03
+00A6 E100      01439         BNZ     _00516_DS_
+00A8 01440 _00515_DS_:
+               01441         .line   689; usb.c      SetFeature();
+00A8 EC00 F000 01442         CALL    _SetFeature
+00AC D000      01443         BRA     _00534_DS_
+00AE 01444 _00516_DS_:
+               01445         .line   691; usb.c      else if (request == GET_INTERFACE)
+00AE 5000      01446         MOVF    r0x00, W
+00B0 0A0A      01447         XORLW   0x0a
+00B2 E100      01448         BNZ     _00513_DS_
+               01449         .line   698; usb.c      requestHandled = 1;
+00B4 0E01      01450         MOVLW   0x01
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 28
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+00B6 0000      01451         BANKSEL _requestHandled
+00B8 6F00      01452         MOVWF   _requestHandled, B
+00BA 0000      01453         BANKSEL _controlTransferBuffer
+               01454         .line   699; usb.c      controlTransferBuffer[0] = 0;
+00BC 6B00      01455         CLRF    _controlTransferBuffer, B
+               01456         .line   700; usb.c      outPtr = (__data byte *)&controlTransferBuffer;
+00BE 0E00      01457         MOVLW   HIGH(_controlTransferBuffer)
+00C0 0000      01458         BANKSEL (_outPtr + 1)
+00C2 6F00      01459         MOVWF   (_outPtr + 1), B
+00C4 0E00      01460         MOVLW   LOW(_controlTransferBuffer)
+00C6 0000      01461         BANKSEL _outPtr
+00C8 6F00      01462         MOVWF   _outPtr, B
+00CA 0E80      01463         MOVLW   0x80
+00CC 0000      01464         BANKSEL (_outPtr + 2)
+00CE 6F00      01465         MOVWF   (_outPtr + 2), B
+               01466         .line   701; usb.c      wCount = 1;
+00D0 0E01      01467         MOVLW   0x01
+00D2 0000      01468         BANKSEL _wCount
+00D4 6F00      01469         MOVWF   _wCount, B
+00D6 0000      01470         BANKSEL (_wCount + 1)
+00D8 6B00      01471         CLRF    (_wCount + 1), B
+00DA D000      01472         BRA     _00534_DS_
+00DC 01473 _00513_DS_:
+               01474         .line   703; usb.c      else if (request == SET_INTERFACE)
+00DC 5000      01475         MOVF    r0x00, W
+00DE 0A0B      01476         XORLW   0x0b
+00E0 E100      01477         BNZ     _00534_DS_
+               01478         .line   709; usb.c      requestHandled = 1;
+00E2 0E01      01479         MOVLW   0x01
+00E4 0000      01480         BANKSEL _requestHandled
+00E6 6F00      01481         MOVWF   _requestHandled, B
+00E8 01482 _00534_DS_:
+               01483         .line   717; usb.c      else if (request == SYNCH_FRAME)
+00E8 CFE4 F000 01484         MOVFF   PREINC1, r0x00
+00EC CFE4 FFD9 01485         MOVFF   PREINC1, FSR2L
+00F0 0012      01486         RETURN  
+               01487 
+               01488 ; ; Starting pCode block
+               01489 S_usb__SetFeature       code
+0000 01490 _SetFeature:
+               01491         .line   573; usb.c      static void SetFeature(void)
+0000 CFD9 FFE5 01492         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 01493         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 01494         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 01495         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 01496         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 01497         MOVFF   r0x03, POSTDEC1
+0018 C000 FFE5 01498         MOVFF   r0x04, POSTDEC1
+001C C000 FFE5 01499         MOVFF   r0x05, POSTDEC1
+               01500         .line   575; usb.c      byte recipient = SetupPacket.bmRequestType & 0x1F;
+0020 0E1F      01501         MOVLW   0x1f
+0022 0000      01502         BANKSEL _SetupPacket
+0024 1500      01503         ANDWF   _SetupPacket, W, B
+0026 6E00      01504         MOVWF   r0x00
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 29
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               01505         .line   576; usb.c      byte feature = SetupPacket.wValue0;
+0028 C000 F000 01506         MOVFF   (_SetupPacket + 2), r0x01
+               01507         .line   581; usb.c      if (recipient == 0x00)
+002C 5000      01508         MOVF    r0x00, W
+002E E100      01509         BNZ     _00453_DS_
+               01510         .line   584; usb.c      if (feature == DEVICE_REMOTE_WAKEUP)
+0030 5000      01511         MOVF    r0x01, W
+0032 0A01      01512         XORLW   0x01
+0034 E000      01513         BZ      _00486_DS_
+0036 D000      01514         BRA     _00455_DS_
+0038 01515 _00486_DS_:
+               01516         .line   586; usb.c      requestHandled = 1;
+0038 0E01      01517         MOVLW   0x01
+003A 0000      01518         BANKSEL _requestHandled
+003C 6F00      01519         MOVWF   _requestHandled, B
+003E 0000      01520         BANKSEL (_SetupPacket + 1)
+               01521         .line   587; usb.c      if (SetupPacket.bRequest == SET_FEATURE)
+0040 5100      01522         MOVF    (_SetupPacket + 1), W, B
+0042 0A03      01523         XORLW   0x03
+0044 E100      01524         BNZ     _00435_DS_
+               01525         .line   588; usb.c      remoteWakeup = 1;
+0046 0E01      01526         MOVLW   0x01
+0048 0000      01527         BANKSEL _remoteWakeup
+004A 6F00      01528         MOVWF   _remoteWakeup, B
+004C D000      01529         BRA     _00455_DS_
+004E 01530 _00435_DS_:
+004E 0000      01531         BANKSEL _remoteWakeup
+               01532         .line   590; usb.c      remoteWakeup = 0;
+0050 6B00      01533         CLRF    _remoteWakeup, B
+0052 D000      01534         BRA     _00455_DS_
+0054 01535 _00453_DS_:
+               01536         .line   594; usb.c      else if (recipient == 0x02)
+0054 5000      01537         MOVF    r0x00, W
+0056 0A02      01538         XORLW   0x02
+0058 E000      01539         BZ      _00490_DS_
+005A D000      01540         BRA     _00455_DS_
+005C 01541 _00490_DS_:
+               01542         .line   597; usb.c      byte endpointNum = SetupPacket.wIndex0 & 0x0F;
+005C 0E0F      01543         MOVLW   0x0f
+005E 0000      01544         BANKSEL (_SetupPacket + 4)
+0060 1500      01545         ANDWF   (_SetupPacket + 4), W, B
+0062 6E00      01546         MOVWF   r0x00
+               01547         .line   598; usb.c      byte endpointDir = SetupPacket.wIndex0 & 0x80;
+0064 0E80      01548         MOVLW   0x80
+0066 0000      01549         BANKSEL (_SetupPacket + 4)
+0068 1500      01550         ANDWF   (_SetupPacket + 4), W, B
+006A 6E00      01551         MOVWF   r0x02
+               01552         .line   599; usb.c      if ((feature == ENDPOINT_HALT) && (endpointNum != 0))
+006C 5000      01553         MOVF    r0x01, W
+006E A4D8      01554         BTFSS   STATUS, 2
+0070 D000      01555         BRA     _00455_DS_
+0072 5000      01556         MOVF    r0x00, W
+0074 B4D8      01557         BTFSC   STATUS, 2
+0076 D000      01558         BRA     _00455_DS_
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 30
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               01559         .line   602; usb.c      requestHandled = 1;
+0078 0E01      01560         MOVLW   0x01
+007A 0000      01561         BANKSEL _requestHandled
+007C 6F00      01562         MOVWF   _requestHandled, B
+               01563         .line   605; usb.c      inPtr = (byte *)&ep0Bo + (endpointNum * 8);
+007E 0E00      01564         MOVLW   HIGH(_ep0Bo)
+0080 6E00      01565         MOVWF   r0x03
+0082 0E00      01566         MOVLW   LOW(_ep0Bo)
+0084 6E00      01567         MOVWF   r0x01
+0086 0E80      01568         MOVLW   0x80
+0088 6E00      01569         MOVWF   r0x04
+               01570 ; ;multiply lit val:0x08 by variable r0x00 and store in r0x00
+008A 5000      01571         MOVF    r0x00, W
+008C 0D08      01572         MULLW   0x08
+008E 50F4      01573         MOVF    PRODH, W
+0090 6E00      01574         MOVWF   r0x05
+0092 CFF3 F000 01575         MOVFF   PRODL, r0x00
+0096 5000      01576         MOVF    r0x00, W
+0098 2400      01577         ADDWF   r0x01, W
+009A 0000      01578         BANKSEL _inPtr
+009C 6F00      01579         MOVWF   _inPtr, B
+009E 5000      01580         MOVF    r0x05, W
+00A0 2000      01581         ADDWFC  r0x03, W
+00A2 0000      01582         BANKSEL (_inPtr + 1)
+00A4 6F00      01583         MOVWF   (_inPtr + 1), B
+00A6 6AE8      01584         CLRF    WREG
+00A8 BE00      01585         BTFSC   r0x05, 7
+00AA 68E8      01586         SETF    WREG
+00AC 2000      01587         ADDWFC  r0x04, W
+00AE 0000      01588         BANKSEL (_inPtr + 2)
+00B0 6F00      01589         MOVWF   (_inPtr + 2), B
+               01590         .line   606; usb.c      if (endpointDir)
+00B2 5000      01591         MOVF    r0x02, W
+00B4 E000      01592         BZ      _00440_DS_
+               01593         .line   607; usb.c      inPtr += 4;
+00B6 0E04      01594         MOVLW   0x04
+00B8 0000      01595         BANKSEL _inPtr
+00BA 2700      01596         ADDWF   _inPtr, F, B
+00BC 0E00      01597         MOVLW   0x00
+00BE 0000      01598         BANKSEL (_inPtr + 1)
+00C0 2300      01599         ADDWFC  (_inPtr + 1), F, B
+00C2 0000      01600         BANKSEL (_inPtr + 2)
+00C4 2300      01601         ADDWFC  (_inPtr + 2), F, B
+00C6 01602 _00440_DS_:
+00C6 0000      01603         BANKSEL (_SetupPacket + 1)
+               01604         .line   609; usb.c      if(SetupPacket.bRequest == SET_FEATURE)
+00C8 5100      01605         MOVF    (_SetupPacket + 1), W, B
+00CA 0A03      01606         XORLW   0x03
+00CC E100      01607         BNZ     _00445_DS_
+               01608         .line   610; usb.c      *inPtr = 0x84;
+00CE C000 F000 01609         MOVFF   _inPtr, r0x00
+00D2 C000 F000 01610         MOVFF   (_inPtr + 1), r0x01
+00D6 C000 F000 01611         MOVFF   (_inPtr + 2), r0x03
+00DA 0E84      01612         MOVLW   0x84
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 31
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+00DC 6EE5      01613         MOVWF   POSTDEC1
+00DE C000 FFE9 01614         MOVFF   r0x00, FSR0L
+00E2 C000 FFF3 01615         MOVFF   r0x01, PRODL
+00E6 5000      01616         MOVF    r0x03, W
+00E8 EC00 F000 01617         CALL    __gptrput1
+00EC D000      01618         BRA     _00455_DS_
+00EE 01619 _00445_DS_:
+               01620         .line   613; usb.c      if(endpointDir == 1)
+00EE 5000      01621         MOVF    r0x02, W
+00F0 0A01      01622         XORLW   0x01
+00F2 E100      01623         BNZ     _00442_DS_
+               01624         .line   614; usb.c      *inPtr = 0x00;
+00F4 C000 F000 01625         MOVFF   _inPtr, r0x00
+00F8 C000 F000 01626         MOVFF   (_inPtr + 1), r0x01
+00FC C000 F000 01627         MOVFF   (_inPtr + 2), r0x02
+0100 0E00      01628         MOVLW   0x00
+0102 6EE5      01629         MOVWF   POSTDEC1
+0104 C000 FFE9 01630         MOVFF   r0x00, FSR0L
+0108 C000 FFF3 01631         MOVFF   r0x01, PRODL
+010C 5000      01632         MOVF    r0x02, W
+010E EC00 F000 01633         CALL    __gptrput1
+0112 D000      01634         BRA     _00455_DS_
+0114 01635 _00442_DS_:
+               01636         .line   616; usb.c      *inPtr = 0x88;
+0114 C000 F000 01637         MOVFF   _inPtr, r0x00
+0118 C000 F000 01638         MOVFF   (_inPtr + 1), r0x01
+011C C000 F000 01639         MOVFF   (_inPtr + 2), r0x02
+0120 0E88      01640         MOVLW   0x88
+0122 6EE5      01641         MOVWF   POSTDEC1
+0124 C000 FFE9 01642         MOVFF   r0x00, FSR0L
+0128 C000 FFF3 01643         MOVFF   r0x01, PRODL
+012C 5000      01644         MOVF    r0x02, W
+012E EC00 F000 01645         CALL    __gptrput1
+0132 01646 _00455_DS_:
+0132 CFE4 F000 01647         MOVFF   PREINC1, r0x05
+0136 CFE4 F000 01648         MOVFF   PREINC1, r0x04
+013A CFE4 F000 01649         MOVFF   PREINC1, r0x03
+013E CFE4 F000 01650         MOVFF   PREINC1, r0x02
+0142 CFE4 F000 01651         MOVFF   PREINC1, r0x01
+0146 CFE4 F000 01652         MOVFF   PREINC1, r0x00
+014A CFE4 FFD9 01653         MOVFF   PREINC1, FSR2L
+014E 0012      01654         RETURN  
+               01655 
+               01656 ; ; Starting pCode block
+               01657 S_usb__GetStatus        code
+0000 01658 _GetStatus:
+               01659         .line   524; usb.c      static void GetStatus(void)
+0000 CFD9 FFE5 01660         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 01661         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 01662         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 01663         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 01664         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 01665         MOVFF   r0x03, POSTDEC1
+0018 C000 FFE5 01666         MOVFF   r0x04, POSTDEC1
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 32
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+001C C000 FFE5 01667         MOVFF   r0x05, POSTDEC1
+               01668         .line   527; usb.c      byte recipient = SetupPacket.bmRequestType & 0x1F;
+0020 0E1F      01669         MOVLW   0x1f
+0022 0000      01670         BANKSEL _SetupPacket
+0024 1500      01671         ANDWF   _SetupPacket, W, B
+0026 6E00      01672         MOVWF   r0x00
+0028 0000      01673         BANKSEL _controlTransferBuffer
+               01674         .line   531; usb.c      controlTransferBuffer[0] = 0;
+002A 6B00      01675         CLRF    _controlTransferBuffer, B
+002C 0000      01676         BANKSEL (_controlTransferBuffer + 1)
+               01677         .line   532; usb.c      controlTransferBuffer[1] = 0;
+002E 6B00      01678         CLRF    (_controlTransferBuffer + 1), B
+               01679         .line   535; usb.c      if (recipient == 0x00)
+0030 5000      01680         MOVF    r0x00, W
+0032 E100      01681         BNZ     _00390_DS_
+               01682         .line   538; usb.c      requestHandled = 1;
+0034 0E01      01683         MOVLW   0x01
+0036 0000      01684         BANKSEL _requestHandled
+0038 6F00      01685         MOVWF   _requestHandled, B
+003A 0000      01686         BANKSEL _selfPowered
+               01687         .line   540; usb.c      if (selfPowered)
+003C 5100      01688         MOVF    _selfPowered, W, B
+003E E000      01689         BZ      _00377_DS_
+               01690         .line   541; usb.c      controlTransferBuffer[0] |= 0x01;
+0040 0E01      01691         MOVLW   0x01
+0042 0000      01692         BANKSEL _controlTransferBuffer
+0044 1100      01693         IORWF   _controlTransferBuffer, W, B
+0046 6E00      01694         MOVWF   r0x01
+0048 5000      01695         MOVF    r0x01, W
+004A 0000      01696         BANKSEL _controlTransferBuffer
+004C 6F00      01697         MOVWF   _controlTransferBuffer, B
+004E 01698 _00377_DS_:
+004E 0000      01699         BANKSEL _remoteWakeup
+               01700         .line   542; usb.c      if (remoteWakeup)
+0050 5100      01701         MOVF    _remoteWakeup, W, B
+0052 B4D8      01702         BTFSC   STATUS, 2
+0054 D000      01703         BRA     _00391_DS_
+               01704         .line   543; usb.c      controlTransferBuffer[0] |= 0x02;
+0056 0E02      01705         MOVLW   0x02
+0058 0000      01706         BANKSEL _controlTransferBuffer
+005A 1100      01707         IORWF   _controlTransferBuffer, W, B
+005C 6E00      01708         MOVWF   r0x01
+005E 5000      01709         MOVF    r0x01, W
+0060 0000      01710         BANKSEL _controlTransferBuffer
+0062 6F00      01711         MOVWF   _controlTransferBuffer, B
+0064 D000      01712         BRA     _00391_DS_
+0066 01713 _00390_DS_:
+               01714         .line   545; usb.c      else if (recipient == 0x01)
+0066 5000      01715         MOVF    r0x00, W
+0068 0A01      01716         XORLW   0x01
+006A E100      01717         BNZ     _00387_DS_
+               01718         .line   548; usb.c      requestHandled = 1;
+006C 0E01      01719         MOVLW   0x01
+006E 0000      01720         BANKSEL _requestHandled
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 33
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0070 6F00      01721         MOVWF   _requestHandled, B
+0072 D000      01722         BRA     _00391_DS_
+0074 01723 _00387_DS_:
+               01724         .line   550; usb.c      else if (recipient == 0x02)
+0074 5000      01725         MOVF    r0x00, W
+0076 0A02      01726         XORLW   0x02
+0078 E000      01727         BZ      _00426_DS_
+007A D000      01728         BRA     _00391_DS_
+007C 01729 _00426_DS_:
+               01730         .line   553; usb.c      byte endpointNum = SetupPacket.wIndex0 & 0x0F;
+007C 0E0F      01731         MOVLW   0x0f
+007E 0000      01732         BANKSEL (_SetupPacket + 4)
+0080 1500      01733         ANDWF   (_SetupPacket + 4), W, B
+0082 6E00      01734         MOVWF   r0x00
+               01735         .line   554; usb.c      byte endpointDir = SetupPacket.wIndex0 & 0x80;
+0084 0E80      01736         MOVLW   0x80
+0086 0000      01737         BANKSEL (_SetupPacket + 4)
+0088 1500      01738         ANDWF   (_SetupPacket + 4), W, B
+008A 6E00      01739         MOVWF   r0x01
+               01740         .line   555; usb.c      requestHandled = 1;
+008C 0E01      01741         MOVLW   0x01
+008E 0000      01742         BANKSEL _requestHandled
+0090 6F00      01743         MOVWF   _requestHandled, B
+               01744         .line   558; usb.c      inPtr = (byte *)&ep0Bo + (endpointNum * 8);
+0092 0E00      01745         MOVLW   HIGH(_ep0Bo)
+0094 6E00      01746         MOVWF   r0x03
+0096 0E00      01747         MOVLW   LOW(_ep0Bo)
+0098 6E00      01748         MOVWF   r0x02
+009A 0E80      01749         MOVLW   0x80
+009C 6E00      01750         MOVWF   r0x04
+               01751 ; ;multiply lit val:0x08 by variable r0x00 and store in r0x00
+009E 5000      01752         MOVF    r0x00, W
+00A0 0D08      01753         MULLW   0x08
+00A2 50F4      01754         MOVF    PRODH, W
+00A4 6E00      01755         MOVWF   r0x05
+00A6 CFF3 F000 01756         MOVFF   PRODL, r0x00
+00AA 5000      01757         MOVF    r0x00, W
+00AC 2400      01758         ADDWF   r0x02, W
+00AE 0000      01759         BANKSEL _inPtr
+00B0 6F00      01760         MOVWF   _inPtr, B
+00B2 5000      01761         MOVF    r0x05, W
+00B4 2000      01762         ADDWFC  r0x03, W
+00B6 0000      01763         BANKSEL (_inPtr + 1)
+00B8 6F00      01764         MOVWF   (_inPtr + 1), B
+00BA 6AE8      01765         CLRF    WREG
+00BC BE00      01766         BTFSC   r0x05, 7
+00BE 68E8      01767         SETF    WREG
+00C0 2000      01768         ADDWFC  r0x04, W
+00C2 0000      01769         BANKSEL (_inPtr + 2)
+00C4 6F00      01770         MOVWF   (_inPtr + 2), B
+               01771         .line   559; usb.c      if (endpointDir)
+00C6 5000      01772         MOVF    r0x01, W
+00C8 E000      01773         BZ      _00381_DS_
+               01774         .line   560; usb.c      inPtr += 4;
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 34
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+00CA 0E04      01775         MOVLW   0x04
+00CC 0000      01776         BANKSEL _inPtr
+00CE 2700      01777         ADDWF   _inPtr, F, B
+00D0 0E00      01778         MOVLW   0x00
+00D2 0000      01779         BANKSEL (_inPtr + 1)
+00D4 2300      01780         ADDWFC  (_inPtr + 1), F, B
+00D6 0000      01781         BANKSEL (_inPtr + 2)
+00D8 2300      01782         ADDWFC  (_inPtr + 2), F, B
+00DA 01783 _00381_DS_:
+               01784         .line   561; usb.c      if(*inPtr & BSTALL)
+00DA C000 F000 01785         MOVFF   _inPtr, r0x00
+00DE C000 F000 01786         MOVFF   (_inPtr + 1), r0x01
+00E2 C000 F000 01787         MOVFF   (_inPtr + 2), r0x02
+00E6 C000 FFE9 01788         MOVFF   r0x00, FSR0L
+00EA C000 FFF3 01789         MOVFF   r0x01, PRODL
+00EE 5000      01790         MOVF    r0x02, W
+00F0 EC00 F000 01791         CALL    __gptrget1
+00F4 6E00      01792         MOVWF   r0x00
+00F6 A400      01793         BTFSS   r0x00, 2
+00F8 D000      01794         BRA     _00391_DS_
+               01795         .line   562; usb.c      controlTransferBuffer[0] = 0x01;
+00FA 0E01      01796         MOVLW   0x01
+00FC 0000      01797         BANKSEL _controlTransferBuffer
+00FE 6F00      01798         MOVWF   _controlTransferBuffer, B
+0100 01799 _00391_DS_:
+0100 0000      01800         BANKSEL _requestHandled
+               01801         .line   565; usb.c      if (requestHandled)
+0102 5100      01802         MOVF    _requestHandled, W, B
+0104 E000      01803         BZ      _00394_DS_
+               01804         .line   567; usb.c      outPtr = (byte *)&controlTransferBuffer;
+0106 0E00      01805         MOVLW   HIGH(_controlTransferBuffer)
+0108 0000      01806         BANKSEL (_outPtr + 1)
+010A 6F00      01807         MOVWF   (_outPtr + 1), B
+010C 0E00      01808         MOVLW   LOW(_controlTransferBuffer)
+010E 0000      01809         BANKSEL _outPtr
+0110 6F00      01810         MOVWF   _outPtr, B
+0112 0E80      01811         MOVLW   0x80
+0114 0000      01812         BANKSEL (_outPtr + 2)
+0116 6F00      01813         MOVWF   (_outPtr + 2), B
+               01814         .line   568; usb.c      wCount = 2;
+0118 0E02      01815         MOVLW   0x02
+011A 0000      01816         BANKSEL _wCount
+011C 6F00      01817         MOVWF   _wCount, B
+011E 0000      01818         BANKSEL (_wCount + 1)
+0120 6B00      01819         CLRF    (_wCount + 1), B
+0122 01820 _00394_DS_:
+0122 CFE4 F000 01821         MOVFF   PREINC1, r0x05
+0126 CFE4 F000 01822         MOVFF   PREINC1, r0x04
+012A CFE4 F000 01823         MOVFF   PREINC1, r0x03
+012E CFE4 F000 01824         MOVFF   PREINC1, r0x02
+0132 CFE4 F000 01825         MOVFF   PREINC1, r0x01
+0136 CFE4 F000 01826         MOVFF   PREINC1, r0x00
+013A CFE4 FFD9 01827         MOVFF   PREINC1, FSR2L
+013E 0012      01828         RETURN  
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 35
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               01829 
+               01830 ; ; Starting pCode block
+               01831 S_usb__GetDescriptor    code
+0000 01832 _GetDescriptor:
+               01833         .line   456; usb.c      static void GetDescriptor(void)
+0000 CFD9 FFE5 01834         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 01835         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 01836         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 01837         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 01838         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 01839         MOVFF   r0x03, POSTDEC1
+0018 C000 FFE5 01840         MOVFF   r0x04, POSTDEC1
+001C C000 FFE5 01841         MOVFF   r0x05, POSTDEC1
+0020 C000 FFE5 01842         MOVFF   r0x06, POSTDEC1
+0024 0000      01843         BANKSEL _SetupPacket
+               01844         .line   461; usb.c      if(SetupPacket.bmRequestType == 0x80)
+0026 5100      01845         MOVF    _SetupPacket, W, B
+0028 0A80      01846         XORLW   0x80
+002A E000      01847         BZ      _00363_DS_
+002C D000      01848         BRA     _00342_DS_
+002E 01849 _00363_DS_:
+               01850         .line   463; usb.c      byte descriptorType  = SetupPacket.wValue1;
+002E C000 F000 01851         MOVFF   (_SetupPacket + 3), r0x00
+               01852         .line   464; usb.c      byte descriptorIndex = SetupPacket.wValue0;
+0032 C000 F000 01853         MOVFF   (_SetupPacket + 2), r0x01
+               01854         .line   466; usb.c      if (descriptorType == DEVICE_DESCRIPTOR)
+0036 5000      01855         MOVF    r0x00, W
+0038 0A01      01856         XORLW   0x01
+003A E100      01857         BNZ     _00338_DS_
+               01858         .line   469; usb.c      printf("DEVICE_DESCRIPTOR\r\n");
+003C 0E00      01859         MOVLW   UPPER(___str_5)
+003E 6E00      01860         MOVWF   r0x04
+0040 0E00      01861         MOVLW   HIGH(___str_5)
+0042 6E00      01862         MOVWF   r0x03
+0044 0E00      01863         MOVLW   LOW(___str_5)
+0046 6E00      01864         MOVWF   r0x02
+0048 5000      01865         MOVF    r0x04, W
+004A 6EE5      01866         MOVWF   POSTDEC1
+004C 5000      01867         MOVF    r0x03, W
+004E 6EE5      01868         MOVWF   POSTDEC1
+0050 5000      01869         MOVF    r0x02, W
+0052 6EE5      01870         MOVWF   POSTDEC1
+0054 EC00 F000 01871         CALL    _printf
+0058 0E03      01872         MOVLW   0x03
+005A 26E1      01873         ADDWF   FSR1L, F
+               01874         .line   471; usb.c      requestHandled = 1;
+005C 0E01      01875         MOVLW   0x01
+005E 0000      01876         BANKSEL _requestHandled
+0060 6F00      01877         MOVWF   _requestHandled, B
+               01878         .line   472; usb.c      outPtr = (byte *)&deviceDescriptor;
+0062 0E00      01879         MOVLW   UPPER(_deviceDescriptor)
+0064 0000      01880         BANKSEL (_outPtr + 2)
+0066 6F00      01881         MOVWF   (_outPtr + 2), B
+0068 0E00      01882         MOVLW   HIGH(_deviceDescriptor)
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 36
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+006A 0000      01883         BANKSEL (_outPtr + 1)
+006C 6F00      01884         MOVWF   (_outPtr + 1), B
+006E 0E00      01885         MOVLW   LOW(_deviceDescriptor)
+0070 0000      01886         BANKSEL _outPtr
+0072 6F00      01887         MOVWF   _outPtr, B
+               01888         .line   473; usb.c      wCount = DEVICE_DESCRIPTOR_SIZE;
+0074 0E12      01889         MOVLW   0x12
+0076 0000      01890         BANKSEL _wCount
+0078 6F00      01891         MOVWF   _wCount, B
+007A 0000      01892         BANKSEL (_wCount + 1)
+007C 6B00      01893         CLRF    (_wCount + 1), B
+007E D000      01894         BRA     _00342_DS_
+0080 01895 _00338_DS_:
+               01896         .line   475; usb.c      else if (descriptorType == CONFIGURATION_DESCRIPTOR)
+0080 5000      01897         MOVF    r0x00, W
+0082 0A02      01898         XORLW   0x02
+0084 E000      01899         BZ      _00367_DS_
+0086 D000      01900         BRA     _00335_DS_
+0088 01901 _00367_DS_:
+               01902         .line   478; usb.c      printf("CONFIGURATION_DESCRIPTOR: %d\r\n", descriptorIndex);
+0088 C000 F000 01903         MOVFF   r0x01, r0x02
+008C 6A00      01904         CLRF    r0x03
+008E 0E00      01905         MOVLW   UPPER(___str_6)
+0090 6E00      01906         MOVWF   r0x06
+0092 0E00      01907         MOVLW   HIGH(___str_6)
+0094 6E00      01908         MOVWF   r0x05
+0096 0E00      01909         MOVLW   LOW(___str_6)
+0098 6E00      01910         MOVWF   r0x04
+009A 5000      01911         MOVF    r0x03, W
+009C 6EE5      01912         MOVWF   POSTDEC1
+009E 5000      01913         MOVF    r0x02, W
+00A0 6EE5      01914         MOVWF   POSTDEC1
+00A2 5000      01915         MOVF    r0x06, W
+00A4 6EE5      01916         MOVWF   POSTDEC1
+00A6 5000      01917         MOVF    r0x05, W
+00A8 6EE5      01918         MOVWF   POSTDEC1
+00AA 5000      01919         MOVF    r0x04, W
+00AC 6EE5      01920         MOVWF   POSTDEC1
+00AE EC00 F000 01921         CALL    _printf
+00B2 0E05      01922         MOVLW   0x05
+00B4 26E1      01923         ADDWF   FSR1L, F
+               01924         .line   480; usb.c      requestHandled = 1;
+00B6 0E01      01925         MOVLW   0x01
+00B8 0000      01926         BANKSEL _requestHandled
+00BA 6F00      01927         MOVWF   _requestHandled, B
+               01928         .line   491; usb.c      outPtr = (byte *)&configDescriptor;
+00BC 0E00      01929         MOVLW   UPPER(_configDescriptor)
+00BE 0000      01930         BANKSEL (_outPtr + 2)
+00C0 6F00      01931         MOVWF   (_outPtr + 2), B
+00C2 0E00      01932         MOVLW   HIGH(_configDescriptor)
+00C4 0000      01933         BANKSEL (_outPtr + 1)
+00C6 6F00      01934         MOVWF   (_outPtr + 1), B
+00C8 0E00      01935         MOVLW   LOW(_configDescriptor)
+00CA 0000      01936         BANKSEL _outPtr
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 37
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+00CC 6F00      01937         MOVWF   _outPtr, B
+               01938         .line   493; usb.c      printf ("wCount = %d\n",sizeof (ConfigStruct));
+00CE 0E00      01939         MOVLW   UPPER(___str_7)
+00D0 6E00      01940         MOVWF   r0x04
+00D2 0E00      01941         MOVLW   HIGH(___str_7)
+00D4 6E00      01942         MOVWF   r0x03
+00D6 0E00      01943         MOVLW   LOW(___str_7)
+00D8 6E00      01944         MOVWF   r0x02
+00DA 0E00      01945         MOVLW   0x00
+00DC 6EE5      01946         MOVWF   POSTDEC1
+00DE 0E29      01947         MOVLW   0x29
+00E0 6EE5      01948         MOVWF   POSTDEC1
+00E2 5000      01949         MOVF    r0x04, W
+00E4 6EE5      01950         MOVWF   POSTDEC1
+00E6 5000      01951         MOVF    r0x03, W
+00E8 6EE5      01952         MOVWF   POSTDEC1
+00EA 5000      01953         MOVF    r0x02, W
+00EC 6EE5      01954         MOVWF   POSTDEC1
+00EE EC00 F000 01955         CALL    _printf
+00F2 0E05      01956         MOVLW   0x05
+00F4 26E1      01957         ADDWF   FSR1L, F
+               01958         .line   494; usb.c      wCount = sizeof (ConfigStruct);
+00F6 0E29      01959         MOVLW   0x29
+00F8 0000      01960         BANKSEL _wCount
+00FA 6F00      01961         MOVWF   _wCount, B
+00FC 0000      01962         BANKSEL (_wCount + 1)
+00FE 6B00      01963         CLRF    (_wCount + 1), B
+0100 D000      01964         BRA     _00342_DS_
+0102 01965 _00335_DS_:
+               01966         .line   500; usb.c      else if (descriptorType == STRING_DESCRIPTOR)
+0102 5000      01967         MOVF    r0x00, W
+0104 0A03      01968         XORLW   0x03
+0106 E000      01969         BZ      _00369_DS_
+0108 D000      01970         BRA     _00332_DS_
+010A 01971 _00369_DS_:
+               01972         .line   505; usb.c      requestHandled = 1;
+010A 0E01      01973         MOVLW   0x01
+010C 0000      01974         BANKSEL _requestHandled
+010E 6F00      01975         MOVWF   _requestHandled, B
+               01976         .line   506; usb.c      if (descriptorIndex == 0)
+0110 5000      01977         MOVF    r0x01, W
+0112 E100      01978         BNZ     _00329_DS_
+               01979         .line   507; usb.c      outPtr = (byte *)&stringDescriptor0;
+0114 0E00      01980         MOVLW   UPPER(_stringDescriptor0)
+0116 0000      01981         BANKSEL (_outPtr + 2)
+0118 6F00      01982         MOVWF   (_outPtr + 2), B
+011A 0E00      01983         MOVLW   HIGH(_stringDescriptor0)
+011C 0000      01984         BANKSEL (_outPtr + 1)
+011E 6F00      01985         MOVWF   (_outPtr + 1), B
+0120 0E00      01986         MOVLW   LOW(_stringDescriptor0)
+0122 0000      01987         BANKSEL _outPtr
+0124 6F00      01988         MOVWF   _outPtr, B
+0126 D000      01989         BRA     _00330_DS_
+0128 01990 _00329_DS_:
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 38
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               01991         .line   508; usb.c      else if (descriptorIndex == 1)
+0128 5000      01992         MOVF    r0x01, W
+012A 0A01      01993         XORLW   0x01
+012C E100      01994         BNZ     _00326_DS_
+               01995         .line   509; usb.c      outPtr = (byte *)&stringDescriptor1;
+012E 0E00      01996         MOVLW   UPPER(_stringDescriptor1)
+0130 0000      01997         BANKSEL (_outPtr + 2)
+0132 6F00      01998         MOVWF   (_outPtr + 2), B
+0134 0E00      01999         MOVLW   HIGH(_stringDescriptor1)
+0136 0000      02000         BANKSEL (_outPtr + 1)
+0138 6F00      02001         MOVWF   (_outPtr + 1), B
+013A 0E00      02002         MOVLW   LOW(_stringDescriptor1)
+013C 0000      02003         BANKSEL _outPtr
+013E 6F00      02004         MOVWF   _outPtr, B
+0140 D000      02005         BRA     _00330_DS_
+0142 02006 _00326_DS_:
+               02007         .line   511; usb.c      outPtr = (byte *)&stringDescriptor2;
+0142 0E00      02008         MOVLW   UPPER(_stringDescriptor2)
+0144 0000      02009         BANKSEL (_outPtr + 2)
+0146 6F00      02010         MOVWF   (_outPtr + 2), B
+0148 0E00      02011         MOVLW   HIGH(_stringDescriptor2)
+014A 0000      02012         BANKSEL (_outPtr + 1)
+014C 6F00      02013         MOVWF   (_outPtr + 1), B
+014E 0E00      02014         MOVLW   LOW(_stringDescriptor2)
+0150 0000      02015         BANKSEL _outPtr
+0152 6F00      02016         MOVWF   _outPtr, B
+0154 02017 _00330_DS_:
+               02018         .line   512; usb.c      wCount = *outPtr;
+0154 C000 F000 02019         MOVFF   _outPtr, r0x01
+0158 C000 F000 02020         MOVFF   (_outPtr + 1), r0x02
+015C C000 F000 02021         MOVFF   (_outPtr + 2), r0x03
+0160 C000 FFE9 02022         MOVFF   r0x01, FSR0L
+0164 C000 FFF3 02023         MOVFF   r0x02, PRODL
+0168 5000      02024         MOVF    r0x03, W
+016A EC00 F000 02025         CALL    __gptrget1
+016E 6E00      02026         MOVWF   r0x01
+0170 C000 F000 02027         MOVFF   r0x01, _wCount
+0174 0000      02028         BANKSEL (_wCount + 1)
+0176 6B00      02029         CLRF    (_wCount + 1), B
+0178 D000      02030         BRA     _00342_DS_
+017A 02031 _00332_DS_:
+               02032         .line   517; usb.c      printf("Unknown Descriptor: 0x%ux\r\n", (word)descriptorType);
+017A 6A00      02033         CLRF    r0x01
+017C 0E00      02034         MOVLW   UPPER(___str_8)
+017E 6E00      02035         MOVWF   r0x04
+0180 0E00      02036         MOVLW   HIGH(___str_8)
+0182 6E00      02037         MOVWF   r0x03
+0184 0E00      02038         MOVLW   LOW(___str_8)
+0186 6E00      02039         MOVWF   r0x02
+0188 5000      02040         MOVF    r0x01, W
+018A 6EE5      02041         MOVWF   POSTDEC1
+018C 5000      02042         MOVF    r0x00, W
+018E 6EE5      02043         MOVWF   POSTDEC1
+0190 5000      02044         MOVF    r0x04, W
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 39
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0192 6EE5      02045         MOVWF   POSTDEC1
+0194 5000      02046         MOVF    r0x03, W
+0196 6EE5      02047         MOVWF   POSTDEC1
+0198 5000      02048         MOVF    r0x02, W
+019A 6EE5      02049         MOVWF   POSTDEC1
+019C EC00 F000 02050         CALL    _printf
+01A0 0E05      02051         MOVLW   0x05
+01A2 26E1      02052         ADDWF   FSR1L, F
+01A4 02053 _00342_DS_:
+01A4 CFE4 F000 02054         MOVFF   PREINC1, r0x06
+01A8 CFE4 F000 02055         MOVFF   PREINC1, r0x05
+01AC CFE4 F000 02056         MOVFF   PREINC1, r0x04
+01B0 CFE4 F000 02057         MOVFF   PREINC1, r0x03
+01B4 CFE4 F000 02058         MOVFF   PREINC1, r0x02
+01B8 CFE4 F000 02059         MOVFF   PREINC1, r0x01
+01BC CFE4 F000 02060         MOVFF   PREINC1, r0x00
+01C0 CFE4 FFD9 02061         MOVFF   PREINC1, FSR2L
+01C4 0012      02062         RETURN  
+               02063 
+               02064 ; ; Starting pCode block
+               02065 S_usb__ProcessHIDRequest        code
+0000 02066 _ProcessHIDRequest:
+               02067         .line   336; usb.c      void ProcessHIDRequest(void)
+0000 CFD9 FFE5 02068         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 02069         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 02070         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 02071         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 02072         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 02073         MOVFF   r0x03, POSTDEC1
+0018 C000 FFE5 02074         MOVFF   r0x04, POSTDEC1
+001C C000 FFE5 02075         MOVFF   r0x05, POSTDEC1
+0020 C000 FFE5 02076         MOVFF   r0x06, POSTDEC1
+0024 C000 FFE5 02077         MOVFF   r0x07, POSTDEC1
+               02078         .line   341; usb.c      if((SetupPacket.bmRequestType & 0x1F) != 0x01 || (SetupPacket.wIndex0 != 0x00))
+0028 0E1F      02079         MOVLW   0x1f
+002A 0000      02080         BANKSEL _SetupPacket
+002C 1500      02081         ANDWF   _SetupPacket, W, B
+002E 6E00      02082         MOVWF   r0x00
+0030 5000      02083         MOVF    r0x00, W
+0032 0A01      02084         XORLW   0x01
+0034 E100      02085         BNZ     _00223_DS_
+0036 02086 _00296_DS_:
+0036 0000      02087         BANKSEL (_SetupPacket + 4)
+0038 5100      02088         MOVF    (_SetupPacket + 4), W, B
+003A E000      02089         BZ      _00224_DS_
+003C 02090 _00223_DS_:
+               02091         .line   342; usb.c      return;
+003C D000      02092         BRA     _00256_DS_
+003E 02093 _00224_DS_:
+               02094         .line   344; usb.c      bRequest = SetupPacket.bRequest;
+003E C000 F000 02095         MOVFF   (_SetupPacket + 1), r0x00
+               02096         .line   346; usb.c      if (bRequest == GET_DESCRIPTOR)
+0042 5000      02097         MOVF    r0x00, W
+0044 0A06      02098         XORLW   0x06
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 40
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0046 E000      02099         BZ      _00298_DS_
+0048 D000      02100         BRA     _00235_DS_
+004A 02101 _00298_DS_:
+               02102         .line   349; usb.c      byte descriptorType  = SetupPacket.wValue1;
+004A C000 F000 02103         MOVFF   (_SetupPacket + 3), r0x01
+               02104         .line   350; usb.c      if (descriptorType == HID_DESCRIPTOR)
+004E 5000      02105         MOVF    r0x01, W
+0050 0A21      02106         XORLW   0x21
+0052 E100      02107         BNZ     _00232_DS_
+               02108         .line   353; usb.c      printf("HID: HID_DESCRIPTOR\r\n");
+0054 0E00      02109         MOVLW   UPPER(___str_0)
+0056 6E00      02110         MOVWF   r0x04
+0058 0E00      02111         MOVLW   HIGH(___str_0)
+005A 6E00      02112         MOVWF   r0x03
+005C 0E00      02113         MOVLW   LOW(___str_0)
+005E 6E00      02114         MOVWF   r0x02
+0060 5000      02115         MOVF    r0x04, W
+0062 6EE5      02116         MOVWF   POSTDEC1
+0064 5000      02117         MOVF    r0x03, W
+0066 6EE5      02118         MOVWF   POSTDEC1
+0068 5000      02119         MOVF    r0x02, W
+006A 6EE5      02120         MOVWF   POSTDEC1
+006C EC00 F000 02121         CALL    _printf
+0070 0E03      02122         MOVLW   0x03
+0072 26E1      02123         ADDWF   FSR1L, F
+               02124         .line   356; usb.c      requestHandled = 1;
+0074 0E01      02125         MOVLW   0x01
+0076 0000      02126         BANKSEL _requestHandled
+0078 6F00      02127         MOVWF   _requestHandled, B
+               02128         .line   357; usb.c      outPtr = (__data byte *)&configDescriptor.HIDDescriptor;
+007A 0E00      02129         MOVLW   LOW(_configDescriptor + 9)
+007C 6E00      02130         MOVWF   r0x02
+007E 0E00      02131         MOVLW   HIGH(_configDescriptor + 9)
+0080 6E00      02132         MOVWF   r0x03
+0082 5000      02133         MOVF    r0x03, W
+0084 0000      02134         BANKSEL (_outPtr + 1)
+0086 6F00      02135         MOVWF   (_outPtr + 1), B
+0088 5000      02136         MOVF    r0x02, W
+008A 0000      02137         BANKSEL _outPtr
+008C 6F00      02138         MOVWF   _outPtr, B
+008E 0E80      02139         MOVLW   0x80
+0090 0000      02140         BANKSEL (_outPtr + 2)
+0092 6F00      02141         MOVWF   (_outPtr + 2), B
+               02142         .line   358; usb.c      wCount = HID_HEADER_SIZE;
+0094 0E09      02143         MOVLW   0x09
+0096 0000      02144         BANKSEL _wCount
+0098 6F00      02145         MOVWF   _wCount, B
+009A 0000      02146         BANKSEL (_wCount + 1)
+009C 6B00      02147         CLRF    (_wCount + 1), B
+009E D000      02148         BRA     _00235_DS_
+00A0 02149 _00232_DS_:
+               02150         .line   360; usb.c      else if (descriptorType == REPORT_DESCRIPTOR)
+00A0 5000      02151         MOVF    r0x01, W
+00A2 0A22      02152         XORLW   0x22
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 41
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+00A4 E100      02153         BNZ     _00229_DS_
+               02154         .line   363; usb.c      printf("HID: REPORT_DESCRIPTOR\r\n");
+00A6 0E00      02155         MOVLW   UPPER(___str_1)
+00A8 6E00      02156         MOVWF   r0x04
+00AA 0E00      02157         MOVLW   HIGH(___str_1)
+00AC 6E00      02158         MOVWF   r0x03
+00AE 0E00      02159         MOVLW   LOW(___str_1)
+00B0 6E00      02160         MOVWF   r0x02
+00B2 5000      02161         MOVF    r0x04, W
+00B4 6EE5      02162         MOVWF   POSTDEC1
+00B6 5000      02163         MOVF    r0x03, W
+00B8 6EE5      02164         MOVWF   POSTDEC1
+00BA 5000      02165         MOVF    r0x02, W
+00BC 6EE5      02166         MOVWF   POSTDEC1
+00BE EC00 F000 02167         CALL    _printf
+00C2 0E03      02168         MOVLW   0x03
+00C4 26E1      02169         ADDWF   FSR1L, F
+               02170         .line   366; usb.c      requestHandled = 1;
+00C6 0E01      02171         MOVLW   0x01
+00C8 0000      02172         BANKSEL _requestHandled
+00CA 6F00      02173         MOVWF   _requestHandled, B
+               02174         .line   367; usb.c      outPtr = (__code byte *)HIDReport;
+00CC 0E00      02175         MOVLW   UPPER(_HIDReport)
+00CE 0000      02176         BANKSEL (_outPtr + 2)
+00D0 6F00      02177         MOVWF   (_outPtr + 2), B
+00D2 0E00      02178         MOVLW   HIGH(_HIDReport)
+00D4 0000      02179         BANKSEL (_outPtr + 1)
+00D6 6F00      02180         MOVWF   (_outPtr + 1), B
+00D8 0E00      02181         MOVLW   LOW(_HIDReport)
+00DA 0000      02182         BANKSEL _outPtr
+00DC 6F00      02183         MOVWF   _outPtr, B
+               02184         .line   368; usb.c      wCount = HID_REPORT_SIZE;
+00DE 0E2F      02185         MOVLW   0x2f
+00E0 0000      02186         BANKSEL _wCount
+00E2 6F00      02187         MOVWF   _wCount, B
+00E4 0000      02188         BANKSEL (_wCount + 1)
+00E6 6B00      02189         CLRF    (_wCount + 1), B
+00E8 D000      02190         BRA     _00235_DS_
+00EA 02191 _00229_DS_:
+               02192         .line   370; usb.c      else if (descriptorType == PHYSICAL_DESCRIPTOR)
+00EA 5000      02193         MOVF    r0x01, W
+00EC 0A23      02194         XORLW   0x23
+00EE E100      02195         BNZ     _00235_DS_
+               02196         .line   373; usb.c      printf("HID: PHYSICAL_DESCRIPTOR\r\n");
+00F0 0E00      02197         MOVLW   UPPER(___str_2)
+00F2 6E00      02198         MOVWF   r0x03
+00F4 0E00      02199         MOVLW   HIGH(___str_2)
+00F6 6E00      02200         MOVWF   r0x02
+00F8 0E00      02201         MOVLW   LOW(___str_2)
+00FA 6E00      02202         MOVWF   r0x01
+00FC 5000      02203         MOVF    r0x03, W
+00FE 6EE5      02204         MOVWF   POSTDEC1
+0100 5000      02205         MOVF    r0x02, W
+0102 6EE5      02206         MOVWF   POSTDEC1
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 42
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0104 5000      02207         MOVF    r0x01, W
+0106 6EE5      02208         MOVWF   POSTDEC1
+0108 EC00 F000 02209         CALL    _printf
+010C 0E03      02210         MOVLW   0x03
+010E 26E1      02211         ADDWF   FSR1L, F
+0110 02212 _00235_DS_:
+               02213         .line   385; usb.c      if ((SetupPacket.bmRequestType & 0x60) != 0x20)
+0110 0E60      02214         MOVLW   0x60
+0112 0000      02215         BANKSEL _SetupPacket
+0114 1500      02216         ANDWF   _SetupPacket, W, B
+0116 6E00      02217         MOVWF   r0x01
+0118 5000      02218         MOVF    r0x01, W
+011A 0A20      02219         XORLW   0x20
+011C E000      02220         BZ      _00237_DS_
+               02221         .line   388; usb.c      printf("Not CLASS request: 0x%x, 0x%x\r\n", (word)(SetupPacket.bmRequestType & 0x60), (word)SetupPacket.bRequest);
+011E C000 F000 02222         MOVFF   (_SetupPacket + 1), r0x01
+0122 6A00      02223         CLRF    r0x02
+0124 0E60      02224         MOVLW   0x60
+0126 0000      02225         BANKSEL _SetupPacket
+0128 1500      02226         ANDWF   _SetupPacket, W, B
+012A 6E00      02227         MOVWF   r0x03
+012C 6A00      02228         CLRF    r0x04
+012E 0E00      02229         MOVLW   UPPER(___str_3)
+0130 6E00      02230         MOVWF   r0x07
+0132 0E00      02231         MOVLW   HIGH(___str_3)
+0134 6E00      02232         MOVWF   r0x06
+0136 0E00      02233         MOVLW   LOW(___str_3)
+0138 6E00      02234         MOVWF   r0x05
+013A 5000      02235         MOVF    r0x02, W
+013C 6EE5      02236         MOVWF   POSTDEC1
+013E 5000      02237         MOVF    r0x01, W
+0140 6EE5      02238         MOVWF   POSTDEC1
+0142 5000      02239         MOVF    r0x04, W
+0144 6EE5      02240         MOVWF   POSTDEC1
+0146 5000      02241         MOVF    r0x03, W
+0148 6EE5      02242         MOVWF   POSTDEC1
+014A 5000      02243         MOVF    r0x07, W
+014C 6EE5      02244         MOVWF   POSTDEC1
+014E 5000      02245         MOVF    r0x06, W
+0150 6EE5      02246         MOVWF   POSTDEC1
+0152 5000      02247         MOVF    r0x05, W
+0154 6EE5      02248         MOVWF   POSTDEC1
+0156 EC00 F000 02249         CALL    _printf
+015A 0E07      02250         MOVLW   0x07
+015C 26E1      02251         ADDWF   FSR1L, F
+               02252         .line   390; usb.c      return;
+015E D000      02253         BRA     _00256_DS_
+0160 02254 _00237_DS_:
+               02255         .line   394; usb.c      if (bRequest == GET_REPORT)
+0160 5000      02256         MOVF    r0x00, W
+0162 0A01      02257         XORLW   0x01
+0164 E100      02258         BNZ     _00254_DS_
+               02259         .line   399; usb.c      HIDGetReport();
+0166 EC00 F000 02260         CALL    _HIDGetReport
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 43
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+016A D000      02261         BRA     _00256_DS_
+016C 02262 _00254_DS_:
+               02263         .line   401; usb.c      else if (bRequest == SET_REPORT)
+016C 5000      02264         MOVF    r0x00, W
+016E 0A09      02265         XORLW   0x09
+0170 E100      02266         BNZ     _00251_DS_
+               02267         .line   406; usb.c      HIDPostProcess = 1;
+0172 0E01      02268         MOVLW   0x01
+0174 0000      02269         BANKSEL _HIDPostProcess
+0176 6F00      02270         MOVWF   _HIDPostProcess, B
+               02271         .line   407; usb.c      HIDSetReport();            
+0178 EC00 F000 02272         CALL    _HIDSetReport
+017C D000      02273         BRA     _00256_DS_
+017E 02274 _00251_DS_:
+               02275         .line   409; usb.c      else if (bRequest == GET_IDLE)
+017E 5000      02276         MOVF    r0x00, W
+0180 0A02      02277         XORLW   0x02
+0182 E100      02278         BNZ     _00248_DS_
+               02279         .line   414; usb.c      requestHandled = 1;
+0184 0E01      02280         MOVLW   0x01
+0186 0000      02281         BANKSEL _requestHandled
+0188 6F00      02282         MOVWF   _requestHandled, B
+               02283         .line   415; usb.c      outPtr = &hidIdleRate;
+018A 0E00      02284         MOVLW   HIGH(_hidIdleRate)
+018C 0000      02285         BANKSEL (_outPtr + 1)
+018E 6F00      02286         MOVWF   (_outPtr + 1), B
+0190 0E00      02287         MOVLW   LOW(_hidIdleRate)
+0192 0000      02288         BANKSEL _outPtr
+0194 6F00      02289         MOVWF   _outPtr, B
+0196 0E80      02290         MOVLW   0x80
+0198 0000      02291         BANKSEL (_outPtr + 2)
+019A 6F00      02292         MOVWF   (_outPtr + 2), B
+               02293         .line   416; usb.c      wCount = 1;
+019C 0E01      02294         MOVLW   0x01
+019E 0000      02295         BANKSEL _wCount
+01A0 6F00      02296         MOVWF   _wCount, B
+01A2 0000      02297         BANKSEL (_wCount + 1)
+01A4 6B00      02298         CLRF    (_wCount + 1), B
+01A6 D000      02299         BRA     _00256_DS_
+01A8 02300 _00248_DS_:
+               02301         .line   418; usb.c      else if (bRequest == SET_IDLE)
+01A8 5000      02302         MOVF    r0x00, W
+01AA 0A0A      02303         XORLW   0x0a
+01AC E100      02304         BNZ     _00245_DS_
+               02305         .line   423; usb.c      requestHandled = 1;
+01AE 0E01      02306         MOVLW   0x01
+01B0 0000      02307         BANKSEL _requestHandled
+01B2 6F00      02308         MOVWF   _requestHandled, B
+               02309         .line   424; usb.c      hidIdleRate = SetupPacket.wValue1;
+01B4 C000 F000 02310         MOVFF   (_SetupPacket + 3), _hidIdleRate
+01B8 D000      02311         BRA     _00256_DS_
+01BA 02312 _00245_DS_:
+               02313         .line   426; usb.c      else if (bRequest == GET_PROTOCOL)
+01BA 5000      02314         MOVF    r0x00, W
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 44
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+01BC 0A03      02315         XORLW   0x03
+01BE E100      02316         BNZ     _00242_DS_
+               02317         .line   431; usb.c      requestHandled = 1;
+01C0 0E01      02318         MOVLW   0x01
+01C2 0000      02319         BANKSEL _requestHandled
+01C4 6F00      02320         MOVWF   _requestHandled, B
+               02321         .line   432; usb.c      outPtr = &hidProtocol;
+01C6 0E00      02322         MOVLW   HIGH(_hidProtocol)
+01C8 0000      02323         BANKSEL (_outPtr + 1)
+01CA 6F00      02324         MOVWF   (_outPtr + 1), B
+01CC 0E00      02325         MOVLW   LOW(_hidProtocol)
+01CE 0000      02326         BANKSEL _outPtr
+01D0 6F00      02327         MOVWF   _outPtr, B
+01D2 0E80      02328         MOVLW   0x80
+01D4 0000      02329         BANKSEL (_outPtr + 2)
+01D6 6F00      02330         MOVWF   (_outPtr + 2), B
+               02331         .line   433; usb.c      wCount = 1;
+01D8 0E01      02332         MOVLW   0x01
+01DA 0000      02333         BANKSEL _wCount
+01DC 6F00      02334         MOVWF   _wCount, B
+01DE 0000      02335         BANKSEL (_wCount + 1)
+01E0 6B00      02336         CLRF    (_wCount + 1), B
+01E2 D000      02337         BRA     _00256_DS_
+01E4 02338 _00242_DS_:
+               02339         .line   435; usb.c      else if (bRequest == SET_PROTOCOL)
+01E4 5000      02340         MOVF    r0x00, W
+01E6 0A0B      02341         XORLW   0x0b
+01E8 E100      02342         BNZ     _00239_DS_
+               02343         .line   440; usb.c      requestHandled = 1;
+01EA 0E01      02344         MOVLW   0x01
+01EC 0000      02345         BANKSEL _requestHandled
+01EE 6F00      02346         MOVWF   _requestHandled, B
+               02347         .line   441; usb.c      hidProtocol = SetupPacket.wValue0;
+01F0 C000 F000 02348         MOVFF   (_SetupPacket + 2), _hidProtocol
+01F4 D000      02349         BRA     _00256_DS_
+01F6 02350 _00239_DS_:
+               02351         .line   446; usb.c      printf("HID: Unknown request: 0x%x\r\n", SetupPacket.bRequest);
+01F6 C000 F000 02352         MOVFF   (_SetupPacket + 1), r0x00
+01FA 6A00      02353         CLRF    r0x01
+01FC 0E00      02354         MOVLW   UPPER(___str_4)
+01FE 6E00      02355         MOVWF   r0x04
+0200 0E00      02356         MOVLW   HIGH(___str_4)
+0202 6E00      02357         MOVWF   r0x03
+0204 0E00      02358         MOVLW   LOW(___str_4)
+0206 6E00      02359         MOVWF   r0x02
+0208 5000      02360         MOVF    r0x01, W
+020A 6EE5      02361         MOVWF   POSTDEC1
+020C 5000      02362         MOVF    r0x00, W
+020E 6EE5      02363         MOVWF   POSTDEC1
+0210 5000      02364         MOVF    r0x04, W
+0212 6EE5      02365         MOVWF   POSTDEC1
+0214 5000      02366         MOVF    r0x03, W
+0216 6EE5      02367         MOVWF   POSTDEC1
+0218 5000      02368         MOVF    r0x02, W
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 45
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+021A 6EE5      02369         MOVWF   POSTDEC1
+021C EC00 F000 02370         CALL    _printf
+0220 0E05      02371         MOVLW   0x05
+0222 26E1      02372         ADDWF   FSR1L, F
+0224 02373 _00256_DS_:
+0224 CFE4 F000 02374         MOVFF   PREINC1, r0x07
+0228 CFE4 F000 02375         MOVFF   PREINC1, r0x06
+022C CFE4 F000 02376         MOVFF   PREINC1, r0x05
+0230 CFE4 F000 02377         MOVFF   PREINC1, r0x04
+0234 CFE4 F000 02378         MOVFF   PREINC1, r0x03
+0238 CFE4 F000 02379         MOVFF   PREINC1, r0x02
+023C CFE4 F000 02380         MOVFF   PREINC1, r0x01
+0240 CFE4 F000 02381         MOVFF   PREINC1, r0x00
+0244 CFE4 FFD9 02382         MOVFF   PREINC1, FSR2L
+0248 0012      02383         RETURN  
+               02384 
+               02385 ; ; Starting pCode block
+               02386 S_usb__HIDSetReport     code
+0000 02387 _HIDSetReport:
+               02388         .line   320; usb.c      void HIDSetReport(void)
+0000 CFD9 FFE5 02389         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 02390         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 02391         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 02392         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 02393         MOVFF   r0x02, POSTDEC1
+               02394         .line   322; usb.c      byte reportID = SetupPacket.wValue0;
+0014 C000 F000 02395         MOVFF   (_SetupPacket + 2), r0x00
+0018 0000      02396         BANKSEL (_SetupPacket + 3)
+               02397         .line   328; usb.c      if (SetupPacket.wValue1 == 0x02)
+001A 5100      02398         MOVF    (_SetupPacket + 3), W, B
+001C 0A02      02399         XORLW   0x02
+001E E100      02400         BNZ     _00204_DS_
+               02401         .line   329; usb.c      requestHandled = SetupOutputReport(reportID);
+0020 5000      02402         MOVF    r0x00, W
+0022 6EE5      02403         MOVWF   POSTDEC1
+0024 EC00 F000 02404         CALL    _SetupOutputReport
+0028 6E00      02405         MOVWF   r0x01
+002A CFF3 F000 02406         MOVFF   PRODL, r0x02
+002E 52E6      02407         MOVF    POSTINC1, F
+0030 5000      02408         MOVF    r0x01, W
+0032 0000      02409         BANKSEL _requestHandled
+0034 6F00      02410         MOVWF   _requestHandled, B
+0036 02411 _00204_DS_:
+0036 0000      02412         BANKSEL (_SetupPacket + 3)
+               02413         .line   331; usb.c      if (SetupPacket.wValue1 == 0x03)
+0038 5100      02414         MOVF    (_SetupPacket + 3), W, B
+003A 0A03      02415         XORLW   0x03
+003C E100      02416         BNZ     _00207_DS_
+               02417         .line   332; usb.c      requestHandled = SetupFeatureReport(reportID);
+003E 5000      02418         MOVF    r0x00, W
+0040 6EE5      02419         MOVWF   POSTDEC1
+0042 EC00 F000 02420         CALL    _SetupFeatureReport
+0046 6E00      02421         MOVWF   r0x00
+0048 CFF3 F000 02422         MOVFF   PRODL, r0x01
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 46
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+004C 52E6      02423         MOVF    POSTINC1, F
+004E 5000      02424         MOVF    r0x00, W
+0050 0000      02425         BANKSEL _requestHandled
+0052 6F00      02426         MOVWF   _requestHandled, B
+0054 02427 _00207_DS_:
+0054 CFE4 F000 02428         MOVFF   PREINC1, r0x02
+0058 CFE4 F000 02429         MOVFF   PREINC1, r0x01
+005C CFE4 F000 02430         MOVFF   PREINC1, r0x00
+0060 CFE4 FFD9 02431         MOVFF   PREINC1, FSR2L
+0064 0012      02432         RETURN  
+               02433 
+               02434 ; ; Starting pCode block
+               02435 S_usb__HIDGetReport     code
+0000 02436 _HIDGetReport:
+               02437         .line   304; usb.c      void HIDGetReport(void)
+0000 CFD9 FFE5 02438         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 02439         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 02440         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 02441         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 02442         MOVFF   r0x02, POSTDEC1
+               02443         .line   306; usb.c      byte reportID = SetupPacket.wValue0;
+0014 C000 F000 02444         MOVFF   (_SetupPacket + 2), r0x00
+0018 0000      02445         BANKSEL (_SetupPacket + 3)
+               02446         .line   312; usb.c      if (SetupPacket.wValue1 == 0x01)
+001A 5100      02447         MOVF    (_SetupPacket + 3), W, B
+001C 0A01      02448         XORLW   0x01
+001E E100      02449         BNZ     _00184_DS_
+               02450         .line   313; usb.c      requestHandled = GetInputReport(reportID);
+0020 5000      02451         MOVF    r0x00, W
+0022 6EE5      02452         MOVWF   POSTDEC1
+0024 EC00 F000 02453         CALL    _GetInputReport
+0028 6E00      02454         MOVWF   r0x01
+002A CFF3 F000 02455         MOVFF   PRODL, r0x02
+002E 52E6      02456         MOVF    POSTINC1, F
+0030 5000      02457         MOVF    r0x01, W
+0032 0000      02458         BANKSEL _requestHandled
+0034 6F00      02459         MOVWF   _requestHandled, B
+0036 02460 _00184_DS_:
+0036 0000      02461         BANKSEL (_SetupPacket + 3)
+               02462         .line   315; usb.c      if (SetupPacket.wValue1 == 0x03)
+0038 5100      02463         MOVF    (_SetupPacket + 3), W, B
+003A 0A03      02464         XORLW   0x03
+003C E100      02465         BNZ     _00187_DS_
+               02466         .line   316; usb.c      requestHandled = GetFeatureReport(reportID);
+003E 5000      02467         MOVF    r0x00, W
+0040 6EE5      02468         MOVWF   POSTDEC1
+0042 EC00 F000 02469         CALL    _GetFeatureReport
+0046 6E00      02470         MOVWF   r0x00
+0048 CFF3 F000 02471         MOVFF   PRODL, r0x01
+004C 52E6      02472         MOVF    POSTINC1, F
+004E 5000      02473         MOVF    r0x00, W
+0050 0000      02474         BANKSEL _requestHandled
+0052 6F00      02475         MOVWF   _requestHandled, B
+0054 02476 _00187_DS_:
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 47
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0054 CFE4 F000 02477         MOVFF   PREINC1, r0x02
+0058 CFE4 F000 02478         MOVFF   PREINC1, r0x01
+005C CFE4 F000 02479         MOVFF   PREINC1, r0x00
+0060 CFE4 FFD9 02480         MOVFF   PREINC1, FSR2L
+0064 0012      02481         RETURN  
+               02482 
+               02483 ; ; Starting pCode block
+               02484 S_usb__HIDInitEndpoint  code
+0000 02485 _HIDInitEndpoint:
+               02486         .line   283; usb.c      void HIDInitEndpoint(void)
+0000 CFD9 FFE5 02487         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 02488         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 02489         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 02490         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 02491         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 02492         MOVFF   r0x03, POSTDEC1
+0018 0000      02493         BANKSEL _hidRxLen
+               02494         .line   285; usb.c      hidRxLen =0;
+001A 6B00      02495         CLRF    _hidRxLen, B
+               02496         .line   291; usb.c      UEP1 = 0x1E;
+001C 0E1E      02497         MOVLW   0x1e
+001E 6E00      02498         MOVWF   _UEP1
+               02499         .line   293; usb.c      ep1Bo.Cnt = sizeof(HIDRxBuffer);
+0020 0E20      02500         MOVLW   0x20
+0022 0000      02501         BANKSEL (_ep1Bo + 1)
+0024 6F00      02502         MOVWF   (_ep1Bo + 1), B
+               02503         .line   294; usb.c      ep1Bo.ADDR = PTR16(&HIDRxBuffer);
+0026 0E00      02504         MOVLW   LOW(_HIDRxBuffer)
+0028 6E00      02505         MOVWF   r0x00
+002A 0E00      02506         MOVLW   HIGH(_HIDRxBuffer)
+002C 6E00      02507         MOVWF   r0x01
+002E 6A00      02508         CLRF    r0x02
+0030 6A00      02509         CLRF    r0x03
+0032 6A00      02510         CLRF    r0x02
+0034 6A00      02511         CLRF    r0x03
+0036 5000      02512         MOVF    r0x00, W
+0038 0000      02513         BANKSEL (_ep1Bo + 2)
+003A 6F00      02514         MOVWF   (_ep1Bo + 2), B
+003C 5000      02515         MOVF    r0x01, W
+003E 0000      02516         BANKSEL (_ep1Bo + 3)
+0040 6F00      02517         MOVWF   (_ep1Bo + 3), B
+               02518         .line   295; usb.c      ep1Bo.Stat = UOWN | DTSEN;
+0042 0E88      02519         MOVLW   0x88
+0044 0000      02520         BANKSEL _ep1Bo
+0046 6F00      02521         MOVWF   _ep1Bo, B
+               02522         .line   297; usb.c      ep1Bi.ADDR = PTR16(&HIDTxBuffer);
+0048 0E00      02523         MOVLW   LOW(_HIDTxBuffer)
+004A 6E00      02524         MOVWF   r0x00
+004C 0E00      02525         MOVLW   HIGH(_HIDTxBuffer)
+004E 6E00      02526         MOVWF   r0x01
+0050 6A00      02527         CLRF    r0x02
+0052 6A00      02528         CLRF    r0x03
+0054 6A00      02529         CLRF    r0x02
+0056 6A00      02530         CLRF    r0x03
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 48
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0058 5000      02531         MOVF    r0x00, W
+005A 0000      02532         BANKSEL (_ep1Bi + 2)
+005C 6F00      02533         MOVWF   (_ep1Bi + 2), B
+005E 5000      02534         MOVF    r0x01, W
+0060 0000      02535         BANKSEL (_ep1Bi + 3)
+0062 6F00      02536         MOVWF   (_ep1Bi + 3), B
+               02537         .line   298; usb.c      ep1Bi.Stat = DTS;
+0064 0E40      02538         MOVLW   0x40
+0066 0000      02539         BANKSEL _ep1Bi
+0068 6F00      02540         MOVWF   _ep1Bi, B
+006A CFE4 F000 02541         MOVFF   PREINC1, r0x03
+006E CFE4 F000 02542         MOVFF   PREINC1, r0x02
+0072 CFE4 F000 02543         MOVFF   PREINC1, r0x01
+0076 CFE4 F000 02544         MOVFF   PREINC1, r0x00
+007A CFE4 FFD9 02545         MOVFF   PREINC1, FSR2L
+007E 0012      02546         RETURN  
+               02547 
+               02548 ; ; Starting pCode block
+               02549 S_usb__HIDRxReport      code
+0000 02550 _HIDRxReport:
+               02551         .line   240; usb.c      byte HIDRxReport(byte *buffer, byte len)
+0000 CFD9 FFE5 02552         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 02553         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 02554         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 02555         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 02556         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 02557         MOVFF   r0x03, POSTDEC1
+0018 C000 FFE5 02558         MOVFF   r0x04, POSTDEC1
+001C C000 FFE5 02559         MOVFF   r0x05, POSTDEC1
+0020 C000 FFE5 02560         MOVFF   r0x06, POSTDEC1
+0024 C000 FFE5 02561         MOVFF   r0x07, POSTDEC1
+0028 C000 FFE5 02562         MOVFF   r0x08, POSTDEC1
+002C 0E02      02563         MOVLW   0x02
+002E CFDB F000 02564         MOVFF   PLUSW2, r0x00
+0032 0E03      02565         MOVLW   0x03
+0034 CFDB F000 02566         MOVFF   PLUSW2, r0x01
+0038 0E04      02567         MOVLW   0x04
+003A CFDB F000 02568         MOVFF   PLUSW2, r0x02
+003E 0E05      02569         MOVLW   0x05
+0040 CFDB F000 02570         MOVFF   PLUSW2, r0x03
+0044 0000      02571         BANKSEL _hidRxLen
+               02572         .line   242; usb.c      hidRxLen = 0;
+0046 6B00      02573         CLRF    _hidRxLen, B
+0048 0000      02574         BANKSEL _ep1Bo
+               02575         .line   249; usb.c      if(!(ep1Bo.Stat & UOWN))
+004A BF00      02576         BTFSC   _ep1Bo, 7, B
+004C D000      02577         BRA     _00149_DS_
+               02578         .line   252; usb.c      if(len > ep1Bo.Cnt)
+004E 5000      02579         MOVF    r0x03, W
+0050 0000      02580         BANKSEL (_ep1Bo + 1)
+0052 5D00      02581         SUBWF   (_ep1Bo + 1), W, B
+0054 E200      02582         BC      _00143_DS_
+               02583         .line   253; usb.c      len = ep1Bo.Cnt;
+0056 C000 F000 02584         MOVFF   (_ep1Bo + 1), r0x03
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 49
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+005A 02585 _00143_DS_:
+005A 0000      02586         BANKSEL _hidRxLen
+               02587         .line   259; usb.c      for(hidRxLen = 0; hidRxLen < len; hidRxLen++)
+005C 6B00      02588         CLRF    _hidRxLen, B
+005E 02589 _00151_DS_:
+005E 5000      02590         MOVF    r0x03, W
+0060 0000      02591         BANKSEL _hidRxLen
+0062 5D00      02592         SUBWF   _hidRxLen, W, B
+0064 E200      02593         BC      _00144_DS_
+0066 0000      02594         BANKSEL _hidRxLen
+               02595         .line   261; usb.c      buffer[hidRxLen] = HIDRxBuffer[hidRxLen];
+0068 5100      02596         MOVF    _hidRxLen, W, B
+006A 2400      02597         ADDWF   r0x00, W
+006C 6E00      02598         MOVWF   r0x04
+006E 6AE8      02599         CLRF    WREG
+0070 2000      02600         ADDWFC  r0x01, W
+0072 6E00      02601         MOVWF   r0x05
+0074 6AE8      02602         CLRF    WREG
+0076 2000      02603         ADDWFC  r0x02, W
+0078 6E00      02604         MOVWF   r0x06
+007A 0E00      02605         MOVLW   LOW(_HIDRxBuffer)
+007C 0000      02606         BANKSEL _hidRxLen
+007E 2500      02607         ADDWF   _hidRxLen, W, B
+0080 6E00      02608         MOVWF   r0x07
+0082 6A00      02609         CLRF    r0x08
+0084 0E00      02610         MOVLW   HIGH(_HIDRxBuffer)
+0086 2200      02611         ADDWFC  r0x08, F
+0088 C000 FFE9 02612         MOVFF   r0x07, FSR0L
+008C C000 FFEA 02613         MOVFF   r0x08, FSR0H
+0090 CFEF F000 02614         MOVFF   INDF0, r0x07
+0094 C000 FFE5 02615         MOVFF   r0x07, POSTDEC1
+0098 C000 FFE9 02616         MOVFF   r0x04, FSR0L
+009C C000 FFF3 02617         MOVFF   r0x05, PRODL
+00A0 5000      02618         MOVF    r0x06, W
+00A2 EC00 F000 02619         CALL    __gptrput1
+00A6 0000      02620         BANKSEL _hidRxLen
+               02621         .line   259; usb.c      for(hidRxLen = 0; hidRxLen < len; hidRxLen++)
+00A8 2B00      02622         INCF    _hidRxLen, F, B
+00AA D000      02623         BRA     _00151_DS_
+00AC 02624 _00144_DS_:
+               02625         .line   271; usb.c      ep1Bo.Cnt = sizeof(HIDRxBuffer);
+00AC 0E20      02626         MOVLW   0x20
+00AE 0000      02627         BANKSEL (_ep1Bo + 1)
+00B0 6F00      02628         MOVWF   (_ep1Bo + 1), B
+00B2 0000      02629         BANKSEL _ep1Bo
+               02630         .line   272; usb.c      if(ep1Bo.Stat & DTS)
+00B4 AD00      02631         BTFSS   _ep1Bo, 6, B
+00B6 D000      02632         BRA     _00146_DS_
+               02633         .line   273; usb.c      ep1Bo.Stat = UOWN | DTSEN;
+00B8 0E88      02634         MOVLW   0x88
+00BA 0000      02635         BANKSEL _ep1Bo
+00BC 6F00      02636         MOVWF   _ep1Bo, B
+00BE D000      02637         BRA     _00149_DS_
+00C0 02638 _00146_DS_:
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 50
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               02639         .line   275; usb.c      ep1Bo.Stat = UOWN | DTS | DTSEN;
+00C0 0EC8      02640         MOVLW   0xc8
+00C2 0000      02641         BANKSEL _ep1Bo
+00C4 6F00      02642         MOVWF   _ep1Bo, B
+00C6 02643 _00149_DS_:
+00C6 0000      02644         BANKSEL _hidRxLen
+               02645         .line   278; usb.c      return hidRxLen;
+00C8 5100      02646         MOVF    _hidRxLen, W, B
+00CA CFE4 F000 02647         MOVFF   PREINC1, r0x08
+00CE CFE4 F000 02648         MOVFF   PREINC1, r0x07
+00D2 CFE4 F000 02649         MOVFF   PREINC1, r0x06
+00D6 CFE4 F000 02650         MOVFF   PREINC1, r0x05
+00DA CFE4 F000 02651         MOVFF   PREINC1, r0x04
+00DE CFE4 F000 02652         MOVFF   PREINC1, r0x03
+00E2 CFE4 F000 02653         MOVFF   PREINC1, r0x02
+00E6 CFE4 F000 02654         MOVFF   PREINC1, r0x01
+00EA CFE4 F000 02655         MOVFF   PREINC1, r0x00
+00EE CFE4 FFD9 02656         MOVFF   PREINC1, FSR2L
+00F2 0012      02657         RETURN  
+               02658 
+               02659 ; ; Starting pCode block
+               02660 S_usb__HIDTxReport      code
+0000 02661 _HIDTxReport:
+               02662         .line   203; usb.c      byte HIDTxReport(byte *buffer, byte len)
+0000 CFD9 FFE5 02663         MOVFF   FSR2L, POSTDEC1
+0004 CFE1 FFD9 02664         MOVFF   FSR1L, FSR2L
+0008 C000 FFE5 02665         MOVFF   r0x00, POSTDEC1
+000C C000 FFE5 02666         MOVFF   r0x01, POSTDEC1
+0010 C000 FFE5 02667         MOVFF   r0x02, POSTDEC1
+0014 C000 FFE5 02668         MOVFF   r0x03, POSTDEC1
+0018 C000 FFE5 02669         MOVFF   r0x04, POSTDEC1
+001C C000 FFE5 02670         MOVFF   r0x05, POSTDEC1
+0020 C000 FFE5 02671         MOVFF   r0x06, POSTDEC1
+0024 C000 FFE5 02672         MOVFF   r0x07, POSTDEC1
+0028 C000 FFE5 02673         MOVFF   r0x08, POSTDEC1
+002C C000 FFE5 02674         MOVFF   r0x09, POSTDEC1
+0030 0E02      02675         MOVLW   0x02
+0032 CFDB F000 02676         MOVFF   PLUSW2, r0x00
+0036 0E03      02677         MOVLW   0x03
+0038 CFDB F000 02678         MOVFF   PLUSW2, r0x01
+003C 0E04      02679         MOVLW   0x04
+003E CFDB F000 02680         MOVFF   PLUSW2, r0x02
+0042 0E05      02681         MOVLW   0x05
+0044 CFDB F000 02682         MOVFF   PLUSW2, r0x03
+0048 0000      02683         BANKSEL _ep1Bi
+               02684         .line   212; usb.c      if (ep1Bi.Stat & UOWN)
+004A AF00      02685         BTFSS   _ep1Bi, 7, B
+004C D000      02686         BRA     _00106_DS_
+               02687         .line   213; usb.c      return 0;
+004E 6AE8      02688         CLRF    WREG
+0050 D000      02689         BRA     _00116_DS_
+0052 02690 _00106_DS_:
+               02691         .line   216; usb.c      if(len > HID_INPUT_REPORT_BYTES)
+0052 0E21      02692         MOVLW   0x21
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 51
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+0054 5C00      02693         SUBWF   r0x03, W
+0056 E300      02694         BNC     _00121_DS_
+               02695         .line   217; usb.c      len = HID_INPUT_REPORT_BYTES;
+0058 0E20      02696         MOVLW   0x20
+005A 6E00      02697         MOVWF   r0x03
+005C 02698 _00121_DS_:
+               02699         .line   223; usb.c      for (i = 0; i < len; i++)
+005C 6A00      02700         CLRF    r0x04
+005E 02701 _00114_DS_:
+005E 5000      02702         MOVF    r0x03, W
+0060 5C00      02703         SUBWF   r0x04, W
+0062 E200      02704         BC      _00109_DS_
+               02705         .line   224; usb.c      HIDTxBuffer[i] = buffer[i];
+0064 0E00      02706         MOVLW   LOW(_HIDTxBuffer)
+0066 2400      02707         ADDWF   r0x04, W
+0068 6E00      02708         MOVWF   r0x05
+006A 6A00      02709         CLRF    r0x06
+006C 0E00      02710         MOVLW   HIGH(_HIDTxBuffer)
+006E 2200      02711         ADDWFC  r0x06, F
+0070 5000      02712         MOVF    r0x04, W
+0072 2400      02713         ADDWF   r0x00, W
+0074 6E00      02714         MOVWF   r0x07
+0076 6AE8      02715         CLRF    WREG
+0078 2000      02716         ADDWFC  r0x01, W
+007A 6E00      02717         MOVWF   r0x08
+007C 6AE8      02718         CLRF    WREG
+007E 2000      02719         ADDWFC  r0x02, W
+0080 6E00      02720         MOVWF   r0x09
+0082 C000 FFE9 02721         MOVFF   r0x07, FSR0L
+0086 C000 FFF3 02722         MOVFF   r0x08, PRODL
+008A 5000      02723         MOVF    r0x09, W
+008C EC00 F000 02724         CALL    __gptrget1
+0090 6E00      02725         MOVWF   r0x07
+0092 C000 FFE9 02726         MOVFF   r0x05, FSR0L
+0096 C000 FFEA 02727         MOVFF   r0x06, FSR0H
+009A C000 FFEF 02728         MOVFF   r0x07, INDF0
+               02729         .line   223; usb.c      for (i = 0; i < len; i++)
+009E 2A00      02730         INCF    r0x04, F
+00A0 D000      02731         BRA     _00114_DS_
+00A2 02732 _00109_DS_:
+               02733         .line   228; usb.c      ep1Bi.Cnt = len;
+00A2 5000      02734         MOVF    r0x03, W
+00A4 0000      02735         BANKSEL (_ep1Bi + 1)
+00A6 6F00      02736         MOVWF   (_ep1Bi + 1), B
+00A8 0000      02737         BANKSEL _ep1Bi
+               02738         .line   229; usb.c      if(ep1Bi.Stat & DTS)
+00AA AD00      02739         BTFSS   _ep1Bi, 6, B
+00AC D000      02740         BRA     _00111_DS_
+               02741         .line   230; usb.c      ep1Bi.Stat = UOWN | DTSEN;
+00AE 0E88      02742         MOVLW   0x88
+00B0 0000      02743         BANKSEL _ep1Bi
+00B2 6F00      02744         MOVWF   _ep1Bi, B
+00B4 D000      02745         BRA     _00112_DS_
+00B6 02746 _00111_DS_:
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 52
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               02747         .line   232; usb.c      ep1Bi.Stat = UOWN | DTS | DTSEN;
+00B6 0EC8      02748         MOVLW   0xc8
+00B8 0000      02749         BANKSEL _ep1Bi
+00BA 6F00      02750         MOVWF   _ep1Bi, B
+00BC 02751 _00112_DS_:
+               02752         .line   234; usb.c      return len;
+00BC 5000      02753         MOVF    r0x03, W
+00BE 02754 _00116_DS_:
+00BE CFE4 F000 02755         MOVFF   PREINC1, r0x09
+00C2 CFE4 F000 02756         MOVFF   PREINC1, r0x08
+00C6 CFE4 F000 02757         MOVFF   PREINC1, r0x07
+00CA CFE4 F000 02758         MOVFF   PREINC1, r0x06
+00CE CFE4 F000 02759         MOVFF   PREINC1, r0x05
+00D2 CFE4 F000 02760         MOVFF   PREINC1, r0x04
+00D6 CFE4 F000 02761         MOVFF   PREINC1, r0x03
+00DA CFE4 F000 02762         MOVFF   PREINC1, r0x02
+00DE CFE4 F000 02763         MOVFF   PREINC1, r0x01
+00E2 CFE4 F000 02764         MOVFF   PREINC1, r0x00
+00E6 CFE4 FFD9 02765         MOVFF   PREINC1, FSR2L
+00EA 0012      02766         RETURN  
+               02767 
+               02768 ; ; Starting pCode block for Ival
+               02769         code
+0000 02770 _deviceDescriptor:
+0000 0112 0200 02771         DB      0x12, 0x01, 0x00, 0x02, 0x00, 0x00, 0x00, 0x20, 0xd8, 0x04, 0x41, 0x45
+     0000 2000 
+     04D8 4541 
+000C 0001 0201 02772         DB      0x01, 0x00, 0x01, 0x02, 0x00, 0x01
+     0100      
+               02773 ; ; Starting pCode block for Ival
+0012 02774 _configDescriptor:
+0012 0209 0029 02775         DB      0x09, 0x02, 0x29, 0x00, 0x01, 0x01, 0x00, 0xa0, 0x32, 0x09, 0x04, 0x00
+     0101 A000 
+     0932 0004 
+001E 0200 0003 02776         DB      0x00, 0x02, 0x03, 0x00, 0x00, 0x00, 0x09, 0x21, 0x01, 0x01, 0x00, 0x01
+     0000 2109 
+     0101 0100 
+002A 2F22 0700 02777         DB      0x22, 0x2f, 0x00, 0x07, 0x05, 0x81, 0x03, 0x20, 0x00, 0x01, 0x07, 0x05
+     8105 2003 
+     0100 0507 
+0036 0301 0020 02778         DB      0x01, 0x03, 0x20, 0x00, 0x01
+     0001      
+               02779 ; ; Starting pCode block for Ival
+003C 02780 _HIDReport:
+003C A006 09FF 02781         DB      0x06, 0xa0, 0xff, 0x09, 0x01, 0xa1, 0x01, 0x09, 0x02, 0x15, 0x00, 0x26
+     A101 0901 
+     1502 2600 
+0048 FF00 0875 02782         DB      0x00, 0xff, 0x75, 0x08, 0x95, 0x20, 0x81, 0x02, 0x09, 0x02, 0x15, 0x00
+     2095 0281 
+     0209 0015 
+0054 0026 75FF 02783         DB      0x26, 0x00, 0xff, 0x75, 0x08, 0x95, 0x20, 0x91, 0x02, 0x09, 0x01, 0x15
+     9508 9120 
+     0902 1501 
+0060 2600 FF00 02784         DB      0x00, 0x26, 0x00, 0xff, 0x75, 0x08, 0x95, 0x20, 0xb1, 0x02, 0xc0
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 53
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+     0875 2095 
+     02B1 00C0 
+               02785 ; ; Starting pCode block for Ival
+006C 02786 _stringDescriptor0:
+006C 0304 0409 02787         DB      0x04, 0x03, 0x09, 0x04
+               02788 ; ; Starting pCode block for Ival
+0070 02789 _stringDescriptor1:
+0070 0318 004C 02790         DB      0x18, 0x03, 0x4c, 0x00, 0x69, 0x00, 0x6e, 0x00, 0x75, 0x00, 0x78, 0x00
+     0069 006E 
+     0075 0078 
+007C 0020 0052 02791         DB      0x20, 0x00, 0x52, 0x00, 0x6f, 0x00, 0x62, 0x00, 0x6f, 0x00, 0x74, 0x00
+     006F 0062 
+     006F 0074 
+               02792 ; ; Starting pCode block for Ival
+0088 02793 _stringDescriptor2:
+0088 0326 0055 02794         DB      0x26, 0x03, 0x55, 0x00, 0x53, 0x00, 0x42, 0x00, 0x20, 0x00, 0x52, 0x00
+     0053 0042 
+     0020 0052 
+0094 006F 0062 02795         DB      0x6f, 0x00, 0x62, 0x00, 0x6f, 0x00, 0x74, 0x00, 0x20, 0x00, 0x70, 0x00
+     006F 0074 
+     0020 0070 
+00A0 0072 006F 02796         DB      0x72, 0x00, 0x6f, 0x00, 0x74, 0x00, 0x6f, 0x00, 0x63, 0x00, 0x6f, 0x00
+     0074 006F 
+     0063 006F 
+00AC 006C      02797         DB      0x6c, 0x00
+               02798 ; ; Starting pCode block
+00AE 02799 ___str_0:
+00AE 4948 3A44 02800         DB      0x48, 0x49, 0x44, 0x3a, 0x20, 0x48, 0x49, 0x44, 0x5f, 0x44, 0x45, 0x53
+     4820 4449 
+     445F 5345 
+00BA 5243 5049 02801         DB      0x43, 0x52, 0x49, 0x50, 0x54, 0x4f, 0x52, 0x0d, 0x0a, 0x00
+     4F54 0D52 
+     000A      
+               02802 ; ; Starting pCode block
+00C4 02803 ___str_1:
+00C4 4948 3A44 02804         DB      0x48, 0x49, 0x44, 0x3a, 0x20, 0x52, 0x45, 0x50, 0x4f, 0x52, 0x54, 0x5f
+     5220 5045 
+     524F 5F54 
+00D0 4544 4353 02805         DB      0x44, 0x45, 0x53, 0x43, 0x52, 0x49, 0x50, 0x54, 0x4f, 0x52, 0x0d, 0x0a
+     4952 5450 
+     524F 0A0D 
+00DC 0000      02806         DB      0x00
+               02807 ; ; Starting pCode block
+00DE 02808 ___str_2:
+00DE 4948 3A44 02809         DB      0x48, 0x49, 0x44, 0x3a, 0x20, 0x50, 0x48, 0x59, 0x53, 0x49, 0x43, 0x41
+     5020 5948 
+     4953 4143 
+00EA 5F4C 4544 02810         DB      0x4c, 0x5f, 0x44, 0x45, 0x53, 0x43, 0x52, 0x49, 0x50, 0x54, 0x4f, 0x52
+     4353 4952 
+     5450 524F 
+00F6 0A0D 0000 02811         DB      0x0d, 0x0a, 0x00
+               02812 ; ; Starting pCode block
+00FA 02813 ___str_3:
+00FA 6F4E 2074 02814         DB      0x4e, 0x6f, 0x74, 0x20, 0x43, 0x4c, 0x41, 0x53, 0x53, 0x20, 0x72, 0x65
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 54
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+     4C43 5341 
+     2053 6572 
+0106 7571 7365 02815         DB      0x71, 0x75, 0x65, 0x73, 0x74, 0x3a, 0x20, 0x30, 0x78, 0x25, 0x78, 0x2c
+     3A74 3020 
+     2578 2C78 
+0112 3020 2578 02816         DB      0x20, 0x30, 0x78, 0x25, 0x78, 0x0d, 0x0a, 0x00
+     0D78 000A 
+               02817 ; ; Starting pCode block
+011A 02818 ___str_4:
+011A 4948 3A44 02819         DB      0x48, 0x49, 0x44, 0x3a, 0x20, 0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e
+     5520 6B6E 
+     6F6E 6E77 
+0126 7220 7165 02820         DB      0x20, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x3a, 0x20, 0x30, 0x78
+     6575 7473 
+     203A 7830 
+0132 7825 0A0D 02821         DB      0x25, 0x78, 0x0d, 0x0a, 0x00
+     0000      
+               02822 ; ; Starting pCode block
+0138 02823 ___str_5:
+0138 4544 4956 02824         DB      0x44, 0x45, 0x56, 0x49, 0x43, 0x45, 0x5f, 0x44, 0x45, 0x53, 0x43, 0x52
+     4543 445F 
+     5345 5243 
+0144 5049 4F54 02825         DB      0x49, 0x50, 0x54, 0x4f, 0x52, 0x0d, 0x0a, 0x00
+     0D52 000A 
+               02826 ; ; Starting pCode block
+014C 02827 ___str_6:
+014C 4F43 464E 02828         DB      0x43, 0x4f, 0x4e, 0x46, 0x49, 0x47, 0x55, 0x52, 0x41, 0x54, 0x49, 0x4f
+     4749 5255 
+     5441 4F49 
+0158 5F4E 4544 02829         DB      0x4e, 0x5f, 0x44, 0x45, 0x53, 0x43, 0x52, 0x49, 0x50, 0x54, 0x4f, 0x52
+     4353 4952 
+     5450 524F 
+0164 203A 6425 02830         DB      0x3a, 0x20, 0x25, 0x64, 0x0d, 0x0a, 0x00
+     0A0D 0000 
+               02831 ; ; Starting pCode block
+016C 02832 ___str_7:
+016C 4377 756F 02833         DB      0x77, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x20, 0x3d, 0x20, 0x25, 0x64, 0x0a
+     746E 3D20 
+     2520 0A64 
+0178 0000      02834         DB      0x00
+               02835 ; ; Starting pCode block
+017A 02836 ___str_8:
+017A 6E55 6E6B 02837         DB      0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x20, 0x44, 0x65, 0x73, 0x63
+     776F 206E 
+     6544 6373 
+0186 6972 7470 02838         DB      0x72, 0x69, 0x70, 0x74, 0x6f, 0x72, 0x3a, 0x20, 0x30, 0x78, 0x25, 0x75
+     726F 203A 
+     7830 7525 
+0192 0D78 000A 02839         DB      0x78, 0x0d, 0x0a, 0x00
+               02840 
+               02841 
+               02842 ; Statistics:
+               02843 ; code size:     4458 (0x116a) bytes ( 3.40%)
+               02844 ;                2229 (0x08b5) words
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 55
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+               02845 ; udata size:     195 (0x00c3) bytes (10.88%)
+               02846 ; access size:     10 (0x000a) bytes
+               02847 
+               02848 
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 56
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+FSR0H                             00000FEA
+FSR0L                             00000FE9
+FSR1L                             00000FE1
+FSR2L                             00000FD9
+INDF0                             00000FEF
+PLUSW2                            00000FDB
+POSTDEC1                          00000FE5
+POSTINC1                          00000FE6
+PREINC1                           00000FE4
+PRODH                             00000FF4
+PRODL                             00000FF3
+STATUS                            00000FD8
+WREG                              00000FE8
+_00106_DS_                        00000052
+_00109_DS_                        000000A2
+_00111_DS_                        000000B6
+_00112_DS_                        000000BC
+_00114_DS_                        0000005E
+_00116_DS_                        000000BE
+_00121_DS_                        0000005C
+_00143_DS_                        0000005A
+_00144_DS_                        000000AC
+_00146_DS_                        000000C0
+_00149_DS_                        000000C6
+_00151_DS_                        0000005E
+_00184_DS_                        00000036
+_00187_DS_                        00000054
+_00204_DS_                        00000036
+_00207_DS_                        00000054
+_00223_DS_                        0000003C
+_00224_DS_                        0000003E
+_00229_DS_                        000000EA
+_00232_DS_                        000000A0
+_00235_DS_                        00000110
+_00237_DS_                        00000160
+_00239_DS_                        000001F6
+_00242_DS_                        000001E4
+_00245_DS_                        000001BA
+_00248_DS_                        000001A8
+_00251_DS_                        0000017E
+_00254_DS_                        0000016C
+_00256_DS_                        00000224
+_00296_DS_                        00000036
+_00298_DS_                        0000004A
+_00326_DS_                        00000142
+_00329_DS_                        00000128
+_00330_DS_                        00000154
+_00332_DS_                        0000017A
+_00335_DS_                        00000102
+_00338_DS_                        00000080
+_00342_DS_                        000001A4
+_00363_DS_                        0000002E
+_00367_DS_                        00000088
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 57
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+_00369_DS_                        0000010A
+_00377_DS_                        0000004E
+_00381_DS_                        000000DA
+_00387_DS_                        00000074
+_00390_DS_                        00000066
+_00391_DS_                        00000100
+_00394_DS_                        00000122
+_00426_DS_                        0000007C
+_00435_DS_                        0000004E
+_00440_DS_                        000000C6
+_00442_DS_                        00000114
+_00445_DS_                        000000EE
+_00453_DS_                        00000054
+_00455_DS_                        00000132
+_00486_DS_                        00000038
+_00490_DS_                        0000005C
+_00502_DS_                        0000001A
+_00504_DS_                        0000005C
+_00513_DS_                        000000DC
+_00515_DS_                        000000A8
+_00516_DS_                        000000AE
+_00520_DS_                        0000009C
+_00523_DS_                        00000092
+_00526_DS_                        00000068
+_00529_DS_                        0000003E
+_00532_DS_                        00000032
+_00534_DS_                        000000E8
+_00589_DS_                        00000046
+_00590_DS_                        0000004C
+_00593_DS_                        000000BE
+_00595_DS_                        0000012E
+_00607_DS_                        0000003A
+_00613_DS_                        000000CE
+_00614_DS_                        00000108
+_00615_DS_                        0000012A
+_00622_DS_                        00000070
+_00624_DS_                        000000DC
+_00635_DS_                        0000007A
+_00636_DS_                        000000B4
+_00637_DS_                        000000D6
+_00643_DS_                        000000A8
+_00645_DS_                        000000FE
+_00648_DS_                        00000086
+_00649_DS_                        00000136
+_00665_DS_                        0000009E
+_00678_DS_                        00000058
+_00681_DS_                        0000006A
+_00683_DS_                        00000078
+_00686_DS_                        00000080
+_00689_DS_                        0000002E
+_00694_DS_                        000000A6
+_00697_DS_                        000000C0
+_00700_DS_                        000000C8
+_00705_DS_                        00000086
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 58
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+_00707_DS_                        000000CC
+_00770_DS_                        0000001C
+_00774_DS_                        00000036
+_00802_DS_                        0000001E
+_00819_DS_                        0000001E
+_00821_DS_                        0000002E
+_00839_DS_                        0000001E
+_00844_DS_                        00000036
+_00847_DS_                        00000042
+_00850_DS_                        0000004E
+_00853_DS_                        0000005A
+_00856_DS_                        00000064
+_00863_DS_                        0000007A
+_10836_DS_                        000000B4
+_20837_DS_                        000000D6
+_30838_DS_                        00000108
+_40839_DS_                        0000012A
+_ADCON0                           00000000
+_ADCON0bits                       00000000
+_ADCON1                           00000000
+_ADCON1bits                       00000000
+_ADCON2                           00000000
+_ADCON2bits                       00000000
+_ADRES                            00000000
+_ADRESH                           00000000
+_ADRESL                           00000000
+_BAUDCON                          00000000
+_BAUDCONbits                      00000000
+_BAUDCTL                          00000000
+_BAUDCTLbits                      00000000
+_BSR                              00000000
+_BusReset                         00000000
+_CCP1AS                           00000000
+_CCP1ASbits                       00000000
+_CCP1CON                          00000000
+_CCP1CONbits                      00000000
+_CCP1DEL                          00000000
+_CCP1DELbits                      00000000
+_CCP2CON                          00000000
+_CCP2CONbits                      00000000
+_CCPR1                            00000000
+_CCPR1H                           00000000
+_CCPR1L                           00000000
+_CCPR2                            00000000
+_CCPR2H                           00000000
+_CCPR2L                           00000000
+_CMCON                            00000000
+_CMCONbits                        00000000
+_CVRCON                           00000000
+_CVRCONbits                       00000000
+_DDRA                             00000000
+_DDRAbits                         00000000
+_DDRB                             00000000
+_DDRBbits                         00000000
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 59
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+_DDRC                             00000000
+_DDRCbits                         00000000
+_DDRD                             00000000
+_DDRDbits                         00000000
+_DDRE                             00000000
+_DDREbits                         00000000
+_ECCP1AS                          00000000
+_ECCP1ASbits                      00000000
+_ECCP1CON                         00000000
+_ECCP1CONbits                     00000000
+_ECCP1DEL                         00000000
+_ECCP1DELbits                     00000000
+_EEADR                            00000000
+_EECON1                           00000000
+_EECON1bits                       00000000
+_EECON2                           00000000
+_EEDATA                           00000000
+_EnableUSBModule                  00000000
+_FSR0H                            00000000
+_FSR0L                            00000000
+_FSR1H                            00000000
+_FSR1L                            00000000
+_FSR2H                            00000000
+_FSR2L                            00000000
+_GetDescriptor                    00000000
+_GetFeatureReport                 00000000
+_GetInputReport                   00000000
+_GetStatus                        00000000
+_HIDGetReport                     00000000
+_HIDInitEndpoint                  00000000
+_HIDPostProcess                   00000000
+_HIDReport                        0000003C
+_HIDRxBuffer                      00000020
+_HIDRxReport                      00000000
+_HIDSetReport                     00000000
+_HIDTxBuffer                      00000000
+_HIDTxReport                      00000000
+_HLVDCON                          00000000
+_HLVDCONbits                      00000000
+_INDF0                            00000000
+_INDF1                            00000000
+_INDF2                            00000000
+_INTCON                           00000000
+_INTCON2                          00000000
+_INTCON2bits                      00000000
+_INTCON3                          00000000
+_INTCON3bits                      00000000
+_INTCONbits                       00000000
+_IPR1                             00000000
+_IPR1bits                         00000000
+_IPR2                             00000000
+_IPR2bits                         00000000
+_InDataStage                      00000000
+_LATA                             00000000
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 60
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+_LATAbits                         00000000
+_LATB                             00000000
+_LATBbits                         00000000
+_LATC                             00000000
+_LATCbits                         00000000
+_LATD                             00000000
+_LATDbits                         00000000
+_LATE                             00000000
+_LATEbits                         00000000
+_LVDCON                           00000000
+_LVDCONbits                       00000000
+_OSCCON                           00000000
+_OSCCONbits                       00000000
+_OSCTUNE                          00000000
+_OSCTUNEbits                      00000000
+_OutDataStage                     00000000
+_PC                               00000000
+_PCL                              00000000
+_PCLATH                           00000000
+_PCLATU                           00000000
+_PIE1                             00000000
+_PIE1bits                         00000000
+_PIE2                             00000000
+_PIE2bits                         00000000
+_PIR1                             00000000
+_PIR1bits                         00000000
+_PIR2                             00000000
+_PIR2bits                         00000000
+_PLUSW0                           00000000
+_PLUSW1                           00000000
+_PLUSW2                           00000000
+_PORTA                            00000000
+_PORTAbits                        00000000
+_PORTB                            00000000
+_PORTBbits                        00000000
+_PORTC                            00000000
+_PORTCbits                        00000000
+_PORTD                            00000000
+_PORTDbits                        00000000
+_PORTE                            00000000
+_PORTEbits                        00000000
+_POSTDEC0                         00000000
+_POSTDEC1                         00000000
+_POSTDEC2                         00000000
+_POSTINC0                         00000000
+_POSTINC1                         00000000
+_POSTINC2                         00000000
+_PR2                              00000000
+_PREINC0                          00000000
+_PREINC1                          00000000
+_PREINC2                          00000000
+_PROD                             00000000
+_PRODH                            00000000
+_PRODL                            00000000
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 61
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+_ProcessControlTransfer           00000000
+_ProcessHIDRequest                00000000
+_ProcessStandardRequest           00000000
+_ProcessUSBTransactions           00000000
+_RCON                             00000000
+_RCONbits                         00000000
+_RCREG                            00000000
+_RCSTA                            00000000
+_RCSTAbits                        00000000
+_SPBRG                            00000000
+_SPBRGH                           00000000
+_SPPCFG                           00000000
+_SPPCFGbits                       00000000
+_SPPCON                           00000000
+_SPPCONbits                       00000000
+_SPPDATA                          00000000
+_SPPEPS                           00000000
+_SPPEPSbits                       00000000
+_SSPADD                           00000000
+_SSPBUF                           00000000
+_SSPCON1                          00000000
+_SSPCON1bits                      00000000
+_SSPCON2                          00000000
+_SSPCON2bits                      00000000
+_SSPSTAT                          00000000
+_SSPSTATbits                      00000000
+_STATUS                           00000000
+_STATUSbits                       00000000
+_STKPTR                           00000000
+_STKPTRbits                       00000000
+_SetFeature                       00000000
+_SetFeatureReport                 00000000
+_SetOutputReport                  00000000
+_SetupFeatureReport               00000000
+_SetupOutputReport                00000000
+_SetupPacket                      00000040
+_SetupStage                       00000000
+_Stall                            00000000
+_StartOfFrame                     00000000
+_Suspend                          00000000
+_T0CON                            00000000
+_T0CONbits                        00000000
+_T1CON                            00000000
+_T1CONbits                        00000000
+_T2CON                            00000000
+_T2CONbits                        00000000
+_T3CON                            00000000
+_T3CONbits                        00000000
+_TABLAT                           00000000
+_TBLPTR                           00000000
+_TBLPTRH                          00000000
+_TBLPTRL                          00000000
+_TBLPTRU                          00000000
+_TMR0                             00000000
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 62
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+_TMR0H                            00000000
+_TMR0L                            00000000
+_TMR1                             00000000
+_TMR1H                            00000000
+_TMR1L                            00000000
+_TMR2                             00000000
+_TMR3                             00000000
+_TMR3H                            00000000
+_TMR3L                            00000000
+_TOS                              00000000
+_TOSH                             00000000
+_TOSL                             00000000
+_TOSU                             00000000
+_TRISA                            00000000
+_TRISAbits                        00000000
+_TRISB                            00000000
+_TRISBbits                        00000000
+_TRISC                            00000000
+_TRISCbits                        00000000
+_TRISD                            00000000
+_TRISDbits                        00000000
+_TRISE                            00000000
+_TRISEbits                        00000000
+_TXREG                            00000000
+_TXSTA                            00000000
+_TXSTAbits                        00000000
+_UADDR                            00000000
+_UADDRbits                        00000000
+_UCFG                             00000000
+_UCFGbits                         00000000
+_UCON                             00000000
+_UCONbits                         00000000
+_UEIE                             00000000
+_UEIEbits                         00000000
+_UEIR                             00000000
+_UEIRbits                         00000000
+_UEP0                             00000000
+_UEP0bits                         00000000
+_UEP1                             00000000
+_UEP10                            00000000
+_UEP10bits                        00000000
+_UEP11                            00000000
+_UEP11bits                        00000000
+_UEP12                            00000000
+_UEP12bits                        00000000
+_UEP13                            00000000
+_UEP13bits                        00000000
+_UEP14                            00000000
+_UEP14bits                        00000000
+_UEP15                            00000000
+_UEP15bits                        00000000
+_UEP1bits                         00000000
+_UEP2                             00000000
+_UEP2bits                         00000000
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 63
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+_UEP3                             00000000
+_UEP3bits                         00000000
+_UEP4                             00000000
+_UEP4bits                         00000000
+_UEP5                             00000000
+_UEP5bits                         00000000
+_UEP6                             00000000
+_UEP6bits                         00000000
+_UEP7                             00000000
+_UEP7bits                         00000000
+_UEP8                             00000000
+_UEP8bits                         00000000
+_UEP9                             00000000
+_UEP9bits                         00000000
+_UFRM                             00000000
+_UFRMH                            00000000
+_UFRMHbits                        00000000
+_UFRML                            00000000
+_UFRMLbits                        00000000
+_UIE                              00000000
+_UIEbits                          00000000
+_UIR                              00000000
+_UIRbits                          00000000
+_USTAT                            00000000
+_USTATbits                        00000000
+_UnSuspend                        00000000
+_WDTCON                           00000000
+_WDTCONbits                       00000000
+_WREG                             00000000
+_WaitForSetupStage                00000000
+__18F4455                         00000001
+___str_0                          000000AE
+___str_1                          000000C4
+___str_2                          000000DE
+___str_3                          000000FA
+___str_4                          0000011A
+___str_5                          00000138
+___str_6                          0000014C
+___str_7                          0000016C
+___str_8                          0000017A
+__gptrget1                        00000000
+__gptrput1                        00000000
+_configDescriptor                 00000012
+_controlTransferBuffer            00000080
+_ctrlTransferStage                00000000
+_currentConfiguration             00000000
+_dataEEPROM                       00F00000
+_deviceAddress                    00000000
+_deviceDescriptor                 00000000
+_deviceState                      00000000
+_ep0Bi                            00000404
+_ep0Bo                            00000400
+_ep1Bi                            0000040C
+_ep1Bo                            00000408
+gpasm-0.13.7 beta               usb.asm     9-1-2014  01:28:48           PAGE 64
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+ 
+_hidIdleRate                      00000000
+_hidProtocol                      00000000
+_hidRxLen                         00000000
+_inPtr                            00000000
+_outPtr                           00000000
+_printf                           00000000
+_remoteWakeup                     00000000
+_requestHandled                   00000000
+_selfPowered                      00000000
+_stdin                            00000000
+_stdout                           00000000
+_stringDescriptor0                0000006C
+_stringDescriptor1                00000070
+_stringDescriptor2                00000088
+_wCount                           00000000
+r0x00                             00000000
+r0x01                             00000001
+r0x02                             00000002
+r0x03                             00000003
+r0x04                             00000004
+r0x05                             00000005
+r0x06                             00000006
+r0x07                             00000007
+r0x08                             00000008
+r0x09                             00000009
+
+
+Errors   :       0
+Warnings :       0 reported,       0 suppressed
+Messages :       0 reported,       0 suppressed
+
