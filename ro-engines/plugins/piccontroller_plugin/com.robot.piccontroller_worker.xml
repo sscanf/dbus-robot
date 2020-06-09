@@ -37,12 +37,6 @@
     <method name="getEncoderRight">
       <arg type="i" direction="out"/>
     </method>
-    <method name="isTurningRight">
-      <arg type="b" direction="out"/>
-    </method>
-    <method name="isTurningLeft">
-      <arg type="b" direction="out"/>
-    </method>
     <method name="setSpeed">
       <arg name="speed" type="i" direction="in"/>
     </method>
@@ -55,6 +49,9 @@
     </method>
     <method name="setMaximumSpeed">
       <arg name="speed" type="i" direction="in"/>
+    </method>
+    <method name="getDirection">
+      <arg type="i" direction="out"/>
     </method>
   </interface>
 </node>

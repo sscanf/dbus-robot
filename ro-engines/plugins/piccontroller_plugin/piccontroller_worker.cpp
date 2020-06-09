@@ -97,16 +97,6 @@ int piccontrollerWorker::getEncoderRight()
     return m_encoderRight;
 }
 
-bool piccontrollerWorker::isTurningRight()
-{
-    return (m_encoderLeft > m_encoderRight ) ? true : false;
-}
-
-bool piccontrollerWorker::isTurningLeft()
-{
-    return (m_encoderLeft < m_encoderRight ) ? true : false;
-}
-
 void piccontrollerWorker::setSpeed(int speed)
 {
     int bPid = 1;
@@ -135,11 +125,34 @@ void piccontrollerWorker::setSpeed(int speed)
         m_pCheckMotorsTimer->start (2000);
     } else
         m_pCheckMotorsTimer->stop();
+
+    if (speed>0)
+        m_direction = DIR_FORWARDING;
+    else if (speed<0)
+        m_direction = DIR_BACKWARDING;
+    else
+        m_direction = DIR_STOPPED;
 }
 
 void piccontrollerWorker::setDualSpeed(int left, int right)
 {
     int bPid = 1;
+    if (left == right) {
+        if (left>0)
+            m_direction = DIR_FORWARDING;
+        else if (left<0)
+            m_direction = DIR_BACKWARDING;
+        else
+            m_direction = DIR_STOPPED;
+    }
+
+    if (left > right)
+        m_direction = DIR_TURNING_RIGHT;
+
+    if (left < right)
+        m_direction = DIR_TURNING_RIGHT;
+
+
     if (left>m_maxSpeed)
         left=m_maxSpeed;
 
@@ -176,6 +189,11 @@ void piccontrollerWorker::setMaximumSpeed(int speed)
     m_maxSpeed = speed;
 }
 
+int piccontrollerWorker::getDirection()
+{
+    return m_direction;
+}
+
 void piccontrollerWorker::setTurn(int turn)
 {
     int engineLeft =0;
@@ -199,5 +217,11 @@ void piccontrollerWorker::setTurn(int turn)
         }
     }
     setDualSpeed (engineLeft, engineRight);
+
+    if (engineLeft> engineRight)
+        m_direction = DIR_TURNING_RIGHT;
+
+    if (engineLeft < engineRight)
+        m_direction = DIR_TURNING_RIGHT;
 }
 

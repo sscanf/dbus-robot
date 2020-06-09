@@ -105,10 +105,6 @@ private slots:
     void onTurnTimeout     ();
     void onCollision       (int sensor);
     void onMotorsError     (int err);
-    void onAxisLeftX       (double value);
-    void onAxisLeftY       (double);
-    void onAxisRightX      (double);
-    void onAxisRightY      (double);
     void onButtonPS        (bool);
     void onGamepadConnected();
     void onGamepadDisconnected();

@@ -27,6 +27,13 @@ class piccontrollerWorker : public QObject
     Q_CLASSINFO("D-Bus Interface", "com.robot.roengines")
 
 public:
+    enum direction {
+        DIR_FORWARDING,
+        DIR_TURNING_LEFT,
+        DIR_TURNING_RIGHT,
+        DIR_BACKWARDING,
+        DIR_STOPPED
+    };
     enum errors {
         ERR_MOTOR_LEFT,
         ERR_MOTOR_RIGHT
@@ -43,12 +50,12 @@ public Q_SLOTS:
     int     getSpeed      ();
     int     getEncoderLeft();
     int     getEncoderRight();
-    bool    isTurningRight();
-    bool    isTurningLeft ();
     void    setSpeed      (int speed);
     void    setTurn       (int turn);
     void    setDualSpeed  (int left, int right);
     void    setMaximumSpeed (int speed);
+    int     getDirection  ();
+
 
 private:    //Functions
     void    getEngineData ();
@@ -72,6 +79,7 @@ private:    //Variables
     QTimer         *m_pTimer;
     QTimer         *m_pCheckMotorsTimer;
     int             m_maxSpeed=MAX_SPEED;
+    direction       m_direction=DIR_STOPPED;
 
 signals:
     void  error (bool bError);

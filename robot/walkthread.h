@@ -9,7 +9,6 @@
 
 #define FOREVER 3600
 
-
 enum tasks {
     TSK_STEP_FORWARD,
     TSK_STEP_BACKWARD,
@@ -27,13 +26,21 @@ class walkThread : public QThread
 {
     Q_OBJECT
 public:
+    enum direction {
+        DIR_ERROR=-1,
+        DIR_FORWARDING,
+        DIR_TURNING_LEFT,
+        DIR_TURNING_RIGHT,
+        DIR_BACKWARDING,
+        DIR_STOPPED
+    };
+
     explicit walkThread(QDBusConnection connection, QObject *parent = nullptr);
     void       setDualSpeed  (int left, int right);
     void       setSpeed      (int speed);
     int        getSpeed      (void);
-    bool       isTurningRight();
-    bool       isTurningLeft ();
     void       pushTask      (tasks task);
+    direction  getDirection  ();
     QList<QVariant> getCollisions();
     void       terminate();
     void       turn (int speed);

@@ -26,7 +26,6 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
          return;
     }
 
-
     m_capture.set (CV_CAP_PROP_FRAME_WIDTH,320);
     m_capture.set (CV_CAP_PROP_FRAME_HEIGHT,240);
     m_capture.set (CV_CAP_PROP_BRIGHTNESS,40);
@@ -51,6 +50,15 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
     m_pSocket = new QTcpServer(this);
     connect(m_pSocket, SIGNAL (newConnection()), this, SLOT(on_newConnection()));
     m_pSocket->listen(QHostAddress("0.0.0.0"),1234);
+
+
+    QThread *pThreadThreshold = new QThread();
+    QThread *pThreadResult = new QThread();
+    m_pThresholdSender->moveToThread(pThreadThreshold);
+    m_pResultSender->moveToThread(pThreadResult);
+    pThreadResult->start();
+    pThreadThreshold->start();
+
 
 //    m_camera.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
 //    m_camera.set(CV_CAP_PROP_FRAME_WIDTH, 640);
@@ -178,14 +186,18 @@ void balltrackerWorker::detectCircles()
     int centerBallY = m_data.m_image.rows/2;
 
     Mat imgHSV;
-    cvtColor(m_data.m_image, imgHSV, COLOR_BGR2HSV);   //Convert the captured frame from BGR to HSV
-
-    inRange(imgHSV, Scalar(m_iLowH, m_iLowS, m_iLowV), Scalar(m_iHighH, m_iHighS, m_iHighV), imgThresholded); //Threshold the image
-//    morphOps (imgThresholded);
-
-    GaussianBlur( imgThresholded, imgThresholded, cv::Size(9, 9), 2, 2 );
     vector<Vec3f> circles;
+    cvtColor(m_data.m_image, imgHSV, COLOR_BGR2HSV);   //Convert the captured frame from BGR to HSV
+    inRange(imgHSV, Scalar(m_iLowH, m_iLowS, m_iLowV), Scalar(m_iHighH, m_iHighS, m_iHighV), imgThresholded); //Threshold the image
+    morphOps (imgThresholded);
+    GaussianBlur( imgThresholded, imgThresholded, cv::Size(9, 9), 3, 3 );
     HoughCircles( imgThresholded, circles, CV_HOUGH_GRADIENT, 2, imgThresholded.rows/32, 200, 80, 0, 0 );
+
+
+//    cvtColor(m_data.m_image, imgHSV, COLOR_BGR2GRAY);   //Convert the captured frame from BGR to GRAY
+//    medianBlur (imgHSV, imgHSV,5);
+//    vector<Vec3f> circles;
+//    HoughCircles( imgHSV, circles, CV_HOUGH_GRADIENT, 2, imgHSV.rows/32, 200, 80, 0, 0 );
 
     if (circles.size()) {
         m_centerBall = QVector3D (cvRound(circles[0][0]), cvRound(circles[0][1]), cvRound(circles[0][2]));
@@ -213,8 +225,8 @@ void balltrackerWorker::detectCircles()
     }
 
     drawCVPannel();
-    m_pThresholdSender->sendTcpFrame(imgThresholded);
-    m_pResultSender->sendTcpFrame(m_data.m_image);
+    m_pThresholdSender->pushFrame(imgThresholded);
+    m_pResultSender->pushFrame(m_data.m_image);
 
     int distX = m_centerBall.x() - centerBallX;
     int distY = m_centerBall.y() - centerBallY;

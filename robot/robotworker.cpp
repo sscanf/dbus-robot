@@ -101,42 +101,7 @@ void robotWorker::initGamepad()
                                            "com.robot.rogamepad.dualshock4",
                                            m_connection,
                                            this);
-//    ret=QDBusConnection::systemBus().connect( "com.robot.rogamepad",
-//                                              "/rogamepad/dualshock4",
-//                                              "com.robot.rogamepad.dualshock4",
-//                                              "axisLeftX",
-//                                              this,
-//                                              SLOT (onAxisLeftX(double)));
-//    if (!ret) {
-//        qDebug() << "Error initialitzing gamepad";
-//    }
-//    ret=QDBusConnection::systemBus().connect( "com.robot.rogamepad",
-//                                              "/rogamepad/dualshock4",
-//                                              "com.robot.rogamepad.dualshock4",
-//                                              "axisLeftY",
-//                                              this,
-//                                              SLOT (onAxisLeftY(double)));
-//    if (!ret) {
-//        qDebug() << "Error initialitzing gamepad";
-//    }
-//    ret=QDBusConnection::systemBus().connect( "com.robot.rogamepad",
-//                                              "/rogamepad/dualshock4",
-//                                              "com.robot.rogamepad.dualshock4",
-//                                              "axisRightX",
-//                                              this,
-//                                              SLOT (onAxisRightX(double)));
-//    if (!ret) {
-//        qDebug() << "Error initialitzing gamepad";
-//    }
-//    ret=QDBusConnection::systemBus().connect( "com.robot.rogamepad",
-//                                              "/rogamepad/dualshock4",
-//                                              "com.robot.rogamepad.dualshock4",
-//                                              "axisRightY",
-//                                              this,
-//                                              SLOT (onAxisRightY(double)));
-//    if (!ret) {
-//        qDebug() << "Error initialitzing gamepad";
-//    }
+
     ret=QDBusConnection::systemBus().connect( "com.robot.rogamepad",
                                               "/rogamepad/dualshock4",
                                               "com.robot.rogamepad.dualshock4",
@@ -259,38 +224,39 @@ RO3DPoint robotWorker::getCenterDistance()
 void robotWorker::setDir(tasks task)
 {
     QList<QVariant> collisions = m_pWalkThread->getCollisions();
+    qDebug() << "DIR = " << task;
     switch (task) {
         case TSK_STEP_FORWARD:
-           if (!collisions.contains (frontCenter) && !collisions.contains(frontLeft) && !collisions.contains(frontRight)) {
+           if (!collisions.contains (frontCenter)) {
                 m_pWalkThread->pushTask(task);
-                qDebug() << "Forwarding";
+                qDebug() << "FORWARDING";
            }
         break;
 
         case TSK_STEP_BACKWARD:
-           if (!collisions.contains (rearCenter) && !collisions.contains(rearLeft) && !collisions.contains(rearRight)) {
+           if (!collisions.contains (rearCenter)){
                 m_pWalkThread->pushTask(task);
-                qDebug() << "Backwarding";
+                qDebug() << "BACKWARDING";
            }
         break;
 
         case TSK_TURN_LEFT:
-           if (!collisions.contains (frontLeft) && !collisions.contains(frontCenter)) {
+           if (!collisions.contains (frontLeft)) {
                 m_pWalkThread->pushTask(task);
-                qDebug() << "FRONT_LEFT";
+                qDebug() << "TURNING LEFT";
            }
         break;
 
         case TSK_TURN_RIGHT:
-           if (!collisions.contains (frontRight) && !collisions.contains(frontCenter)) {
+           if (!collisions.contains (frontRight)) {
                 m_pWalkThread->pushTask(task);
-                qDebug() << "FRONT_RIGHT";
+                qDebug() << "TURNING RIGHT";
            }
         break;
 
         default:
                 m_pWalkThread->pushTask(task);
-                qDebug() << "FRONT_STOP";
+                qDebug() << "STOPPING";
         break;
     }
 }
@@ -352,7 +318,6 @@ void robotWorker::onTurnTimeout()
     tasks lstTsk[] = {TSK_TURN_RIGHT, TSK_TURN_LEFT, TSK_STEP_FORWARD, TSK_STOP};
 
     int rnd = qrand() % (sizeof(lstTsk)/sizeof(int));
-    qDebug() << "Dir = " << rnd;
     if (m_azimut<90) {
         setDir(lstTsk[rnd]);
     } else if (m_azimut>90) {
@@ -363,26 +328,58 @@ void robotWorker::onTurnTimeout()
 void robotWorker::onCollision(int sensor)
 {
     int speed = m_pWalkThread->getSpeed();
+    tasks lstTskRight  [] = {TSK_TURN_RIGHT, TSK_STEP_FORWARD,TSK_STOP};
+    tasks lstTskLeft   [] = {TSK_TURN_LEFT, TSK_STEP_FORWARD,TSK_STOP};
+    tasks lstTskFCenter[] = {TSK_TURN_LEFT, TSK_TURN_RIGHT,TSK_STEP_BACKWARD};
+    tasks lstTskRCenter[] = {TSK_TURN_LEFT, TSK_TURN_RIGHT,TSK_STEP_FORWARD};
+    tasks lstTskFLeft  [] = {TSK_TURN_RIGHT, TSK_STEP_FORWARD,TSK_STEP_FORWARD};
+    tasks lstTskFRight [] = {TSK_TURN_LEFT, TSK_STEP_FORWARD,TSK_STEP_FORWARD};
+    int rnd;
+
     if (speed) {
         qDebug() << "Collision sensor: " << sensor;
         switch (sensor) {
+
             case frontCenter:
-                if (speed>0)
-                     setDir(TSK_STEP_BACKWARD);
+                if (speed>0) {
+                     rnd = qrand() % (sizeof(lstTskFCenter)/sizeof(int));
+                     setDir(lstTskFCenter[rnd]);
+                }
             break;
 
             case rearCenter:
-                if (speed<0)
-                    setDir(TSK_STEP_FORWARD);
+                if (speed<0) {
+                     rnd = qrand() % (sizeof(lstTskRCenter)/sizeof(int));
+                     setDir(lstTskRCenter[rnd]);
+                }
             break;
 
             case frontLeft:
-                setDir(TSK_TURN_RIGHT);
+                 rnd = qrand() % (sizeof(lstTskFLeft)/sizeof(int));
+                 setDir(lstTskFLeft[rnd]);
             break;
 
             case frontRight:
-                setDir(TSK_TURN_LEFT);
+                 rnd = qrand() % (sizeof(lstTskFRight)/sizeof(int));
+                 setDir(lstTskFRight[rnd]);
             break;
+
+           case rearRight:
+            rnd = qrand() % (sizeof(lstTskRight)/sizeof(int));
+            if (speed<0)
+                setDir(lstTskRight[rnd]);
+            else if (m_pWalkThread->getDirection()==walkThread::DIR_TURNING_RIGHT)
+                setDir(lstTskRight[rnd]);
+           break;
+
+           case rearLeft:
+            rnd = qrand() % (sizeof(lstTskLeft)/sizeof(int));
+            if (speed<0)
+                setDir(lstTskLeft[rnd]);
+            else if (m_pWalkThread->getDirection()==walkThread::DIR_TURNING_RIGHT)
+                setDir(lstTskLeft[rnd]);
+           break;
+
         }
     }
 }
@@ -406,40 +403,6 @@ void robotWorker::setSpeed()
 
 //    qDebug() << m_valL << m_valR << speedL << speedR;
     m_pWalkThread->setDualSpeed(speedL, speedR);
-}
-
-void robotWorker::onAxisLeftX(double value)
-{
-    int speed = map (value, -1,1, -MAX_SPEED/2, MAX_SPEED/2);
-    if (value<0)
-        m_valL = qAbs(speed)*-1;
-    else
-        m_valR = qAbs(speed)*-1;
-
-    if (value==0) {
-        m_valL=0;
-        m_valR=0;
-    }
-
-    setSpeed ();
-}
-
-void robotWorker::onAxisLeftY(double value)
-{
-    m_speed = map (value, -1,1, -MAX_SPEED/2, MAX_SPEED/2);
-    setSpeed();
-}
-
-void robotWorker::onAxisRightX(double value)
-{
-    int angle = map (value, -1,1, 180, 0);
-    m_pPositionThrd->setAzimuth(angle);
-}
-
-void robotWorker::onAxisRightY(double value)
-{
-    int angle = map (value, -1,1, 0, 120);
-    m_pPositionThrd->setElevation(angle);
 }
 
 void robotWorker::onButtonPS(bool value)
