@@ -7,18 +7,19 @@ positionThrd::positionThrd(QDBusConnection connection, quint16 azim, quint16 ele
 {
     m_azim = azim;
     m_elev = elev;
-    setPossition (m_azim, m_elev);
 }
 
 void positionThrd::run()
 {
-    m_pCameraIface = new QDBusInterface ("com.robot.rocamera",
+    m_pCameraIface = new QDBusInterface ("com.robot.pwm",
                                          "/servos",
                                          "com.robot.servoscontroller",
                                          m_connection,
                                          this);
+    setPossition (m_azim, m_elev);
     int antElev=0;
     int antAzim=0;
+
     forever {
         if (m_azim < m_newAzim) {
             m_azim++;

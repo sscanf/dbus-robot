@@ -59,7 +59,6 @@ QList<QVariant> walkThread::getCollisions()
     QDBusPendingReply<QList<QVariant>> r = m_pSensorsIface->call(QLatin1String("getCollisions"));
     if(r.isValid()) {
          arr= r.value();
-         qDebug() << "COLLISIONS = "<< arr;
     }
     return arr;
 }

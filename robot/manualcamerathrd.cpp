@@ -4,7 +4,7 @@
 manualCameraThrd::manualCameraThrd(QDBusConnection connection, QThread *parent) :
     QThread(parent)
 {
-    m_pCameraIface = new QDBusInterface ("com.robot.rocamera",
+    m_pPWMIface = new QDBusInterface ("com.robot.pwm",
                                          "/servos",
                                          "com.robot.servoscontroller",
                                          connection,
@@ -68,7 +68,7 @@ void manualCameraThrd::onAxisRightX(double value)
     int angle = map (value, -1,1, 180, 0);
     if (m_processing==false) {
         m_processing=true;
-        m_pCameraIface->call ("setAngle", QVariant::fromValue(uchar(1)), QVariant::fromValue(quint16(angle)));
+        m_pPWMIface->call ("setAngle", QVariant::fromValue(uchar(1)), QVariant::fromValue(quint16(angle)));
         m_processing=false;
     }
 }
@@ -78,7 +78,7 @@ void manualCameraThrd::onAxisRightY(double value)
     int angle = map (value, -1,1, 0, 120);
     if (m_processing==false) {
         m_processing=true;
-        m_pCameraIface->call ("setAngle", QVariant::fromValue(uchar(0)), QVariant::fromValue(quint16(angle)));
+        m_pPWMIface->call ("setAngle", QVariant::fromValue(uchar(0)), QVariant::fromValue(quint16(angle)));
         m_processing=false;
     }
 }

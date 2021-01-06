@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=com.robot.pwm
+Exec=/usr/bin/ropwm
+User=root

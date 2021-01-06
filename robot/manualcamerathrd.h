@@ -18,7 +18,7 @@ private:
 
 
 private:
-    QDBusInterface *m_pCameraIface;
+    QDBusInterface *m_pPWMIface;
     bool m_processing=false;
 
 private slots:

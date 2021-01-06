@@ -16,17 +16,23 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += main.cpp\
+        ircamerawidget.cpp \
         mainwindow.cpp \
         powerwidget.cpp \
         statuswidget.cpp \
-        streamclientWidget.cpp
+        streamclientWidget.cpp \
+        visionsettings.cpp
 
 HEADERS  += mainwindow.h \
+    ../common/robot.h \
+    ircamerawidget.h \
     powerwidget.h \
     statuswidget.h \
-    streamclientWidget.h
+    streamclientWidget.h \
+    visionsettings.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    visionsettings.ui
 
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

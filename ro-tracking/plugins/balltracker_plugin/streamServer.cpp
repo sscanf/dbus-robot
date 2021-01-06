@@ -65,10 +65,6 @@ void streamServer::pushFrame(const Mat &img)
     m_frames.enqueue(img);
 }
 
-void streamServer::run()
-{
-}
-
 void streamServer::onNewConnection()
 {
     qDebug() << "New TCP Connection";
@@ -76,7 +72,7 @@ void streamServer::onNewConnection()
     connect(clientConnection, SIGNAL (disconnected()), this, SLOT (onDisconnected()));
     connect(clientConnection, SIGNAL (readyRead()),    this, SLOT (onReadyRead()));
     m_listClients.append (clientConnection);
-    m_pTimer->start(30);
+    m_pTimer->start(5);
 }
 
 void streamServer::onDisconnected()
@@ -104,6 +100,7 @@ void streamServer::onReadyRead()
 
 void streamServer::onTimeout()
 {
+    qDebug() << m_frames.count();
     if (!m_frames.isEmpty()) {
         Mat img = m_frames.dequeue();
         sendTcpFrame(img);

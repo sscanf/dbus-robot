@@ -1,4 +1,0 @@
-[D-BUS Service]
-Name=com.robot.rocamera
-Exec=/usr/bin/rocamera
-User=root

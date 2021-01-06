@@ -93,7 +93,7 @@ private:    //Variables
     QString         m_strDescription;
     bool            m_bEnabled;
     QDBusConnection m_connection;
-    QTimer         *m_pTimer;
+//    QTimer         *m_pTimer;
     VideoCapture    m_capture;
     MyImemData      m_data;
     QTcpServer     *m_pSocket;
@@ -119,12 +119,14 @@ signals:
     void error (bool bError);
     void possitionChanged (QPoint possition);
     void ballLost();
+    void nextTrack();
 
 private slots:
-    void on_timeout ();
+//    void on_timeout ();
     void on_newConnection();
     void on_disconnected();
     void on_readyRead();
+    void on_track();
 };
 
 #endif // balltracker_MANAGER_H

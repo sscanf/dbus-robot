@@ -19,7 +19,6 @@ public:
     void startListening ();
     void stopListening  ();
     void pushFrame      (Mat const &img);
-    void run            ();
 
 private:
     void sendTcpFrame   (Mat const &img);
