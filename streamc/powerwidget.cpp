@@ -134,7 +134,7 @@ void powerWidget::onVoltageChanged(int val)
 {
     if (m_pVoltage!=nullptr) {
         double voltage = val/1000.0;
-        int cap = map (voltage,12.8,16.0,0,100);
+        int cap = map (voltage,14.0,16.7,0,100);
         m_pVoltage->setProperty("currentValue",(double)voltage);
         m_pRobotCapacity->setProperty("currentValue",(double)cap);
     }

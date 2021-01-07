@@ -27,6 +27,8 @@ walkThread::walkThread(QDBusConnection connection, QObject *parent) :
                                          "com.robot.rosensors",
                                          m_connection,
                                          this);
+
+    QDBusMessage msg = m_pEnginesIface->call ("setMaximumSpeed", QVariant::fromValue(qint32(50)));
     stop();
 }
 
@@ -71,29 +73,19 @@ void walkThread::turn(int speed)
     m_pEnginesIface->call ("setTurn", QVariant::fromValue(qint32(speed)));
 }
 
-bool walkThread::isTurningRight()
-{
-    bool ret=false;
-    QDBusPendingReply<bool> r = m_pEnginesIface->call(QLatin1String("isTurningRight"));
-    if(r.isValid()) {
-         ret= r.value();
-    }
-    return ret;
-}
-
-bool walkThread::isTurningLeft()
-{
-    bool ret=false;
-    QDBusPendingReply<bool> r = m_pEnginesIface->call(QLatin1String("isTurningLeft"));
-    if(r.isValid()) {
-         ret= r.value();
-    }
-    return ret;
-}
-
 void walkThread::pushTask(tasks task)
 {
     m_tasks.enqueue(task);
+}
+
+walkThread::direction walkThread::getDirection()
+{
+    direction ret=DIR_ERROR;
+    QDBusPendingReply<int> r = m_pEnginesIface->call(QLatin1String("getDirection"));
+    if(r.isValid()) {
+         ret= static_cast<direction>(r.value());
+    }
+    return ret;
 }
 
 void walkThread::stepForward()
@@ -131,6 +123,7 @@ void walkThread::run()
         if (!m_tasks.isEmpty()) {
             tasks task = m_tasks.dequeue();
             switch (task){
+
                 case TSK_STEP_FORWARD:
                     stepForward();
                 break;

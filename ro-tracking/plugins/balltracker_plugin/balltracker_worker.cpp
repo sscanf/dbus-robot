@@ -23,12 +23,13 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
 
     if ( !m_capture.isOpened() ){  // if not success, exit program
          qDebug() << "Cannot open the web cam";
-         return;
+//         return;
     }
-
 
     m_capture.set (CV_CAP_PROP_FRAME_WIDTH,320);
     m_capture.set (CV_CAP_PROP_FRAME_HEIGHT,240);
+//    m_capture.set (CV_CAP_PROP_FRAME_WIDTH,640);
+//    m_capture.set (CV_CAP_PROP_FRAME_HEIGHT,480);
     m_capture.set (CV_CAP_PROP_BRIGHTNESS,40);
     m_capture.set (CV_CAP_PROP_CONTRAST,1);
 //    m_capture.set (CV_CAP_PROP_XI_LED_MODE,1);
@@ -36,7 +37,7 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
     m_bEnabled      = bEnabled;
     m_strDescription= strDescription;
     m_strAddress    = QString("%1/%2").arg(DBUS_BASE_ADDRESS).arg(strName);
-    m_pTimer        = new QTimer();
+//    m_pTimer        = new QTimer();
     m_bBallDetected = false;
 
     new balltracker_workerInterface(this);
@@ -44,13 +45,22 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
     QString strObject = "/"+strName;
     m_connection.registerObject(strObject,this);
 
-    connect (m_pTimer, SIGNAL (timeout()),  this, SLOT (on_timeout()));
+//    connect (m_pTimer, SIGNAL (timeout()),  this, SLOT (on_timeout()));
+    connect (this, SIGNAL (nextTrack()),  this, SLOT (on_track()));
 
     m_pThresholdSender = new streamServer (1235);
     m_pResultSender = new streamServer (1236);
     m_pSocket = new QTcpServer(this);
     connect(m_pSocket, SIGNAL (newConnection()), this, SLOT(on_newConnection()));
     m_pSocket->listen(QHostAddress("0.0.0.0"),1234);
+
+
+    QThread *pThreadThreshold = new QThread();
+    QThread *pThreadResult = new QThread();
+    m_pThresholdSender->moveToThread(pThreadThreshold);
+    m_pResultSender->moveToThread(pThreadResult);
+    pThreadResult->start();
+    pThreadThreshold->start();
 
 //    m_camera.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
 //    m_camera.set(CV_CAP_PROP_FRAME_WIDTH, 640);
@@ -76,12 +86,13 @@ void balltrackerWorker::morphOps(Mat const &thresh)
 
 void balltrackerWorker::startTracking()
 {
-    m_pTimer->start (60);
+    emit nextTrack();
+//    m_pTimer->start (10);
 }
 
 void balltrackerWorker::stopTracking()
 {
-    m_pTimer->stop();
+//    m_pTimer->stop();
 }
 
 void balltrackerWorker::startStream()
@@ -151,10 +162,10 @@ void balltrackerWorker::drawCVPannel()
     putText (m_data.m_image,buff,textOrg, fontFace, fontScale, Scalar(255,255,255),thickness,3);
 }
 
-void balltrackerWorker::on_timeout()
-{
-    detectCircles();
-}
+//void balltrackerWorker::on_timeout()
+//{
+//    detectCircles();
+//}
 
 
 void balltrackerWorker::detectCircles()
@@ -178,14 +189,17 @@ void balltrackerWorker::detectCircles()
     int centerBallY = m_data.m_image.rows/2;
 
     Mat imgHSV;
+    vector<Vec3f> circles;
     cvtColor(m_data.m_image, imgHSV, COLOR_BGR2HSV);   //Convert the captured frame from BGR to HSV
-
     inRange(imgHSV, Scalar(m_iLowH, m_iLowS, m_iLowV), Scalar(m_iHighH, m_iHighS, m_iHighV), imgThresholded); //Threshold the image
 //    morphOps (imgThresholded);
-
-    GaussianBlur( imgThresholded, imgThresholded, cv::Size(9, 9), 2, 2 );
-    vector<Vec3f> circles;
+    GaussianBlur( imgThresholded, imgThresholded, cv::Size(9, 9), 3, 3 );
     HoughCircles( imgThresholded, circles, CV_HOUGH_GRADIENT, 2, imgThresholded.rows/32, 200, 80, 0, 0 );
+
+//    cvtColor(m_data.m_image, imgHSV, COLOR_BGR2GRAY);   //Convert the captured frame from BGR to GRAY
+//    medianBlur (imgHSV, imgHSV,5);
+//    vector<Vec3f> circles;
+//    HoughCircles( imgHSV, circles, CV_HOUGH_GRADIENT, 2, imgHSV.rows/32, 200, 80, 0, 0 );
 
     if (circles.size()) {
         m_centerBall = QVector3D (cvRound(circles[0][0]), cvRound(circles[0][1]), cvRound(circles[0][2]));
@@ -212,13 +226,14 @@ void balltrackerWorker::detectCircles()
         }
     }
 
-    drawCVPannel();
-    m_pThresholdSender->sendTcpFrame(imgThresholded);
-    m_pResultSender->sendTcpFrame(m_data.m_image);
+//    drawCVPannel();
+    m_pThresholdSender->pushFrame(imgThresholded);
+    m_pResultSender->pushFrame(m_data.m_image);
 
     int distX = m_centerBall.x() - centerBallX;
     int distY = m_centerBall.y() - centerBallY;
     m_centerDistance = QPoint (distX, distY);
+    QTimer::singleShot(10, this, SLOT (on_track()));
 }
 
 void balltrackerWorker::on_newConnection()
@@ -246,5 +261,10 @@ void balltrackerWorker::on_readyRead()
     in >> m_iHighV;
     in >> m_camBrightness;
     qDebug() << m_iLowH <<  m_iLowS << m_iLowV << " : " << m_iHighH << m_iHighS << m_iHighV << m_camBrightness;
-//    m_capture.set (CV_CAP_PROP_BRIGHTNESS,m_camBrightness);
+    //    m_capture.set (CV_CAP_PROP_BRIGHTNESS,m_camBrightness);
+}
+
+void balltrackerWorker::on_track()
+{
+    detectCircles();
 }

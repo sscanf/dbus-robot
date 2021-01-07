@@ -6,6 +6,8 @@
 #include <QTcpSocket>
 #include <opencv2/opencv.hpp>
 #include <QMutex>
+#include <QQueue>
+#include <QTimer>
 
 using namespace cv;
 
@@ -14,22 +16,28 @@ class streamServer : public QObject
     Q_OBJECT
 public:
     explicit streamServer(int port, QObject *parent = nullptr);
-    void sendTcpFrame   (Mat const &img);
     void startListening ();
     void stopListening  ();
+    void pushFrame      (Mat const &img);
 
 private:
-    QTcpServer         *m_pSocket;
+    void sendTcpFrame   (Mat const &img);
+
+private:
+    QTcpServer         *m_pSocket=nullptr;
+    QTimer             *m_pTimer;
     QList<QTcpSocket *> m_listClients;
     int                 m_port=0;
     QMutex              m_mutex;
+    QQueue<Mat >        m_frames;
 
 signals:
 
 private slots:
-    void on_newConnection();
-    void on_disconnected();
-    void on_readyRead();
+    void onNewConnection();
+    void onDisconnected();
+    void onReadyRead();
+    void onTimeout();
 };
 
 #endif // IMAGESENDER_H

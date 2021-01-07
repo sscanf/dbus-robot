@@ -1,13 +1,17 @@
 #include <QImage>
 #include <QBuffer>
 #include "streamServer.h"
+#include <QCoreApplication>
 
 streamServer::streamServer(int port, QObject *parent) :
     QObject(parent),
     m_port (port)
 {
-    m_pSocket = new QTcpServer(this);
-    connect(m_pSocket, SIGNAL (newConnection()), this, SLOT(on_newConnection()));
+    m_pTimer = new QTimer (this);
+    connect (m_pTimer, SIGNAL (timeout()), this, SLOT (onTimeout()));
+    m_pSocket = new QTcpServer();
+    startListening();
+    connect(m_pSocket, SIGNAL (newConnection()), this, SLOT(onNewConnection()));
 }
 
 void streamServer::sendTcpFrame(const Mat &img)
@@ -44,24 +48,34 @@ void streamServer::sendTcpFrame(const Mat &img)
 
 void streamServer::startListening()
 {
-    m_pSocket->listen(QHostAddress("0.0.0.0"),m_port);
+    if (m_pSocket!=nullptr) {
+        qDebug() << "Starting listening ";
+        m_pSocket->listen(QHostAddress("0.0.0.0"),m_port);
+    }
 }
 
 void streamServer::stopListening()
 {
-    m_pSocket->close();
+    if (m_pSocket!=nullptr)
+        m_pSocket->close();
 }
 
-void streamServer::on_newConnection()
+void streamServer::pushFrame(const Mat &img)
+{
+    m_frames.enqueue(img);
+}
+
+void streamServer::onNewConnection()
 {
     qDebug() << "New TCP Connection";
     QTcpSocket *clientConnection = m_pSocket->nextPendingConnection();
-    connect(clientConnection, SIGNAL (disconnected()), this, SLOT (on_disconnected()));
-    connect(clientConnection, SIGNAL (readyRead()), this, SLOT (on_readyRead()));
+    connect(clientConnection, SIGNAL (disconnected()), this, SLOT (onDisconnected()));
+    connect(clientConnection, SIGNAL (readyRead()),    this, SLOT (onReadyRead()));
     m_listClients.append (clientConnection);
+    m_pTimer->start(5);
 }
 
-void streamServer::on_disconnected()
+void streamServer::onDisconnected()
 {
     qDebug() << "TCP Connecton lost";
     QTcpSocket *pClient = (QTcpSocket *)sender();
@@ -79,7 +93,16 @@ void streamServer::on_disconnected()
     m_mutex.unlock();
 }
 
-void streamServer::on_readyRead()
+void streamServer::onReadyRead()
 {
     qDebug() << "receiving ...";
+}
+
+void streamServer::onTimeout()
+{
+    qDebug() << m_frames.count();
+    if (!m_frames.isEmpty()) {
+        Mat img = m_frames.dequeue();
+        sendTcpFrame(img);
+    }
 }

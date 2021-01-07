@@ -69,7 +69,6 @@ int ina219Worker::readFile(const QString &fileName)
 
         QString strVal = file.readAll();
         value = strVal.toInt(nullptr, 10);
-        qDebug() << strVal << value;
     }
     return value;
 }

@@ -27,12 +27,24 @@
 using namespace std;
 using namespace cv;
 
-#define ILOW_H  0
-#define ILOW_S  100
-#define ILOW_V  100
-#define IHIGH_H 10
+#define ILOW_H  35
+#define ILOW_S  50
+#define ILOW_V  10
+
+#define IHIGH_H 80
 #define IHIGH_S 255
 #define IHIGH_V 255
+
+//COLOR_RANGES_HSV = {
+//    "red": [(0, 50, 10), (10, 255, 255)],
+//    "orange": [(10, 50, 10), (25, 255, 255)],
+//    "yellow": [(25, 50, 10), (35, 255, 255)],
+//    "green": [(35, 50, 10), (80, 255, 255)],
+//    "cyan": [(80, 50, 10), (100, 255, 255)],
+//    "blue": [(100, 50, 10), (130, 255, 255)],
+//    "purple": [(130, 50, 10), (170, 255, 255)],
+//    "red ": [(170, 50, 10), (180, 255, 255)]
+//}
 
 class MyImemData
 {
@@ -81,13 +93,13 @@ private:    //Variables
     QString         m_strDescription;
     bool            m_bEnabled;
     QDBusConnection m_connection;
-    QTimer         *m_pTimer;
+//    QTimer         *m_pTimer;
     VideoCapture    m_capture;
     MyImemData      m_data;
     QTcpServer     *m_pSocket;
     QTcpSocket     *m_pClient;
-    streamServer    *m_pThresholdSender;
-    streamServer    *m_pResultSender;
+    streamServer   *m_pThresholdSender;
+    streamServer   *m_pResultSender;
     QMutex          m_mutex;
     QVector3D       m_centerBall;
     QPoint          m_centerDistance;
@@ -107,12 +119,14 @@ signals:
     void error (bool bError);
     void possitionChanged (QPoint possition);
     void ballLost();
+    void nextTrack();
 
 private slots:
-    void on_timeout ();
+//    void on_timeout ();
     void on_newConnection();
     void on_disconnected();
     void on_readyRead();
+    void on_track();
 };
 
 #endif // balltracker_MANAGER_H

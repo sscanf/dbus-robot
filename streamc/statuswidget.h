@@ -5,9 +5,7 @@
 #include <QtDBus/QDBusConnection>
 #include <QtQuickWidgets/QQuickWidget>
 #include <QTcpSocket>
-
-#define ROBOT_IP "192.168.0.1"
-#define ROBOT_PORT 6667
+#include "../common/robot.h"
 
 class statusWidget : public QWidget
 {

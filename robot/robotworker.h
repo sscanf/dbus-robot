@@ -76,6 +76,7 @@ private: //Variables
     QTimer           *m_pRandomTimer;
     QTimer           *m_pTurnTimer;
     QDBusConnection   m_connection;
+    QDBusInterface   *m_pServosIRIface;
     QDBusInterface   *m_pTrackingIface;
     QDBusInterface   *m_pDistanceIface;
     QDBusInterface   *m_pGamepadIface;
@@ -87,7 +88,7 @@ private: //Variables
     int               m_lastDirAzim;
     bool              m_ballLost=false;
     int               m_totalCameraRounds=0;
-    positionThrd     *m_pPositionThrd;
+//    positionThrd     *m_pPositionThrd;
     walkThread       *m_pWalkThread;
     manualCameraThrd *m_pCameraThrd;
     manualMotorsThrd *m_pMotorsThrd;
@@ -100,15 +101,12 @@ private: //Variables
 private slots:
     void onTimeout         ();
     void onRandomTimeout   ();
-    void onPossitionChanged(QPoint);
+    void onPositionChanged(QPoint);
+    void onPositionChanged(QPoint,QPoint,QPoint,QPoint);
     void onBallLost        ();
     void onTurnTimeout     ();
     void onCollision       (int sensor);
     void onMotorsError     (int err);
-    void onAxisLeftX       (double value);
-    void onAxisLeftY       (double);
-    void onAxisRightX      (double);
-    void onAxisRightY      (double);
     void onButtonPS        (bool);
     void onGamepadConnected();
     void onGamepadDisconnected();

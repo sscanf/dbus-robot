@@ -32,7 +32,7 @@ public:
     qint8       ReadReg8       (unsigned char RegisterAddress);
     int         WriteReg8      (quint8 RegisterAddress, int value);
     int         send           (const QByteArray &buffer);
-    int         send           (unsigned char RegisterAddress, unsigned char *TxBuf, int length);
+    int         send           (unsigned char registerAddress, unsigned char *buffer, int length);
     int         send           (unsigned char value);
     void        close          ();
 

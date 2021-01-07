@@ -36,7 +36,7 @@ void zoi2c::init(QString Devicefile, int Address)
     devicefile=Devicefile;
     slave_address = Address;
     error_flag=false;
-        fd = 0;
+    fd = 0;
 }
 
 int zoi2c::errorMsg(QString message)
@@ -178,19 +178,24 @@ int zoi2c::WriteReg8(quint8 RegisterAddress, int value)
   return i2c_smbus_access (I2C_SMBUS_WRITE, RegisterAddress, I2C_SMBUS_BYTE_DATA, &data) ;
 }
 
-//    int ret=-1;
-//    if (!fd)
-//        if (open_fd() == -1)
-//              return -1;
+int zoi2c::send(unsigned char registerAddress, unsigned char *buffer, int length)
+{
 
-//    error_flag=false;
-//    ret = write(fd, &value, static_cast<size_t>(sizeof(value)));
-//    if (ret != 1) {
-//        return errorMsg("i2c write error!\n");
-//        qDebug() << getErrorMessage();
-//    }
-//    return ret;
-//}
+  union i2c_smbus_data  data;
+  int i;
+
+  if( length > I2C_SMBUS_BLOCK_MAX ){
+    length = I2C_SMBUS_BLOCK_MAX;
+  }
+
+  for(i=1; i<=length; i++){
+    data.block[i] = buffer[i-1];
+  }
+
+  data.block[0] = length;
+  return i2c_smbus_access(I2C_SMBUS_WRITE, registerAddress, I2C_SMBUS_BLOCK_DATA, &data);
+}
+
 
 int zoi2c::send(const QByteArray &buffer)
 {
@@ -207,35 +212,35 @@ int zoi2c::send(const QByteArray &buffer)
     return 1;
 }
 
-int zoi2c::send(unsigned char RegisterAddress, unsigned char *TxBuf, int length)
-{
-    int i;
-    unsigned char data[length+1];
-    data[0]=RegisterAddress;
+//int zoi2c::send(unsigned char RegisterAddress, unsigned char *TxBuf, int length)
+//{
+//    int i;
+//    unsigned char data[length+1];
+//    data[0]=RegisterAddress;
 
-    for ( i = 0; i < length ; i++ ) {
-        data[i+1] = TxBuf[i];
-    }
+//    for ( i = 0; i < length ; i++ ) {
+//        data[i+1] = TxBuf[i];
+//    }
 
-    if (TxBuf == nullptr)
-        return errorMsg("Send method received a null TxBuf pointer.\n");
-    if (length < 1)
-        return errorMsg("Send method received an invalid buffer length.\n");
+//    if (TxBuf == nullptr)
+//        return errorMsg("Send method received a null TxBuf pointer.\n");
+//    if (length < 1)
+//        return errorMsg("Send method received an invalid buffer length.\n");
 
-    if (!fd)
-        if (open_fd() == -1)
-              return -1;
+//    if (!fd)
+//        if (open_fd() == -1)
+//              return -1;
 
-    error_flag=false;
+//    error_flag=false;
 
-/*	if (send(RegisterAddress) == -1)
-        return -1;
-*/
-    if(write(fd, data, static_cast<int>(length+1) != length+1))
-        return errorMsg("i2c write error!\n");
+///*	if (send(RegisterAddress) == -1)
+//        return -1;
+//*/
+//    if(write(fd, data, static_cast<int>(length+1) != length+1))
+//        return errorMsg("i2c write error!\n");
 
-    return 1;
-}
+//    return 1;
+//}
 
 int zoi2c::send(unsigned char value)
 {
