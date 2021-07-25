@@ -42,3 +42,5 @@ com.robot.roengines.xml
 *_worker.xml
 *proxy/
 vlc-qt
+firmware
+imx8

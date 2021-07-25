@@ -7,24 +7,23 @@
 #include <QThread>
 #include <QTimer>
 
-class positionThrd : public QThread
-{
+class positionThrd : public QThread {
 
 public:
     explicit positionThrd(QDBusConnection connection, quint16 azim, quint16 elev, QObject *parent = nullptr);
     void run();
-    void setPossition (quint16 azim, quint16 elev);
-    void setAzimuth   (quint16 azim);
-    void setElevation (quint16 elev);
+    void setPossition(quint16 azim, quint16 elev);
+    void setAzimuth(quint16 azim);
+    void setElevation(quint16 elev);
     void setAngle(quint16 azim, quint16 elev);
 
 private:
-//    void setAngle(quint16 azim, quint16 elev);
+    //    void setAngle(quint16 azim, quint16 elev);
 private:
     QDBusInterface *m_pCameraIface;
     QDBusConnection m_connection;
-    int             m_azim=90;
-    int             m_elev=70;
+    int             m_azim = 90;
+    int             m_elev = 70;
     int             m_newAzim;
     int             m_newElev;
 

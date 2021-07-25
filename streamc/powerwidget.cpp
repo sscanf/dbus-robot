@@ -24,7 +24,7 @@ powerWidget::powerWidget(QWidget *parent) :
 
 void powerWidget::connectToRobot()
 {
-    QString connString = QString("tcp:host=%1,port=%2").arg(ROBOT_IP).arg(ROBOT_PORT);
+    QString connString = QString("tcp:host=%1,port=%2").arg(ROBOT_IP).arg(ROBOT_DBUS_PORT);
     m_connection = QDBusConnection::connectToBus(connString,"robot");
 
     m_connection.connect( "com.robot.rosensors",
@@ -96,7 +96,7 @@ QString powerWidget::getStatus()
 
 void powerWidget::onTimeout()
 {
-    m_pSocket->connectToHost(ROBOT_IP,ROBOT_PORT);
+    m_pSocket->connectToHost(ROBOT_IP,ROBOT_DBUS_PORT);
 }
 
 void powerWidget::onConnected()

@@ -6,7 +6,7 @@
 
 VERSION = \\\"'01.00.00'\\\"
 DEFINES += APP_VERSION=$${VERSION}
-QMAKE_CXXFLAGS += -std=c++0x
+#QMAKE_CXXFLAGS += -std=c++0x
 
 system ($$PWD/../tools/mkinterface.sh gamepad_manager)
 system ($$quote(mkdir $$[QT_SYSROOT]/usr/include/robot/$$escape_expand(\\n\\t)))
@@ -15,6 +15,8 @@ system ($$quote(cp -r $${PWD}/proxy/* $$[QT_SYSROOT]/usr/include/robot/$$escape_
 QT          += core dbus xml
 QT          -= gui
 INCLUDEPATH += ../common/
+#INCLUDEPATH += $$[QT_SYSROOT]/usr/include/
+QMAKE_CXXFLAGS += -I $$[QT_SYSROOT]/usr/include
 TARGET       = rogamepad
 CONFIG      += console
 CONFIG      -= app_bundle
@@ -46,4 +48,4 @@ INSTALLS += dbus_services
 QMAKE_CLEAN += $$PWD/gamepad_manager_interface.cpp \
                $$PWD/gamepad_manager_interface.h   \
                $$PWD/com.robot.gamepad_manager.xml \
-               $$PWD/proxy/*
+               -r $$PWD/proxy/*

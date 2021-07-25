@@ -10,9 +10,8 @@ system ($$quote(cp -a $${PWD}/proxy/* $$[QT_SYSROOT]/usr/include/robot/$$escape_
 
 INCLUDEPATH += ../../common
 INCLUDEPATH += ./plugins/common/
-INCLUDEPATH += ../../lib
-INCLUDEPATH += $$PWD/
-DEPENDPATH  += $$PWD/
+#INCLUDEPATH += $$[QT_SYSROOT]/usr/include/
+QMAKE_CXXFLAGS += -I $$[QT_SYSROOT]/usr/include
 TEMPLATE     = lib
 CONFIG      += plugin
 TARGET       = $$qtLibraryTarget(balltracker-plugin)

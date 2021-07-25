@@ -6,21 +6,22 @@ DEFINES += APP_VERSION=$${VERSION}
 
 system ($$PWD/../tools/mkinterface.sh distance_worker)
 system ($$quote(mkdir $$[QT_SYSROOT]/usr/include/robot/$$escape_expand(\\n\\t)))
-#system ($$quote(cp -a $${PWD}/proxy/* $$(QT_SYSROOT)/usr/include/robot/$$escape_expand(\\n\\t)))
+#system ($$quote(cp -a $${PWD}/proxy/* $$[QT_SYSROOT]/usr/include/robot/$$escape_expand(\\n\\t)))
 
 INCLUDEPATH += ../../../common/
 INCLUDEPATH += ../../common
 INCLUDEPATH += ./plugins/common/
 INCLUDEPATH += ../../lib
 INCLUDEPATH += $$PWD/
-DEPENDPATH  += $$PWD/
+#INCLUDEPATH += $$[QT_SYSROOT]/usr/include
+QMAKE_CXXFLAGS += -I $$[QT_SYSROOT]/usr/include
 TEMPLATE     = lib
 CONFIG      += plugin debug
 TARGET       = $$qtLibraryTarget(distance-plugin)
 DESTDIR      = plugins
 LIBS        += -lsoc
 
-sysroot_files.path    = $$(QT_SYSROOT)/etc/
+sysroot_files.path    = $$[QT_SYSROOT]/etc/
 sysroot_files.files   = $$PWD/robot/
 sysroot_files.commands= cp $$config.files.files $$config_files.path
 

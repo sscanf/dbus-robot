@@ -20,8 +20,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QQuickItem *pItem = m_pWidget->rootObject();
     connect (pItem, SIGNAL (launch(QString)), this, SLOT (onApp(QString)));
 
-    m_pWidgetThreshold = new streamClientWidget("192.168.0.1",1235);
-    m_pWidgetResult = new streamClientWidget("192.168.0.1",1236);
+    m_pWidgetThreshold = new streamClientWidget(ROBOT_IP,1235);
+    m_pWidgetResult = new streamClientWidget(ROBOT_IP,1236);
     m_pWidgetStatus = new statusWidget();
     m_pWidgetPower = new powerWidget();
     m_pWidgetIRCamera = new IRCameraWidget();

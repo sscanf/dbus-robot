@@ -19,7 +19,7 @@ CONFIG      += plugin
 TARGET       = $$qtLibraryTarget(ina219-plugin)
 DESTDIR      = plugins
 
-sysroot_files.path    = $$(QT_SYSROOT)/etc/
+sysroot_files.path    = $$[QT_SYSROOT]/etc/
 sysroot_files.files   = $$PWD/robot/
 sysroot_files.commands= cp $$config.files.files $$config_files.path
 

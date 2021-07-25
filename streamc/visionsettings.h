@@ -6,6 +6,7 @@
 #include <QImage>
 #include <QTimer>
 #include <QColor>
+#include "../common/robot.h"
 
 #define ILOW_H  100
 #define ILOW_S  100

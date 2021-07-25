@@ -27,12 +27,12 @@ public:
     explicit servoscontrollerWorker(Adafruit_PWMServoDriver  *pPwm, QString strName, QString strDescription = 0, bool bEnabled=0, QObject *parent = 0);
 
 public Q_SLOTS:
-    QString getName       ()              { return m_strName; }
-    QString getAddress    ()              { return m_strAddress; }
-    QString getPluginType ()              { return PLUGIN_TYPE; }
-    QString getDescription()              { return m_strDescription; }
-    bool    isEnabled     ()              { return m_bEnabled; }
-    void    setEnabled    (bool bEnabled) { m_bEnabled = bEnabled; }
+    QString getName       ();
+    QString getAddress    ();
+    QString getPluginType ();
+    QString getDescription();
+    bool    isEnabled     ();
+    void    setEnabled    (bool bEnabled);
     void    setServoPulse (quint8 n, double pulse);
     void    setAngle      (quint8 n, quint16 angle);
     void    stop          (quint8 n);

@@ -1,6 +1,5 @@
 #include <QCoreApplication>
 #include <qabstractanimation.h>
-#include <stdlib.h>
 
 #include "rosensors_manager.h"
 

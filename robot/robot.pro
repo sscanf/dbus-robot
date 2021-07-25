@@ -1,12 +1,15 @@
 QT += core dbus
 QT -= gui
 
-CONFIG      += c++11
-TARGET       = robot
-CONFIG      += console
-CONFIG      -= app_bundle
-TEMPLATE     = app
-INCLUDEPATH += $$(QT_SYSROOT)/usr/include/robot/
+TARGET    = robot
+CONFIG   += console
+CONFIG   -= app_bundle
+TEMPLATE  = app
+#CONFIG    += c++11
+
+#INCLUDEPATH += $$[QT_SYSROOT]/usr/include
+#INCLUDEPATH += $$[QT_SYSROOT]
+QMAKE_CXXFLAGS += -I $$[QT_SYSROOT]/usr/include
 
 HEADERS += robotworker.h \
     manualcamerathrd.h \

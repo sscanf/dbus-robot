@@ -82,7 +82,7 @@ void visionSettings::on_disconnected()
 
 void visionSettings::on_timeout()
 {
-    m_pSocket->connectToHost("192.168.0.1",1234);
+    m_pSocket->connectToHost(ROBOT_IP,1234);
 }
 
 void visionSettings::on_lowhChanged(int value)

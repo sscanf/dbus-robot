@@ -1,25 +1,26 @@
 VERSION = \\\"'01.00.00'\\\"
 DEFINES += APP_VERSION=$${VERSION}
-QMAKE_CXXFLAGS += -std=c++0x
+#QMAKE_CXXFLAGS += -std=c++0x
 
 system ($$PWD/../tools/mkinterface.sh servoscontroller_worker)
 system ($$quote(mkdir $$[QT_SYSROOT]/usr/include/robot/$$escape_expand(\\n\\t)))
-system ($$quote(cp -r $${PWD}/proxy/* $$(QT_SYSROOT)/usr/include/robot/$$escape_expand(\\n\\t)))
+system ($$quote(cp -r $${PWD}/proxy/* $$[QT_SYSROOT]/usr/include/robot/$$escape_expand(\\n\\t)))
 
-QT          += core dbus xml
-QT          -= gui
-INCLUDEPATH += ../../common
-#INCLUDEPATH += $$[QT_SYSROOT]/usr/include
-INCLUDEPATH += ../../../common/
-INCLUDEPATH += ../../common/
-INCLUDEPATH += ./plugins/common/
-INCLUDEPATH += $$PWD/
-TEMPLATE     = lib
-CONFIG      += plugin
-TARGET       = $$qtLibraryTarget(servoscontroller-plugin)
-DESTDIR      = plugins
+QT             += core dbus xml
+QT             -= gui
+INCLUDEPATH    += ../../common
+#INCLUDEPATH    += $$[QT_SYSROOT]/usr/include
+INCLUDEPATH    += ../../../common/
+INCLUDEPATH    += ../../common/
+INCLUDEPATH    += ./plugins/common/
+INCLUDEPATH    += $$PWD/
+TEMPLATE        = lib
+CONFIG         += plugin
+TARGET          = $$qtLibraryTarget(servoscontroller-plugin)
+DESTDIR         = plugins
+QMAKE_CXXFLAGS += -I $$[QT_SYSROOT]/usr/include
 
-sysroot_files.path      = $$(QT_SYSROOT)/etc/
+sysroot_files.path      = $$[QT_SYSROOT]/etc/
 sysroot_files.files     = $$PWD/robot/
 sysroot_files.commands  = cp $$config.files.files $$config_files.path
 

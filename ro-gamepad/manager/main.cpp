@@ -1,6 +1,5 @@
 #include <QCoreApplication>
 #include <qabstractanimation.h>
-#include <stdlib.h>
 #include "gamepad_manager.h"
 
 int main(int argc, char *argv[])

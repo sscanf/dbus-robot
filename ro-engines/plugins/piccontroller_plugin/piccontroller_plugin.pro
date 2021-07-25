@@ -5,8 +5,8 @@ VERSION = \\\"'01.00.00'\\\"
 DEFINES += APP_VERSION=$${VERSION}
 
 system ($$PWD/../tools/mkinterface.sh piccontroller_worker)
-system ($$quote(mkdir $$(QT_SYSROOT)/usr/include/robot/$$escape_expand(\\n\\t)))
-system ($$quote(cp -r $${PWD}/proxy/* $$(QT_SYSROOT)/usr/include/robot/$$escape_expand(\\n\\t)))
+system ($$quote(mkdir $$[QT_SYSROOT]/usr/include/robot/$$escape_expand(\\n\\t)))
+system ($$quote(cp -r $${PWD}/proxy/* $$[QT_SYSROOT]/usr/include/robot/$$escape_expand(\\n\\t)))
 
 LIBS        += -lusb-1.0
 INCLUDEPATH += ../../common
