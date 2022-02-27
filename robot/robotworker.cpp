@@ -410,7 +410,7 @@ void robotWorker::onCollision(int sensor) {
 
 void robotWorker::onMotorsError(int err) {
     setDir(TSK_STOP);
-    qDebug() << "Error on motors: " << err;
+    qDebug() << "Error in motoros: " << err;
 }
 
 void robotWorker::setSpeed() {
