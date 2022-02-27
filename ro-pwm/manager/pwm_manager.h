@@ -6,7 +6,7 @@
 #include <QList>
 
 #include <QPluginLoader>
-#include <QtDBus/QtDBus>
+#include <QtDBus>
 #include <Adafruit_PWMServoDriver.h>
 
 #include "pwm_plugin.h"

@@ -6,8 +6,8 @@
 #include "positionthrd.h"
 #include "walkthread.h"
 #include <QCoreApplication>
-#include <QtDBus/QtDBus>
-#include <QtDBus/qdbusconnection.h>
+#include <QtDBus>
+#include <qdbusconnection.h>
 
 #define LOW_SPEED 2
 

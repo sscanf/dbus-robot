@@ -5,7 +5,7 @@
 #include <QMap>
 #include <QFile>
 #include <QTimer>
-#include <QtDBus/QtDBus>
+#include <QtDBus>
 #include <mpu9250.h>
 
 #define PLUGIN_TYPE   " Please, define plugin type !!! "

@@ -5,7 +5,7 @@
 #include <QQuickWidget>
 #include <QWidget>
 #include <QtDBus/QDBusConnection>
-#include <QtDBus/QtDBus>
+#include <QtDBus>
 
 class IRCameraWidget : public QWidget {
     Q_OBJECT

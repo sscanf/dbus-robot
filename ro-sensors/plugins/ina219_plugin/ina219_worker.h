@@ -6,7 +6,7 @@
 #include <QFile>
 #include <QTimer>
 #include <rosensors_plugin.h>
-#include <QtDBus/QtDBus>
+#include <QtDBus>
 
 #define PLUGIN_TYPE   " Please, define plugin type !!! "
 

@@ -7,7 +7,7 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
     : QObject(parent)
     , m_strName(strName)
     , m_connection(QDBusConnection::systemBus())
-    , m_capture(1)
+    , m_capture(0)
     , m_iLowH(ILOW_H)
     , m_iHighH(IHIGH_H)
     , m_iLowS(ILOW_S)
@@ -21,16 +21,16 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
     //    }
 
     if (!m_capture.isOpened()) { // if not success, exit program
-        qDebug() << "Cannot open the web cam";
+        qDebug() << "Cannot open the camera";
         return;
     }
 
-    m_capture.set(CV_CAP_PROP_FRAME_WIDTH, 320);
-    m_capture.set(CV_CAP_PROP_FRAME_HEIGHT, 240);
+    m_capture.set(CAP_PROP_FRAME_WIDTH, 320);
+    m_capture.set(CAP_PROP_FRAME_HEIGHT, 240);
     //    m_capture.set (CV_CAP_PROP_FRAME_WIDTH,640);
     //    m_capture.set (CV_CAP_PROP_FRAME_HEIGHT,480);
-    m_capture.set(CV_CAP_PROP_BRIGHTNESS, 40);
-    m_capture.set(CV_CAP_PROP_CONTRAST, 1);
+    m_capture.set(CAP_PROP_BRIGHTNESS, 40);
+    m_capture.set(CAP_PROP_CONTRAST, 1);
     //    m_capture.set (CV_CAP_PROP_XI_LED_MODE,1);
 
     m_bEnabled       = bEnabled;
@@ -179,7 +179,7 @@ void balltrackerWorker::detectCircles() {
     inRange(imgHSV, Scalar(m_iLowH, m_iLowS, m_iLowV), Scalar(m_iHighH, m_iHighS, m_iHighV), imgThresholded); // Threshold the image
     //    morphOps (imgThresholded);
     GaussianBlur(imgThresholded, imgThresholded, cv::Size(9, 9), 3, 3);
-    HoughCircles(imgThresholded, circles, CV_HOUGH_GRADIENT, 2, imgThresholded.rows / 32, 200, 80, 0, 0);
+    HoughCircles(imgThresholded, circles, HOUGH_GRADIENT, 2, imgThresholded.rows / 32, 200, 80, 0, 0);
 
     //    cvtColor(m_data.m_image, imgHSV, COLOR_BGR2GRAY);   //Convert the captured frame from BGR to GRAY
     //    medianBlur (imgHSV, imgHSV,5);

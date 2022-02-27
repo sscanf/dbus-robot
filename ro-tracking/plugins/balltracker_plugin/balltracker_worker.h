@@ -6,7 +6,7 @@
 #include <QFile>
 #include <QTimer>
 #include <rotracking_plugin.h>
-#include <QtDBus/QtDBus>
+#include <QtDBus>
 #include <opencv2/opencv.hpp>
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/video/video.hpp>

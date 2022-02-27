@@ -7,8 +7,8 @@
 
 pwmManager::pwmManager(int & argc, char ** argv) :
     QCoreApplication(argc, argv),
-    m_pwm (0x40),
-    m_connection (QDBusConnection::systemBus())
+    m_connection (QDBusConnection::systemBus()),
+    m_pwm (0x40)
 {
     new pwm_managerInterface(this);
     m_connection.registerObject("/pwm",this);

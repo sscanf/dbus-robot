@@ -51,30 +51,6 @@ void stSampling(void)
 		
 	if (++tiempo>=120) // 120 milisegundos = 480
 	{
-/*		if (width1==0 && encoder[MOTOR_1].outSpeed>0)
-		{
-			encoder[MOTOR_1].time_collision++;
-			if (encoder[MOTOR_1].time_collision==30)
-			{
-				encoder[MOTOR_1].time_collision=0;
-				motorInvertDir(MOTOR_1);
-			}
-		}
-		else
-			encoder[MOTOR_1].time_collision=0;
-					
-		if (width2==0 && encoder[MOTOR_2].outSpeed>0)
-		{
-			encoder[MOTOR_2].time_collision++;
-			if (encoder[MOTOR_2].time_collision==30)
-			{
-				encoder[MOTOR_2].time_collision=0;
-				motorInvertDir(MOTOR_2);
-			}
-		}
-		else
-			encoder[MOTOR_2].time_collision=0;
-*/
 		encoder[MOTOR_1].inSpeed=abs(width1);
 		encoder[MOTOR_2].inSpeed=abs(width2);
 		tiempo=0;
@@ -222,11 +198,9 @@ void readEncoders(void)
 		(*current_state)();
 		counter=0;
 	}
-} 
+}
 
-void initializeMotors(void)
-{
-
+int initializeMotors() {
    ADCON1 |= 0x0F; // Set all I/O pins to digital
    UCFG = 0x14; // Enable pullup resistors; full speed mode
    PORTEbits.RDPU=1;    //Resistencias pull-up en PORTD activas
@@ -273,7 +247,7 @@ void setPidEnabled (char enabled)
 {
 	bPidEnabled = enabled;
 }
-void motorSpeed (int speed, unsigned char motor)
+oid motorSpeed (int speed, unsigned char motor)
 {
  //  speed&=0x7f;
   encoder[motor].outSpeed=(speed*2);

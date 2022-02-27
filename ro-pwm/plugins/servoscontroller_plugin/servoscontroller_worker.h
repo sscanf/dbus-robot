@@ -12,7 +12,7 @@
 #include <QFile>
 #include <QTimer>
 #include <pwm_plugin.h>
-#include <QtDBus/QtDBus>
+#include <QtDBus>
 #include <Adafruit_PWMServoDriver.h>
 
 #define PLUGIN_TYPE   " Please, define plugin type !!! "

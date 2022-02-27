@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QWidget>
-#include <QtDBus/QtDBus>
+#include <QtDBus>
 #include <QtDBus/QDBusConnection>
 #include <QQuickWidget>
 #include <QQuickItem>

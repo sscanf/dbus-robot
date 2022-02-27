@@ -5,7 +5,7 @@
 #include <QTimer>
 #include <QList>
 #include <QPluginLoader>
-#include <QtDBus/QtDBus>
+#include <QtDBus>
 #include "rosensors_plugin.h"
 
 class rosensorsManager : public QCoreApplication

@@ -16,8 +16,9 @@ uint8_t  distances[TOTAL_SENSORS+1];
 uint8_t portB;
 uint8_t portD;
 
-void setup()
-{
+unsigned long start_time;
+
+void setup() {
   Wire.begin(SLAVE_ADDRESS);
   Wire.onRequest(respondData); // register event
   Wire.onReceive(receiveRegister);
@@ -30,8 +31,7 @@ void setup()
   maxloops = microsecondsToClockCycles(500);
 }
 
-void loop()
-{      
+void loop() {      
   memset (timesStart, 0, sizeof(timesStart));
   memset (timesStop, 0, sizeof(timesStop));
   
@@ -44,7 +44,8 @@ void loop()
   unsigned long numloops=0;
   uint8_t val, valPortB, valPortD;
   uint8_t count=0;
-  
+
+  start_time = millis();
   while (count < TOTAL_SENSORS && numloops < maxloops) {
     valPortD= *portInputRegister(portD);
     valPortB= *portInputRegister(portB);
@@ -66,6 +67,7 @@ void loop()
     numloops++;
   };
 
+  Serial.print (millis() - start_time);
   Serial.print ("Distance : ");
   for (int n=0; n<TOTAL_SENSORS; n++) {
     distances[n] = (timesStop[n] * 0.034) / 2;
@@ -79,11 +81,9 @@ void loop()
 
 // function that executes whenever data is requested by master
 // this function is registered as an event, see setup()
-void respondData()
-{
+void respondData() {
   Wire.write (distances,TOTAL_SENSORS);
 }
 
-void receiveRegister(int byteCount)
-{
+void receiveRegister(int byteCount) {
 }

@@ -5,7 +5,7 @@
 #include <QTimer>
 #include <QList>
 #include <QPluginLoader>
-#include <QtDBus/QtDBus>
+#include <QtDBus>
 #include "rotracking_plugin.h"
 
 

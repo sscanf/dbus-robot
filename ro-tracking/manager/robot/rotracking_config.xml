@@ -1,5 +1,5 @@
 <ROBOT>
-<!--        <Plugin name="balltracker" description="Ball tracking" active="true" file="libballtracker-plugin.so" />-->
-        <Plugin name="irtracker" description="Infrared tracking" active="true" file="libirtracker-plugin.so" />
+        <Plugin name="balltracker" description="Ball tracking" active="true" file="libballtracker-plugin.so" />
+<!--        <Plugin name="irtracker" description="Infrared tracking" active="true" file="libirtracker-plugin.so" /> -->
 <!--        <Plugin name="stream" description="Streaming plugin" active="true" file="libstream-plugin.so" /> -->
 </ROBOT>

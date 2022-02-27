@@ -1,3 +1,4 @@
 <ROBOT>
-        <Plugin name="engines" description="Engines controller" active="true" file="libpiccontroller-plugin.so" />
+        <!-- <Plugin name="engines" description="Engines controller" active="true" file="libpiccontroller-plugin.so" /> -->
+        <Plugin name="l298n" description="Engines controller" active="true" file="libl298n-plugin.so" />
 </ROBOT>

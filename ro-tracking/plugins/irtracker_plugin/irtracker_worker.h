@@ -8,7 +8,7 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTimer>
-#include <QtDBus/QtDBus>
+#include <QtDBus>
 #include <rotracking_plugin.h>
 //#include <raspicam/raspicam_cv.h>
 

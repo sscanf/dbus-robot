@@ -5,7 +5,7 @@
 #include <QTimer>
 #include <QList>
 #include <QPluginLoader>
-#include <QtDBus/QtDBus>
+#include <QtDBus>
 #include "gamepad_plugin.h"
 
 #define PLUGINS_PATH        "/usr/lib/"

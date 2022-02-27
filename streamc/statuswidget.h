@@ -1,7 +1,7 @@
 #ifndef STATUSWIDGET_H
 #define STATUSWIDGET_H
 
-#include <QtDBus/QtDBus>
+#include <QtDBus>
 #include <QtDBus/QDBusConnection>
 #include <QtQuickWidgets/QQuickWidget>
 #include <QTcpSocket>

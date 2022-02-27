@@ -6,27 +6,28 @@
 #include <QMap>
 #include <QObject>
 #include <QTimer>
-#include <QtDBus/QtDBus>
+#include <QtDBus>
 #include <roengines_plugin.h>
 
-#define PLUGIN_TYPE " Please, define plugin type !!! "
+#define PLUGIN_TYPE    " Please, define plugin type !!! "
 #define USB_BUFFER_LEN 32
-#define VELOCIDAD_H 0
-#define VELOCIDAD_L 1
-#define MOTOR_LEFT_H 2
-#define MOTOR_LEFT_L 3
-#define MOTOR_RIGHT_H 4
-#define MOTOR_RIGHT_L 5
-#define BPID_H 6
-#define BPID_L 7
-#define MAX_SPEED 15
+#define VELOCIDAD_H    0
+#define VELOCIDAD_L    1
+#define MOTOR_LEFT_H   2
+#define MOTOR_LEFT_L   3
+#define MOTOR_RIGHT_H  4
+#define MOTOR_RIGHT_L  5
+#define BPID_H         6
+#define BPID_L         7
+#define MAX_SPEED      15
 
 class piccontrollerWorker : public QObject {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "com.robot.roengines")
 
 public:
-    enum direction{
+    enum direction
+    {
         DIR_FORWARDING,
         DIR_TURNING_LEFT,
         DIR_TURNING_RIGHT,

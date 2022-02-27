@@ -5,7 +5,7 @@
 #include <QMap>
 #include <QFile>
 #include <QTimer>
-#include <QtDBus/QtDBus>
+#include <QtDBus>
 #include <rosensors_plugin.h>
 #include "zoi2c.h"
 

@@ -14,12 +14,16 @@ INCLUDEPATH += ./plugins/common/
 INCLUDEPATH += ../../lib
 INCLUDEPATH += $$PWD/
 #INCLUDEPATH += $$[QT_SYSROOT]/usr/include
-QMAKE_CXXFLAGS += -I $$[QT_SYSROOT]/usr/include
 TEMPLATE     = lib
-CONFIG      += plugin debug
+CONFIG      += plugin
 TARGET       = $$qtLibraryTarget(distance-plugin)
 DESTDIR      = plugins
 LIBS        += -lsoc
+
+QMAKE_CXXFLAGS += -I $$[QT_SYSROOT]/usr/include
+QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CFLAGS += -Wno-cpp
+QMAKE_CXXFLAGS += -Wno-cpp
 
 sysroot_files.path    = $$[QT_SYSROOT]/etc/
 sysroot_files.files   = $$PWD/robot/
