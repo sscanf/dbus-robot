@@ -97,7 +97,7 @@ private:    //Variables
     VideoCapture    m_capture;
     MyImemData      m_data;
     QTcpServer     *m_pSocket;
-    QTcpSocket     *m_pClient;
+//    QTcpSocket     *m_pClient;
     streamServer   *m_pThresholdSender;
     streamServer   *m_pResultSender;
     QMutex          m_mutex;
@@ -124,7 +124,7 @@ signals:
 private slots:
 //    void on_timeout ();
     void on_newConnection();
-    void on_disconnected();
+//    void on_disconnected();
     void on_readyRead();
     void on_track();
 };

@@ -4,8 +4,8 @@
 #
 #-------------------------------------------------
 
-VERSION = \\\"'01.00.00'\\\"
-DEFINES         += APP_VERSION=$${VERSION}
+VERSION  = \\\"'01.00.00'\\\"
+DEFINES += APP_VERSION=$${VERSION}
 
 QMAKE_CXXFLAGS += -std=c++11
 QMAKE_CFLAGS += -Wno-cpp

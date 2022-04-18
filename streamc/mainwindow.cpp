@@ -1,14 +1,13 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
-{
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow) {
 
-    m_pWidget = new QQuickWidget (this);
-//    connect (m_pWidget, SIGNAL (statusChanged(QQuickWidget::Status)), this, SLOT (onStatusChanged(QQuickWidget::Status)));
-    m_pWidget->setSource (QUrl ("qrc:/MainMenu.qml"));
+    m_pWidget = new QQuickWidget(this);
+    //    connect (m_pWidget, SIGNAL (statusChanged(QQuickWidget::Status)), this, SLOT (onStatusChanged(QQuickWidget::Status)));
+    m_pWidget->setSource(QUrl("qrc:/MainMenu.qml"));
     m_pWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
     m_pWidget->setFixedWidth(900);
     m_pWidget->setFixedHeight(563);
@@ -16,25 +15,22 @@ MainWindow::MainWindow(QWidget *parent) :
     setFixedWidth(900);
     setFixedHeight(563);
 
-
     QQuickItem *pItem = m_pWidget->rootObject();
-    connect (pItem, SIGNAL (launch(QString)), this, SLOT (onApp(QString)));
+    connect(pItem, SIGNAL(launch(QString)), this, SLOT(onApp(QString)));
 
-    m_pWidgetThreshold = new streamClientWidget(ROBOT_IP,1235);
-    m_pWidgetResult = new streamClientWidget(ROBOT_IP,1236);
-    m_pWidgetStatus = new statusWidget();
-    m_pWidgetPower = new powerWidget();
-    m_pWidgetIRCamera = new IRCameraWidget();
+    m_pWidgetThreshold = new streamClientWidget(ROBOT_IP, 1235);
+    m_pWidgetResult    = new streamClientWidget(ROBOT_IP, 1236);
+    m_pWidgetStatus    = new statusWidget();
+    m_pWidgetPower     = new powerWidget();
+    m_pWidgetIRCamera  = new IRCameraWidget();
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::onApp(QString app)
-{
-    QWidget *pWidget=nullptr;
+void MainWindow::onApp(QString app) {
+    QWidget *pWidget = nullptr;
 
     if (app == "speedPannel")
         pWidget = m_pWidgetStatus;

@@ -4,7 +4,7 @@ Rectangle {
     id: mainMenu
     width: 900
     height: 563
-    signal launch(app: string)
+    signal launch(string app)
 
     Image {
         id: background

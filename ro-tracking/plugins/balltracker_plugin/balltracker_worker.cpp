@@ -25,8 +25,10 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
         return;
     }
 
-    m_capture.set(CAP_PROP_FRAME_WIDTH, 320);
-    m_capture.set(CAP_PROP_FRAME_HEIGHT, 240);
+    //m_capture.set(CAP_PROP_FRAME_WIDTH, 320);
+    //m_capture.set(CAP_PROP_FRAME_HEIGHT, 240);
+    m_capture.set(CAP_PROP_FRAME_WIDTH, 720);
+    m_capture.set(CAP_PROP_FRAME_HEIGHT, 480);
     //    m_capture.set (CV_CAP_PROP_FRAME_WIDTH,640);
     //    m_capture.set (CV_CAP_PROP_FRAME_HEIGHT,480);
     m_capture.set(CAP_PROP_BRIGHTNESS, 40);
@@ -53,12 +55,11 @@ balltrackerWorker::balltrackerWorker(QString strName, QString strDescription, bo
     connect(m_pSocket, SIGNAL(newConnection()), this, SLOT(on_newConnection()));
     m_pSocket->listen(QHostAddress("0.0.0.0"), 1234);
 
-    QThread *pThreadThreshold = new QThread();
-    QThread *pThreadResult    = new QThread();
-    m_pThresholdSender->moveToThread(pThreadThreshold);
-    m_pResultSender->moveToThread(pThreadResult);
-    pThreadResult->start();
-    pThreadThreshold->start();
+    m_pThresholdSender = new streamServer(ROBOT_STREAM_THRESHOLD_VIDEO);
+    m_pResultSender = new streamServer(ROBOT_STREAM_RESULT_VIDEO);
+
+    m_pThresholdSender->start();
+    m_pResultSender->start();
 
     //    m_camera.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
     //    m_camera.set(CV_CAP_PROP_FRAME_WIDTH, 640);
@@ -164,8 +165,8 @@ void balltrackerWorker::detectCircles() {
         return;
     }
 
-    //    //Rotamos la imágen 90 grados porque la cámara está en posición vertical.
-    double  angle = -90;
+    //Rotamos la imágen 90 grados porque la cámara está en posición vertical.
+    double  angle = 0;
     Point2f center((m_data.m_image.cols - 1) / 2.0, (m_data.m_image.rows - 1) / 2.0);
     Mat     rot = getRotationMatrix2D(center, angle, 1);
     warpAffine(m_data.m_image, m_data.m_image, rot, m_data.m_image.size());
@@ -218,18 +219,17 @@ void balltrackerWorker::detectCircles() {
     int distX        = m_centerBall.x() - centerBallX;
     int distY        = m_centerBall.y() - centerBallY;
     m_centerDistance = QPoint(distX, distY);
-    QTimer::singleShot(10, this, SLOT(on_track()));
+    QTimer::singleShot(1, this, SLOT(on_track()));
 }
 
 void balltrackerWorker::on_newConnection() {
-    m_pClient = m_pSocket->nextPendingConnection();
-    connect(m_pClient, SIGNAL(disconnected()), this, SLOT(on_disconnected()));
-    connect(m_pClient, SIGNAL(readyRead()), this, SLOT(on_readyRead()));
+    QTcpSocket *pClient = m_pSocket->nextPendingConnection();
+    connect(pClient, SIGNAL(readyRead()), this, SLOT(on_readyRead()));
 }
 
-void balltrackerWorker::on_disconnected() {
-    m_pClient->deleteLater();
-}
+//void balltrackerWorker::on_disconnected() {
+//    m_pClient->deleteLater();
+//}
 
 void balltrackerWorker::on_readyRead() {
     QTcpSocket *pSocket = (QTcpSocket *)this->sender();

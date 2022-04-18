@@ -179,8 +179,8 @@ void robotWorker::onPositionChanged(QPoint position) {
 
     RO3DPoint pos;
     pos           = getCenterDistance();
-    double tempaz = map(pos.x(), 0, 320, 0, 180);
-    double tempel = map(pos.y(), 0, 240, 0, 90);
+    double tempaz = map(pos.x(), 0, 720, 0, 180);
+    double tempel = map(pos.y(), 0, 480, 0, 90);
     m_azimut      = static_cast<quint16>(m_azimut - (tempaz / 15));
     m_elev        = static_cast<quint16>(m_elev + (tempel / 15));
     m_pPositionThrd->setPossition(m_azimut, m_elev);
@@ -325,7 +325,7 @@ void robotWorker::setConnectedStatus(bool value) {
 }
 
 void robotWorker::onBallLost() {
-    if (m_ballLost != true) {
+    if (m_ballLost == false) {
         qDebug() << "Ball lost";
         setDir(TSK_STOP);
         m_ballLost = true;

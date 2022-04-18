@@ -11,8 +11,7 @@ void positionThrd::run() {
     m_pCameraIface = new QDBusInterface("com.robot.pwm", //
                                         "/servos",
                                         "com.robot.servoscontroller",
-                                        m_connection,
-                                        this);
+                                        m_connection );
     setPossition(m_azim, m_elev);
     int antElev = 0;
     int antAzim = 0;
@@ -34,8 +33,8 @@ void positionThrd::run() {
             antElev = m_elev;
             antAzim = m_azim;
             setAngle(m_azim, m_elev);
-        } else
-            msleep(100);
+        }
+        msleep(10);
     }
 }
 
