@@ -31,11 +31,10 @@ HEADERS = \
           l298n_factory.h          \
           l298n_worker.h
 
-
 SOURCES  = \
           ../../../common/Adafruit_PWMServoDriver.cpp \
-          l298n_worker_interface.cpp \
           ../../../common/zoi2c.cpp \
+          l298n_worker_interface.cpp \
           l298n_worker.cpp           \
           l298n_factory.cpp
 

@@ -70,16 +70,20 @@ private: // Variables
     QString m_strAddress;
     QString m_strDescription;
     bool    m_bEnabled;
-    int     m_speed = 0;
     int     m_errorsRight[TOTAL_ERRORS];
     int     m_errorsLeft[TOTAL_ERRORS];
-    int     m_nErrors = 0;
+    int     m_speed = 0;
+    int     m_lastSpeedLeft  = 0;
+    int     m_lastSpeedRight = 0;
+    int     m_nErrors        = 0;
     QTimer *m_pTimer;
 
     //   void (l298nWorker::*current_state)(QVariantList *) = NULL;
 
 signals:
     void error(bool bError);
+    void encoderRightChange(int val);
+    void encoderLeftChange(int val);
 
 private slots:
     // States

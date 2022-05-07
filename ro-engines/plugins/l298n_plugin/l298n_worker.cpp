@@ -13,14 +13,13 @@ l298nWorker::l298nWorker(QString strName, QString strDescription, bool bEnabled,
     m_strAddress     = QString("%1/%2").arg(DBUS_BASE_ADDRESS, strName);
 
     new l298n_workerInterface(this);
-    QString strAddress = m_strAddress;
-    QString strObject  = "/" + strName;
+    QString strObject = "/" + strName;
     m_connection.registerObject(strObject, this);
-    m_connection.registerService(strAddress.replace("/", "."));
 
     m_pwm.begin();
-    m_pTimer = new QTimer (this);
-    connect (m_pTimer, SIGNAL (timeout()), this, SLOT (onTimeout()));
+    m_pTimer = new QTimer(this);
+    connect(m_pTimer, SIGNAL(timeout()), this, SLOT(onTimeout()));
+    m_pTimer->start (100);
 }
 
 QString l298nWorker::getName() {
@@ -125,8 +124,19 @@ void l298nWorker::setEncoderSpeed(encoders encoder, int speed) {
     }
 }
 
-void l298nWorker::onTimeout()
-{
+void l298nWorker::onTimeout() {
+    int speedLeft  = getSpeed(encoder_left);
+    int speedRight = getSpeed(encoder_right);
+
+    if (m_lastSpeedLeft != speedLeft) {
+        m_lastSpeedLeft = speedLeft;
+        emit encoderLeftChange(speedLeft);
+    }
+
+    if (m_lastSpeedRight != speedRight) {
+        m_lastSpeedRight = speedRight;
+        emit encoderLeftChange(speedRight);
+    }
     PIDControl();
 }
 

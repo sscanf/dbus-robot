@@ -34,12 +34,14 @@ HEADERS = distance_worker_interface.h\
           distance_worker.h \
           ../../../common/imx6io.h \
           ../../../common/zoi2c.h \
+          ../../../common/qsoc.h \
            enumsdbus.h
 
 SOURCES  = distance_worker_interface.cpp\
            distance_factory.cpp \
            distance_worker.cpp \
            ../../../common/imx6io.cpp \
+          ../../../common/qsoc.cpp \
            ../../../common/zoi2c.cpp
 
 target.path = /usr/lib

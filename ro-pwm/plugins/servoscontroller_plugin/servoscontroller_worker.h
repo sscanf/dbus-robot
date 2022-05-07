@@ -24,6 +24,10 @@ class servoscontrollerWorker : public QObject
     Q_CLASSINFO("D-Bus Interface", "com.robot.servoscontroller")
 
 public:
+    enum Positions{
+        position_azimuth,
+        position_elevation
+    };
     explicit servoscontrollerWorker(Adafruit_PWMServoDriver  *pPwm, QString strName, QString strDescription = 0, bool bEnabled=0, QObject *parent = 0);
 
 public Q_SLOTS:
@@ -34,8 +38,8 @@ public Q_SLOTS:
     bool    isEnabled     ();
     void    setEnabled    (bool bEnabled);
     void    setServoPulse (quint8 n, double pulse);
-    void    setAngle      (quint8 n, quint16 angle);
-    void    stop          (quint8 n);
+    void    setAngle      (servoscontrollerWorker::Positions pos, quint16 angle);
+    void    stop          (servoscontrollerWorker::Positions pos);
 
 private:    //Functions
     double map(double x, double in_min, double in_max, double out_min, double out_max);
