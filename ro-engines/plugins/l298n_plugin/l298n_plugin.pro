@@ -12,6 +12,9 @@ system ($$quote(cp -r $${PWD}/proxy/* $$[QT_SYSROOT]/usr/include/robot/$$escape_
 QMAKE_CXXFLAGS += -std=c++11
 QMAKE_CFLAGS += -Wno-cpp
 QMAKE_CXXFLAGS += -Wno-cpp
+QMAKE_CXXFLAGS_DEBUG -= -O2
+QMAKE_CXXFLAGS_DEBUG += -O0
+
 
 INCLUDEPATH += ../../common
 INCLUDEPATH += ../../../common

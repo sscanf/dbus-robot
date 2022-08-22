@@ -7,13 +7,14 @@ CONFIG   -= app_bundle
 TEMPLATE  = app
 #CONFIG    += c++11
 
-QMAKE_CXXFLAGS += -I $$[QT_SYSROOT]/usr/include
-QMAKE_CXXFLAGS += -std=c++11
-QMAKE_CFLAGS += -Wno-cpp
-QMAKE_CXXFLAGS += -Wno-cpp
+INCLUDEPATH += $$[QT_SYSROOT]/usr/include
+#INCLUDEPATH += $$[QT_SYSROOT
+QMAKE_CXXFLAGS += -std=c++0x
 
-#INCLUDEPATH += $$[QT_SYSROOT]/usr/include
-#INCLUDEPATH += $$[QT_SYSROOT]
+systemd_files.path  = /lib/systemd/
+systemd_files.files = $$PWD/system/
+
+
 
 HEADERS += robotworker.h \
     manualcamerathrd.h \
@@ -32,3 +33,4 @@ SOURCES += main.cpp  \
 
 target.path  = /usr/bin/
 INSTALLS += target
+INSTALLS += systemd_files

@@ -13,14 +13,19 @@
         <file alias="ZEnergyBar.qml">qml/ZEnergyBar.qml</file>
         <file alias="ZOSlider.qml">qml/ZOSlider.qml</file>
         <file alias="commons.js">qml/commons.js</file>
-        <file alias="target.png">qml/target.png</file>
-        <file>qml/boton.png</file>
-        <file>qml/fuelgauges.png</file>
-        <file>qml/ledblue_off.svg</file>
-        <file>qml/ledblue_on.svg</file>
-        <file alias="ledgreen_off.svg">qml/ledgreen_off.svg</file>
-        <file alias="ledgreen_on.svg">qml/ledgreen_on.svg</file>
-        <file>qml/noun_gauges_167244.png</file>
-        <file>qml/tron_background_by_anarchyartistbuddy_d5gdvp8-fullview.jpg</file>
+        <file alias="target.png">images/target.png</file>
+        <file>images/boton.png</file>
+        <file>images/fuelgauges.png</file>
+        <file>images/ledblue_off.svg</file>
+        <file>images/ledblue_on.svg</file>
+        <file alias="ledgreen_off.svg">images/ledgreen_off.svg</file>
+        <file alias="ledgreen_on.svg">images/ledgreen_on.svg</file>
+        <file>images/noun_gauges_167244.png</file>
+        <file alias="background">images/tron_background_by_anarchyartistbuddy_d5gdvp8-fullview.jpg</file>
+        <file alias="Sensors.qml">qml/Sensors.qml</file>
+        <file>images/sensor2.png</file>
+        <file alias="tinker.obj">qml/3d/tinker.obj</file>
+        <file alias="obj.mtl">qml/3d/obj.mtl</file>
+        <file>Sensor.qml</file>
     </qresource>
 </RCC>

@@ -1,0 +1,26 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="AzimutGaugeStyle.qml">qml/AzimutGaugeStyle.qml</file>
+        <file alias="ircamera.qml">qml/ircamera.qml</file>
+        <file alias="MainMenu.qml">qml/MainMenu.qml</file>
+        <file alias="PowerPanel.qml">qml/PowerPanel.qml</file>
+        <file alias="ROButton.qml">qml/ROButton.qml</file>
+        <file alias="SlotButton.qml">qml/SlotButton.qml</file>
+        <file alias="SpeedGauge.qml">qml/SpeedGauge.qml</file>
+        <file alias="SpeedPanel.qml">qml/SpeedPanel.qml</file>
+        <file alias="ToggleButton.qml">qml/ToggleButton.qml</file>
+        <file alias="TronButton.qml">qml/TronButton.qml</file>
+        <file alias="ZEnergyBar.qml">qml/ZEnergyBar.qml</file>
+        <file alias="ZOSlider.qml">qml/ZOSlider.qml</file>
+        <file alias="commons.js">qml/commons.js</file>
+        <file alias="target.png">qml/target.png</file>
+        <file>qml/boton.png</file>
+        <file>qml/fuelgauges.png</file>
+        <file>qml/ledblue_off.svg</file>
+        <file>qml/ledblue_on.svg</file>
+        <file alias="ledgreen_off.svg">qml/ledgreen_off.svg</file>
+        <file alias="ledgreen_on.svg">qml/ledgreen_on.svg</file>
+        <file>qml/noun_gauges_167244.png</file>
+        <file>qml/tron_background_by_anarchyartistbuddy_d5gdvp8-fullview.jpg</file>
+    </qresource>
+</RCC>

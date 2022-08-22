@@ -7,14 +7,16 @@
 #include <QQueue>
 #include <QThread>
 
-#define FOREVER 3600
+#define FOREVER   3600
+#define IDLE_TIME 1000
 
 enum tasks {
     TSK_STEP_FORWARD, // 0
     TSK_STEP_BACKWARD,
     TSK_TURN_LEFT,
     TSK_TURN_RIGHT,
-    TSK_STOP
+    TSK_STOP,
+    TSK_NONE
 };
 
 struct stCommands {
@@ -34,7 +36,7 @@ public:
         DIR_STOPPED
     };
 
-    explicit walkThread(QDBusConnection connection, QObject* parent = nullptr);
+    explicit walkThread(QDBusConnection connection, QObject *parent = nullptr);
     void            setDualSpeed(int left, int right);
     void            setSpeed(int speed);
     int             getSpeed(void);
@@ -54,10 +56,12 @@ private:
 
 private:
     QDBusConnection m_connection;
-    QDBusInterface* m_pEnginesIface;
-    QDBusInterface* m_pSensorsIface;
-    int             m_speed = 2;
+    QDBusInterface *m_pEnginesIface;
+    QDBusInterface *m_pSensorsIface;
     QQueue<tasks>   m_tasks;
+    tasks           m_lastTask = TSK_STOP;
+    int             m_speed    = 20;
+    int             m_msecs    = 0; // Iddle time
 
 private slots:
     void onEnginesError(int err);

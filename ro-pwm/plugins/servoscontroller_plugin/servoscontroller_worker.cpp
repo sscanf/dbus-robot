@@ -3,15 +3,19 @@
 #include "servoscontroller_worker.h"
 #include "servoscontroller_worker_interface.h"
 
-servoscontrollerWorker::servoscontrollerWorker(Adafruit_PWMServoDriver *pPwm, QString strName, QString strDescription, bool bEnabled, QObject *parent)
+servoscontrollerWorker::servoscontrollerWorker(Adafruit_PWMServoDriver *pPwm,
+                                               const QString           &strName,
+                                               const QString           &strDescription,
+                                               bool                     bEnabled,
+                                               QObject                 *parent)
     : QObject(parent)
     , m_strName(strName)
-    , m_connection(QDBusConnection::systemBus()){
+    , m_connection(QDBusConnection::systemBus()) {
     m_bEnabled       = bEnabled;
     m_strDescription = strDescription;
-    m_strAddress     = QString("%1/%2").arg(DBUS_BASE_ADDRESS).arg(strName);
+    m_strAddress     = QStringLiteral("%1/%2").arg(DBUS_BASE_ADDRESS, strName);
     m_pPwm           = pPwm;
-    m_inc            = +1;
+    m_inc            = 1;
 
     new servoscontroller_workerInterface(this);
     QString strObject = "/" + strName;
@@ -19,10 +23,10 @@ servoscontrollerWorker::servoscontrollerWorker(Adafruit_PWMServoDriver *pPwm, QS
     //    m_connection.registerService(strAddress.replace("/","."));
 
     m_pTimer = new QTimer(this);
-    connect(m_pTimer, SIGNAL(timeout()), this, SLOT(on_timeout()));
+    connect(m_pTimer, &QTimer::timeout, this, &servoscontrollerWorker::on_timeout);
     m_pTimer->start(T_TIMEOUT);
-    setAngle(position_azimuth, 90);
-    setAngle(position_elevation, 50);
+    setAngle(0, 45);
+    setAngle(1, 45);
 }
 
 QString servoscontrollerWorker::getName() {
@@ -34,7 +38,7 @@ QString servoscontrollerWorker::getAddress() {
 }
 
 QString servoscontrollerWorker::getPluginType() {
-    return PLUGIN_TYPE;
+    return QStringLiteral (PLUGIN_TYPE);
 }
 
 QString servoscontrollerWorker::getDescription() {
@@ -54,15 +58,15 @@ double servoscontrollerWorker::map(double x, double in_min, double in_max, doubl
 }
 
 void servoscontrollerWorker::on_timeout() {
-    stop(position_azimuth);
-    stop(position_elevation);
+    stop(0);
+    stop(1);
     m_pTimer->stop();
 }
 
-void servoscontrollerWorker::stop(Positions pos) {
+void servoscontrollerWorker::stop(int pos) {
     m_pPwm->setPWM((int)pos, 0, 0);
 }
-void servoscontrollerWorker::setAngle(servoscontrollerWorker::Positions pos, quint16 angle) {
+void servoscontrollerWorker::setAngle(quint8 pos, quint16 angle) {
     // 240 = 1ms
     // 480 = 2ms
     //    qDebug() << angle;

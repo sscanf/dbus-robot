@@ -83,7 +83,7 @@ static struct file_operations encoder_right_fops = {
     .read  = proc_encoder_right_read,
 };
 
-static struct file_operations encoder_left_fops= {
+static struct file_operations encoder_left_fops = {
     .owner = THIS_MODULE,
     .read  = proc_encoder_left_read,
 };

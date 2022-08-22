@@ -13,7 +13,7 @@ piccontrollerWorker::piccontrollerWorker(QString strName, QString strDescription
     m_pUsbBufferRx   = 0;
 
     new piccontroller_workerInterface(this);
-    QString strAddress = m_strAddress;
+//    QString strAddress = m_strAddress;
     QString strObject  = "/" + strName;
     m_connection.registerObject(strObject, this);
 

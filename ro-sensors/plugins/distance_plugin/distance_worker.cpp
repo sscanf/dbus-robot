@@ -2,19 +2,19 @@
 #include "distance_worker.h"
 #include "distance_worker_interface.h"
 
-distanceWorker::distanceWorker(QString strName, QString strDescription, bool bEnabled, QObject *parent)
+distanceWorker::distanceWorker(const QString &strName, const QString &strDescription, bool bEnabled, QObject *parent)
     : QObject(parent)
     , m_strName(strName)
     , m_connection(QDBusConnection::systemBus()) {
     m_bEnabled       = bEnabled;
     m_strDescription = strDescription;
-    m_strAddress     = QString("%1/%2").arg(DBUS_BASE_ADDRESS).arg(strName);
+    m_strAddress     = QStringLiteral("%1/%2").arg(DBUS_BASE_ADDRESS).arg(strName);
 
     new distance_workerInterface(this);
     m_connection.registerObject(m_strAddress, this);
 
     m_pTimer = new QTimer(this);
-    connect(m_pTimer, SIGNAL(timeout()), this, SLOT(onTimeout()));
+    connect(m_pTimer, &QTimer::timeout, this, &distanceWorker::onTimeout);
     m_pTimer->start(100);
     m_i2c.setAddress(0x30);
 
@@ -30,7 +30,7 @@ QString distanceWorker::getAddress() {
 }
 
 QString distanceWorker::getPluginType() {
-    return PLUGIN_TYPE;
+    return QStringLiteral(PLUGIN_TYPE);
 }
 
 QString distanceWorker::getDescription() {
@@ -45,15 +45,15 @@ void distanceWorker::setEnabled(bool bEnabled) {
     m_bEnabled = bEnabled;
 }
 
-int distanceWorker::getDistance(int distance) {
-    return m_distances[distance];
+int distanceWorker::getDistance(int sensor) {
+    return m_sensors[sensor];
 }
 
 QList<QVariant> distanceWorker::getCollisions() {
     QList<QVariant> sensors;
     for (int n = 0; n < MAX_SENSORS; n++) {
-        if (m_distances[n] > 0) {
-            if (m_distances[n] <= m_minDistances[n]) {
+        if (m_sensors[n] > 0) {
+            if (m_sensors[n] <= m_minDistances[n]) {
                 sensors.append(n);
             }
         }
@@ -74,11 +74,14 @@ void distanceWorker::setMinRear(int center, int right, int left) {
 }
 
 void distanceWorker::onTimeout() {
-    m_i2c.receive(m_distances, MAX_SENSORS);
-
+    m_i2c.receive(m_sensors, MAX_SENSORS);
     for (int n = 0; n < MAX_SENSORS; n++) {
-        if (m_distances[n] > 0) {
-            if (m_distances[n] <= m_minDistances[n]) {
+        if (m_sensors[n] != m_lastSensors[n]) {
+            emit distanceChanged(n, m_sensors[n]);
+            m_lastSensors[n] = m_sensors[n];
+        }
+        if (m_sensors[n] > 0) {
+            if (m_sensors[n] <= m_minDistances[n]) {
                 emit collision(n);
             }
         }

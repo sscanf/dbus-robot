@@ -44,8 +44,7 @@ class robotWorker : public QCoreApplication {
     Q_OBJECT
 
 public:
-    enum distances
-    {
+    enum distances {
         frontCenter,
         frontLeft,
         frontRight,
@@ -55,53 +54,58 @@ public:
     };
     robotWorker(int &argc, char **argv);
 
+    struct minDistances {
+        int  minDistance;
+        bool bAlarm;
+    };
+
 private: // Functions
-    void      initTracker();
-    void      initDistSensors();
-    void      initGamepad();
-    double    map(double x, double in_min, double in_max, double out_min, double out_max);
-    RO3DPoint getCenterDistance();
-    void      setDir(tasks task);
-    void      setAutonomous(bool bValue);
-    void      setGamepadColor(int red, int blue, int green);
-    void      setConnectedStatus(bool value);
-    void      setSpeed();
+    void                  initTracker();
+    void                  initDistSensors();
+    void                  initGamepad();
+    double                map(double x, double in_min, double in_max, double out_min, double out_max);
+    RO3DPoint             getCenterDistance();
+    void                  setDir(const tasks &task);
+    walkThread::direction getDir();
+    void                  setAutonomous(bool bValue);
+    void                  setGamepadColor(int red, int blue, int green);
+    void                  setConnectedStatus(bool value);
+    void                  setSpeed();
 
 private: // Variables
-    QTimer *          m_pTimer;
-    QTimer *          m_pRandomTimer;
-    QTimer *          m_pTurnTimer;
+    QTimer           *m_pTimer;
+    QTimer           *m_pRandomTimer;
+    QTimer           *m_pTurnTimer;
     QDBusConnection   m_connection;
-    QDBusInterface *  m_pServosIRIface;
-    QDBusInterface *  m_pTrackingIface;
-    QDBusInterface *  m_pDistanceIface;
-    QDBusInterface *  m_pGamepadIface;
+    QDBusInterface   *m_pServosIRIface;
+    QDBusInterface   *m_pTrackingIface;
+    QDBusInterface   *m_pDistanceIface;
+    QDBusInterface   *m_pGamepadIface;
     int               m_azimut;
     int               m_elev;
     int               m_lastAzimut;
     int               m_lastElev;
     int               m_lastDirElev;
     int               m_lastDirAzim;
-    bool              m_ballLost          = false;
-    int               m_totalCameraRounds = 0;
-    positionThrd *    m_pPositionThrd;
-    walkThread *      m_pWalkThread;
+    positionThrd     *m_pPositionThrd;
+    walkThread       *m_pWalkThread;
     manualCameraThrd *m_pCameraThrd;
     manualMotorsThrd *m_pMotorsThrd;
-    PID *             m_pPid;
+    PID              *m_pPid;
     bool              m_bAutonomous;
-    int               m_valL  = 0;
-    int               m_valR  = 0;
-    int               m_speed = 0;
+    bool              m_ballLost          = false;
+    int               m_totalCameraRounds = 0;
+    int               m_valL              = 0;
+    int               m_valR              = 0;
+    int               m_speed             = 0;
+    minDistances      m_collisionSensors[6];
 
 private slots:
     void onTimeout();
-    void onRandomTimeout();
-    void onPositionChanged(QPoint);
-    void onPositionChanged(QPoint, QPoint, QPoint, QPoint);
+    void onPositionChanged(const QPoint &position);
+    void onPositionChanged(const QPoint &pos1, const QPoint &pos2, const QPoint &pos3, const QPoint &pos4);
     void onBallLost();
-    void onTurnTimeout();
-    void onCollision(int sensor);
+    void onDistanceChanged(int sensor, int distance);
     void onMotorsError(int err);
     void onButtonPS(bool);
     void onGamepadConnected();

@@ -1,5 +1,5 @@
 import QtQuick 2.10
-import QtGraphicalEffects 1.0
+import QtGraphicalEffects 1.15
 
 Item {
     id: boton

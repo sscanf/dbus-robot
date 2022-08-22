@@ -1,0 +1,11 @@
+[Unit]
+Description=Robot controller app
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/robot
+
+[Install]
+WantedBy=multi-user.target
+Alias=robot.service
+

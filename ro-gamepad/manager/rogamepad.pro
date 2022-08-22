@@ -19,7 +19,7 @@ system ($$quote(cp -r $${PWD}/proxy/* $$[QT_SYSROOT]/usr/include/robot/$$escape_
 QT          += core dbus xml
 QT          -= gui
 INCLUDEPATH += ../common/
-#INCLUDEPATH += $$[QT_SYSROOT]/usr/include/
+INCLUDEPATH += $$[QT_SYSROOT]/usr/include/
 QMAKE_CXXFLAGS += -I $$[QT_SYSROOT]/usr/include
 TARGET       = rogamepad
 CONFIG      += console

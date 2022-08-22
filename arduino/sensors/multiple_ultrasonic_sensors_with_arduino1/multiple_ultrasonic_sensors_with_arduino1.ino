@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2019 Oscar Casatmijana Vazquez 
+ * 
+ * This program is free software: 
+ * you can redistribute it and/or modify it under the terms of the GNU General 
+ * Public License as published by the Free Software Foundation, either version 3 
+ * of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. 
+ * If not, see <https://www.gnu.org/licenses/>.
+*/
+
+
+
+// Simultaneous reading of multiple ultrasonic sensors
+
 #include <Wire.h>
 
 #define SLAVE_ADDRESS 0x30
@@ -15,6 +33,7 @@ long timesStop[TOTAL_SENSORS];
 uint8_t  distances[TOTAL_SENSORS+1];
 uint8_t portB;
 uint8_t portD;
+char buff[10];
 
 unsigned long start_time;
 
@@ -43,10 +62,10 @@ void loop() {
   
   unsigned long numloops=0;
   uint8_t val, valPortB, valPortD;
-  uint8_t count=0;
+  uint8_t sensorNum=0;
 
   start_time = millis();
-  while (count < TOTAL_SENSORS && numloops < maxloops) {
+  while (sensorNum < TOTAL_SENSORS && numloops < maxloops) {
     valPortD= *portInputRegister(portD);
     valPortB= *portInputRegister(portB);
     val = (valPortD & 0xfc)| (valPortB&0x3);
@@ -57,7 +76,7 @@ void loop() {
           timesStop[n]=0;
         } else if (timesStop[n] == 0) { 
             timesStop[n]=micros()-timesStart[n];
-            count++;          
+            sensorNum++;          
           }        
       } else if (timesStart[n]==0) {  //HIGH        
           timesStart[n]=micros();
@@ -67,14 +86,14 @@ void loop() {
     numloops++;
   };
 
-  Serial.print (millis() - start_time);
-  Serial.print ("Distance : ");
+  //Serial.print (millis() - start_time);
+  //Serial.print ("Distance : ");
   for (int n=0; n<TOTAL_SENSORS; n++) {
     distances[n] = (timesStop[n] * 0.034) / 2;
-    Serial.print (distances[n]);
-    Serial.print (" ");
+//    sprintf (buff, "%03d ", distances[n]);
+//    Serial.print (buff);
   }  
-  Serial.println (" ");
+//  Serial.println (" ");
 
   delay(100);
 }

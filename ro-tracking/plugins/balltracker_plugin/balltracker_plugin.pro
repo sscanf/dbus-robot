@@ -24,12 +24,10 @@ LIBS        += -lopencv_core -lopencv_video -lopencv_highgui -lopencv_imgproc -l
 HEADERS = balltracker_worker_interface.h \
           balltracker_factory.h          \
           balltracker_worker.h \
-          streamServer.h
 
 SOURCES  = balltracker_worker_interface.cpp\
            balltracker_worker.cpp          \
            balltracker_factory.cpp \
-           streamServer.cpp
 
 target.path = /usr/lib/
 

@@ -7,10 +7,9 @@
 
 #define TOTAL_SAMPLES 1
 #define TOTAL_ERRORS  5
-#define LIMIT         10
+#define LIMIT         40
 
-enum MotorDirection
-{
+enum MotorDirection {
     Forward,
     Backward
 };
@@ -18,8 +17,7 @@ enum MotorDirection
 class encodersThrd : public QThread {
     Q_OBJECT
 public:
-    enum States
-    {
+    enum States {
         stSampling,
         stAveraged,
         stWaitingForStopped
@@ -48,7 +46,7 @@ private:
     qint16                   m_outSpeed;
     qint16                   m_pwm;
     quint8                   m_time_collision;
-    int                      m_width    = 0;
+    int                      m_width = 0;
     QList<int>               m_errors;
     QSoc                     m_soc;
     QString                  m_strChanA;

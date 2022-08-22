@@ -20,11 +20,14 @@ ina219Worker::ina219Worker(QString strName, QString strDescription, bool bEnable
 }
 
 int ina219Worker::init() {
+    int ret = EXIT_FAILURE;
     QFile file("/sys/bus/i2c/devices/i2c-4/new_device");
     if (file.open(QIODevice::WriteOnly)) {
         file.write ("ina219 0x45\n");
+        ret = EXIT_SUCCESS;
     }
     file.close();
+    return ret;
 }
 
 QString ina219Worker::getName() {

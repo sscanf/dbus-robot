@@ -11,7 +11,8 @@
 
 #define PLUGIN_TYPE " Please, define plugin type !!! "
 
-#define MAX_SENSORS 6
+//#define MAX_SENSORS 6
+#define MAX_SENSORS 3
 
 class distanceWorker : public QObject {
     Q_OBJECT
@@ -27,7 +28,7 @@ public:
         rearCenter
     };
 
-    explicit distanceWorker(QString strName, QString strDescription = 0, bool bEnabled = 0, QObject *parent = 0);
+    explicit distanceWorker(const QString &strName, const QString &strDescription = 0, bool bEnabled = 0, QObject *parent = 0);
 
 public Q_SLOTS:
     QString         getName();
@@ -36,7 +37,7 @@ public Q_SLOTS:
     QString         getDescription();
     bool            isEnabled();
     void            setEnabled(bool bEnabled);
-    int             getDistance(int distance);
+    int             getDistance(int sensor);
     void            setMinFront(int center, int right, int left);
     void            setMinRear(int center, int right, int left);
     QList<QVariant> getCollisions();
@@ -51,8 +52,9 @@ private: // Variables
     QDBusConnection m_connection;
     QTimer         *m_pTimer;
     zoi2c           m_i2c;
-    quint8          m_minDistances[6];
-    quint8          m_distances[6]{0};
+    quint8          m_minDistances[MAX_SENSORS];
+    quint8          m_lastSensors[MAX_SENSORS]{0};
+    quint8          m_sensors[MAX_SENSORS]{0};
 private slots:
     void onTimeout();
 
@@ -60,6 +62,7 @@ public:
 signals:
     void error(bool bError);
     void collision(int sensor);
+    void distanceChanged(int sensor, int distance);
 };
 
 #endif // frontDistance_MANAGER_H

@@ -25,7 +25,7 @@ dbus_files.path     = /etc/dbus-1/
 dbus_files.files    = $$PWD/system.d/
  
 dbus_services.path  = /usr/share/dbus-1/
-dbus_services.files = $$PWD/services
+dbus_services.files = $$PWD/system-services
 
 
 SOURCES += main.cpp \

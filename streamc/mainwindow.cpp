@@ -7,11 +7,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_pWidget = new QQuickWidget(this);
     //    connect (m_pWidget, SIGNAL (statusChanged(QQuickWidget::Status)), this, SLOT (onStatusChanged(QQuickWidget::Status)));
-    m_pWidget->setSource(QUrl("qrc:/MainMenu.qml"));
+    m_pWidget->setSource(QUrl(QStringLiteral("qrc:/MainMenu.qml")));
     m_pWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
     m_pWidget->setFixedWidth(900);
     m_pWidget->setFixedHeight(563);
-    setWindowTitle("Main Menu");
+    setWindowTitle(QStringLiteral("Main Menu"));
     setFixedWidth(900);
     setFixedHeight(563);
 
@@ -23,32 +23,37 @@ MainWindow::MainWindow(QWidget *parent)
     m_pWidgetStatus    = new statusWidget();
     m_pWidgetPower     = new powerWidget();
     m_pWidgetIRCamera  = new IRCameraWidget();
+    m_pSensorsWidget   = new SensorsWidget();
 }
 
 MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::onApp(QString app) {
+void MainWindow::onApp(const QString &app) {
     QWidget *pWidget = nullptr;
 
-    if (app == "speedPannel")
+    if (app == QLatin1String("speedPannel"))
         pWidget = m_pWidgetStatus;
 
-    if (app == "powerPannel")
+    if (app == QLatin1String("powerPannel"))
         pWidget = m_pWidgetPower;
 
-    if (app == "cvPannel") {
+    if (app == QLatin1String("cvPannel")) {
         pWidget = m_pWidgetResult;
-        onApp("thresshold");
+        onApp(QStringLiteral("thresshold"));
     }
 
-    if (app == "threshold") {
+    if (app == QLatin1String("threshold")) {
         pWidget = m_pWidgetThreshold;
     }
 
-    if (app == "ircameraPannel") {
+    if (app == QLatin1String("ircameraPannel")) {
         pWidget = m_pWidgetIRCamera;
+    }
+
+    if (app == QLatin1String("sensorsPannel")) {
+        pWidget = m_pSensorsWidget;
     }
 
     if (pWidget) {
