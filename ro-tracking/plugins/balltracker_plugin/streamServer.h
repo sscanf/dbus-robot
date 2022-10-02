@@ -1,6 +1,7 @@
 #ifndef IMAGESENDER_H
 #define IMAGESENDER_H
 
+#include <QThread>
 #include <QObject>
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -11,25 +12,25 @@
 
 using namespace cv;
 
-class streamServer : public QObject
-{
+class streamServer : public QThread {
     Q_OBJECT
 public:
-    explicit streamServer(int port, QObject *parent = nullptr);
-    void startListening ();
-    void stopListening  ();
-    void pushFrame      (Mat const &img);
+    explicit streamServer(int port, QThread *parent = nullptr);
+    void startListening();
+    void stopListening();
+    void pushFrame(Mat const &img);
+    void run();
 
 private:
-    void sendTcpFrame   (Mat const &img);
+    void sendTcpFrame(Mat const &img, QTcpSocket *pSocekt);
 
 private:
-    QTcpServer         *m_pSocket=nullptr;
-    QTimer             *m_pTimer;
+    QTcpServer         *m_pSocket = nullptr;
     QList<QTcpSocket *> m_listClients;
-    int                 m_port=0;
+    int                 m_port = 0;
     QMutex              m_mutex;
-    QQueue<Mat >        m_frames;
+    QQueue<Mat>         m_frames;
+    bool                m_bStop = false;
 
 signals:
 

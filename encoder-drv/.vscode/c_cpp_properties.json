@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/usr/src/data/projects/dbus-robot.git/imx8/toolchain/zotoolchain-robot-imx8/sysroots/aarch64-tdx-linux/usr/src/kernel/include/",
+                "/usr/src/data/projects/dbus-robot.git/imx8/toolchain/zotoolchain-robot-imx8/sysroots/aarch64-tdx-linux/usr/include/",
+                "./sysroots/aarch64-tdx-linux/lib/modules/5.4.129-5.4.0-devel+git.cb88cc157bfb/build/arch/arm64/include"
+            ],
+            "defines": [
+                "KBUILD_MODNAME=\"hello_module\"",
+                "__GNUC__",
+                "__KERNEL__"
+            ],
+            "compilerPath": "/usr/src/data/projects/dbus-robot.git/imx8/toolchain/zotoolchain-robot-imx8/sysroots/x86_64-tdxsdk-linux/usr/bin/aarch64-tdx-linux/aarch64-tdx-linux-gcc -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security --sysroot=/usr/src/data/projects/dbus-robot.git/imx8/toolchain/zotoolchain-robot-imx8/sysroots/aarch64-tdx-linux",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}

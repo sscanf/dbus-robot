@@ -6,59 +6,59 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
 #include <QObject>
 #include <QMap>
 #include <QFile>
 #include <QTimer>
 #include <pwm_plugin.h>
-#include <QtDBus/QtDBus>
+#include <QtDBus>
 #include <Adafruit_PWMServoDriver.h>
 
-#define PLUGIN_TYPE   " Please, define plugin type !!! "
-#define T_TIMEOUT     400
+#define PLUGIN_TYPE " Please, define plugin type !!! "
+#define T_TIMEOUT   400
 
-class servoscontrollerWorker : public QObject
-{
+class servoscontrollerWorker : public QObject {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "com.robot.servoscontroller")
 
 public:
-    explicit servoscontrollerWorker(Adafruit_PWMServoDriver  *pPwm, QString strName, QString strDescription = 0, bool bEnabled=0, QObject *parent = 0);
+    explicit servoscontrollerWorker(Adafruit_PWMServoDriver *pPwm,
+                                    const QString           &strName,
+                                    const QString           &strDescription = 0,
+                                    bool                     bEnabled       = 0,
+                                    QObject                 *parent         = 0);
 
 public Q_SLOTS:
-    QString getName       ();
-    QString getAddress    ();
-    QString getPluginType ();
+    QString getName();
+    QString getAddress();
+    QString getPluginType();
     QString getDescription();
-    bool    isEnabled     ();
-    void    setEnabled    (bool bEnabled);
-    void    setServoPulse (quint8 n, double pulse);
-    void    setAngle      (quint8 n, quint16 angle);
-    void    stop          (quint8 n);
+    bool    isEnabled();
+    void    setEnabled(bool bEnabled);
+    void    setServoPulse(quint8 n, double pulse);
+    void    setAngle(quint8 pos, quint16 angle);
+    void    stop(int pos);
 
-private:    //Functions
+private: // Functions
     double map(double x, double in_min, double in_max, double out_min, double out_max);
 
-public:     //Variabes
-
-private:    //Variables
+public:  // Variabes
+private: // Variables
     int                      m_address;
     QString                  m_strName;
     QString                  m_strAddress;
     QString                  m_strDescription;
     bool                     m_bEnabled;
     QDBusConnection          m_connection;
-    Adafruit_PWMServoDriver  *m_pPwm;
-    QTimer                   *m_pTimer;
+    Adafruit_PWMServoDriver *m_pPwm;
+    QTimer                  *m_pTimer;
     int                      m_inc;
 signals:
-    void  error (bool bError);
-    void  positionChanged (int idx, int angle);
+    void error(bool bError);
+    void positionChanged(int idx, int angle);
 
 private slots:
-    void  on_timeout();
-
+    void on_timeout();
 };
 
 #endif // servoscontroller_MANAGER_H

@@ -10,13 +10,17 @@ system ($$quote(cp -a $${PWD}/proxy/* $$[QT_SYSROOT]/usr/include/robot/$$escape_
 INCLUDEPATH += ../../../common/
 INCLUDEPATH += ../../common/
 INCLUDEPATH += ./plugins/common/
+INCLUDEPATH += $$[QT_SYSROOT]/usr/include/
 INCLUDEPATH += ../../lib
 INCLUDEPATH += $$PWD/
-DEPENDPATH  += $$PWD/
 TEMPLATE     = lib
 CONFIG      += plugin
 TARGET       = $$qtLibraryTarget(mpu92-plugin)
 DESTDIR      = plugins
+
+QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CFLAGS += -Wno-cpp
+QMAKE_CXXFLAGS += -Wno-cpp
 
 LIBS += -lsoc
 

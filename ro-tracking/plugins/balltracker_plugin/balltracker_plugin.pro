@@ -10,8 +10,9 @@ system ($$quote(cp -a $${PWD}/proxy/* $$[QT_SYSROOT]/usr/include/robot/$$escape_
 
 INCLUDEPATH += ../../common
 INCLUDEPATH += ./plugins/common/
-#INCLUDEPATH += $$[QT_SYSROOT]/usr/include/
-QMAKE_CXXFLAGS += -I $$[QT_SYSROOT]/usr/include
+INCLUDEPATH += $$[QT_SYSROOT]/usr/include/opencv4/
+INCLUDEPATH += $$[QT_SYSROOT]/usr/include/
+#QMAKE_CXXFLAGS += -I $$[QT_SYSROOT]/usr/include
 TEMPLATE     = lib
 CONFIG      += plugin
 TARGET       = $$qtLibraryTarget(balltracker-plugin)
@@ -23,12 +24,10 @@ LIBS        += -lopencv_core -lopencv_video -lopencv_highgui -lopencv_imgproc -l
 HEADERS = balltracker_worker_interface.h \
           balltracker_factory.h          \
           balltracker_worker.h \
-          streamServer.h
 
 SOURCES  = balltracker_worker_interface.cpp\
            balltracker_worker.cpp          \
            balltracker_factory.cpp \
-           streamServer.cpp
 
 target.path = /usr/lib/
 

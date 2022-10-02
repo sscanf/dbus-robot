@@ -5,7 +5,7 @@
 #include <QTimer>
 #include <QList>
 #include <QPluginLoader>
-#include <QtDBus/QtDBus>
+#include <QtDBus>
 #include "roengines_plugin.h"
 
 #define ROENGINES_CONFIG_FILE    "/etc/robot/roengines_config.xml"

@@ -38,14 +38,14 @@ public:
 public:
     QString getName     ();
     void    setName     (QString name);
-    void    setDirection(IODirection dir);
-    void    setValue    (IOValue val);
+    void    setDirection(imx6io::IODirection dir);
+    void    setValue    (imx6io::IOValue val);
     IOValue getValue    ();
 
 signals:
     void pressed();
     void released();
-    void valueChanged(IOValue value);
+    void valueChanged(imx6io::IOValue value);
 
 private:
     void UpdateIO();
@@ -58,7 +58,7 @@ private:
     gpio_level     m_value;
 
 private slots:
-    void onTimeout();
+//    void onTimeout();
 
 };
 #endif // IMX6IO_H

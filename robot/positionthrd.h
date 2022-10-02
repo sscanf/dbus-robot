@@ -7,10 +7,16 @@
 #include <QThread>
 #include <QTimer>
 
+#define MAX_ELEV 70
+#define MIN_ELEV 50
+
+#define MAX_AZIM 100
+#define MIN_AZIM 0
+
 class positionThrd : public QThread {
 
 public:
-    explicit positionThrd(QDBusConnection connection, quint16 azim, quint16 elev, QObject *parent = nullptr);
+    explicit positionThrd(const QDBusConnection &connection, quint16 azim, quint16 elev, QObject *parent = nullptr);
     void run();
     void setPossition(quint16 azim, quint16 elev);
     void setAzimuth(quint16 azim);
@@ -22,8 +28,8 @@ private:
 private:
     QDBusInterface *m_pCameraIface;
     QDBusConnection m_connection;
-    int             m_azim = 90;
-    int             m_elev = 70;
+    int             m_azim = 45;
+    int             m_elev = 45;
     int             m_newAzim;
     int             m_newElev;
 

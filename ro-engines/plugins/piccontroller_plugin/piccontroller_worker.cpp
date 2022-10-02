@@ -5,8 +5,7 @@
 piccontrollerWorker::piccontrollerWorker(QString strName, QString strDescription, bool bEnabled, QObject *parent)
     : QObject(parent)
     , m_strName(strName)
-    , m_connection(QDBusConnection::systemBus())
-{
+    , m_connection(QDBusConnection::systemBus()) {
     m_bEnabled       = bEnabled;
     m_strDescription = strDescription;
     m_strAddress     = QString("%1/%2").arg(DBUS_BASE_ADDRESS).arg(strName);
@@ -14,7 +13,7 @@ piccontrollerWorker::piccontrollerWorker(QString strName, QString strDescription
     m_pUsbBufferRx   = 0;
 
     new piccontroller_workerInterface(this);
-    QString strAddress = m_strAddress;
+//    QString strAddress = m_strAddress;
     QString strObject  = "/" + strName;
     m_connection.registerObject(strObject, this);
 
@@ -29,38 +28,31 @@ piccontrollerWorker::piccontrollerWorker(QString strName, QString strDescription
     connect(m_pCheckMotorsTimer, SIGNAL(timeout()), this, SLOT(on_CheckMotors()));
 }
 
-QString piccontrollerWorker::getName()
-{
+QString piccontrollerWorker::getName() {
     return m_strName;
 }
 
-QString piccontrollerWorker::getAddress()
-{
+QString piccontrollerWorker::getAddress() {
     return m_strAddress;
 }
 
-QString piccontrollerWorker::getPluginType()
-{
+QString piccontrollerWorker::getPluginType() {
     return PLUGIN_TYPE;
 }
 
-QString piccontrollerWorker::getDescription()
-{
+QString piccontrollerWorker::getDescription() {
     return m_strDescription;
 }
 
-bool piccontrollerWorker::isEnabled()
-{
+bool piccontrollerWorker::isEnabled() {
     return m_bEnabled;
 }
 
-void piccontrollerWorker::setEnabled(bool bEnabled)
-{
+void piccontrollerWorker::setEnabled(bool bEnabled) {
     m_bEnabled = bEnabled;
 }
 
-void piccontrollerWorker::getEngineData()
-{
+void piccontrollerWorker::getEngineData() {
     unsigned int speed;
     if (m_libUsb.get(m_pUsbBufferRx, USB_BUFFER_LEN)) {
         // Error de USB
@@ -88,8 +80,7 @@ void piccontrollerWorker::getEngineData()
     }
 }
 
-void piccontrollerWorker::on_timeout()
-{
+void piccontrollerWorker::on_timeout() {
     if (!m_libUsb.isOpen()) {
         if (!m_libUsb.open(0x04d8, 0x4541)) {
             memset(m_pUsbBufferTx, 0, USB_BUFFER_LEN);
@@ -101,8 +92,7 @@ void piccontrollerWorker::on_timeout()
     }
 }
 
-void piccontrollerWorker::on_CheckMotors()
-{
+void piccontrollerWorker::on_CheckMotors() {
     qDebug() << "Checking Motors : " << m_encoderLeft << m_encoderRight << getSpeed();
     if ((m_encoderLeft == 0) && getSpeed()) {
         emit error(ERR_MOTOR_LEFT);
@@ -112,23 +102,19 @@ void piccontrollerWorker::on_CheckMotors()
     }
 }
 
-int piccontrollerWorker::getSpeed()
-{
+int piccontrollerWorker::getSpeed() {
     return m_realSpeed * -1;
 }
 
-int piccontrollerWorker::getEncoderLeft()
-{
+int piccontrollerWorker::getEncoderLeft() {
     return m_encoderLeft;
 }
 
-int piccontrollerWorker::getEncoderRight()
-{
+int piccontrollerWorker::getEncoderRight() {
     return m_encoderRight;
 }
 
-void piccontrollerWorker::setSpeed(int speed)
-{
+void piccontrollerWorker::setSpeed(int speed) {
     int bPid = 1;
     //    speed*=-1;
     if (speed > m_maxSpeed)
@@ -164,8 +150,7 @@ void piccontrollerWorker::setSpeed(int speed)
         m_direction = DIR_STOPPED;
 }
 
-void piccontrollerWorker::setDualSpeed(int left, int right)
-{
+void piccontrollerWorker::setDualSpeed(int left, int right) {
     int bPid = 1;
     if (left == right) {
         if (left > 0)
@@ -213,18 +198,15 @@ void piccontrollerWorker::setDualSpeed(int left, int right)
         m_pCheckMotorsTimer->stop();
 }
 
-void piccontrollerWorker::setMaximumSpeed(int speed)
-{
+void piccontrollerWorker::setMaximumSpeed(int speed) {
     m_maxSpeed = speed;
 }
 
-int piccontrollerWorker::getDirection()
-{
+int piccontrollerWorker::getDirection() {
     return m_direction;
 }
 
-void piccontrollerWorker::setTurn(int turn)
-{
+void piccontrollerWorker::setTurn(int turn) {
     int engineLeft  = 0;
     int engineRight = 0;
 

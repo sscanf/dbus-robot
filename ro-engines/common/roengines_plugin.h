@@ -8,7 +8,6 @@
 #define ROTRACKING_CONFIG_FILE   "/etc/robot/roenginesserver.xml"
 #define DBUS_BASE_ADDRESS        "roengines/engines"
 
-
 /**
  * @brief
  *

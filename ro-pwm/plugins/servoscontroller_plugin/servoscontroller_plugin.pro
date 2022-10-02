@@ -1,24 +1,27 @@
+QT += core dbus xml
+QT -= gui
+
 VERSION = \\\"'01.00.00'\\\"
 DEFINES += APP_VERSION=$${VERSION}
-#QMAKE_CXXFLAGS += -std=c++0x
 
 system ($$PWD/../tools/mkinterface.sh servoscontroller_worker)
 system ($$quote(mkdir $$[QT_SYSROOT]/usr/include/robot/$$escape_expand(\\n\\t)))
 system ($$quote(cp -r $${PWD}/proxy/* $$[QT_SYSROOT]/usr/include/robot/$$escape_expand(\\n\\t)))
 
-QT             += core dbus xml
-QT             -= gui
-INCLUDEPATH    += ../../common
-#INCLUDEPATH    += $$[QT_SYSROOT]/usr/include
-INCLUDEPATH    += ../../../common/
-INCLUDEPATH    += ../../common/
-INCLUDEPATH    += ./plugins/common/
-INCLUDEPATH    += $$PWD/
-TEMPLATE        = lib
-CONFIG         += plugin
-TARGET          = $$qtLibraryTarget(servoscontroller-plugin)
-DESTDIR         = plugins
 QMAKE_CXXFLAGS += -I $$[QT_SYSROOT]/usr/include
+QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CFLAGS += -Wno-cpp
+QMAKE_CXXFLAGS += -Wno-cpp
+
+INCLUDEPATH += ../../common
+INCLUDEPATH += ../../../common/
+INCLUDEPATH += ../../common/
+INCLUDEPATH += ./plugins/common/
+INCLUDEPATH += $$PWD/
+TEMPLATE     = lib
+CONFIG      += plugin
+TARGET       = $$qtLibraryTarget(servoscontroller-plugin)
+DESTDIR      = plugins
 
 sysroot_files.path      = $$[QT_SYSROOT]/etc/
 sysroot_files.files     = $$PWD/robot/
@@ -36,13 +39,13 @@ target.path = /usr/lib/
 HEADERS = servoscontroller_worker_interface.h   \
           servoscontroller_factory.h            \
           servoscontroller_worker.h \
-          ../../common/Adafruit_PWMServoDriver.h \
+          ../../../common/Adafruit_PWMServoDriver.h \
           ../../../common/zoi2c.h
 
 SOURCES  = servoscontroller_worker_interface.cpp\
            servoscontroller_worker.cpp          \
            servoscontroller_factory.cpp \
-           ../../common/Adafruit_PWMServoDriver.cpp \
+           ../../../common/Adafruit_PWMServoDriver.cpp \
            ../../../common/zoi2c.cpp
 
 INSTALLS += target #dbus_files dbus_services

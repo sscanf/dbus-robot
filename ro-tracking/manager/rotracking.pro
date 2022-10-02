@@ -4,9 +4,12 @@
 #
 #-------------------------------------------------
 
-VERSION = \\\"'01.00.00'\\\"
-DEFINES         += APP_VERSION=$${VERSION}
-@QMAKE_CXXFLAGS  += -std=c++0x
+VERSION  = \\\"'01.00.00'\\\"
+DEFINES += APP_VERSION=$${VERSION}
+
+QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CFLAGS += -Wno-cpp
+QMAKE_CXXFLAGS += -Wno-cpp
 
 system ($$PWD/../tools/mkinterface.sh rotracking_manager)
 system ($$quote(mkdir $$[QT_SYSROOT]/usr/include/robot/$$escape_expand(\\n\\t)))

@@ -8,6 +8,10 @@ VERSION = \\\"'01.00.00'\\\"
 DEFINES += APP_VERSION=$${VERSION}
 #QMAKE_CXXFLAGS += -std=c++0x
 
+QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CFLAGS += -Wno-cpp
+QMAKE_CXXFLAGS += -Wno-cpp
+
 system ($$PWD/../tools/mkinterface.sh roengines)
 system ($$quote(mkdir $$[QT_SYSROOT]/usr/include/robot/$$escape_expand(\\n\\t)))
 system ($$quote(cp -r $${PWD}/proxy/* $$[QT_SYSROOT]/usr/include/robot/$$escape_expand(\\n\\t)))
@@ -15,13 +19,12 @@ system ($$quote(cp -r $${PWD}/proxy/* $$[QT_SYSROOT]/usr/include/robot/$$escape_
 QT          += core dbus xml
 QT          -= gui
 INCLUDEPATH += ../common/
-#INCLUDEPATH += $$[QT_SYSROOT]/usr/include/
+INCLUDEPATH += $$[QT_SYSROOT]/usr/include/
 TARGET       = roengines
 CONFIG      += console
 CONFIG      -= app_bundle
 TEMPLATE     = app
 SOURCES     +=  main.cpp
-QMAKE_CXXFLAGS += -I $$[QT_SYSROOT]/usr/include
 
 
 config_files.path  = /etc/

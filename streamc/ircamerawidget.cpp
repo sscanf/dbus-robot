@@ -1,50 +1,54 @@
 #include "ircamerawidget.h"
 #include "../common/robot.h"
 
-IRCameraWidget::IRCameraWidget(QWidget* parent)
+IRCameraWidget::IRCameraWidget(QWidget *parent)
     : QWidget(parent)
-    , m_connection("")
-{
+    , m_connection(QLatin1String("")) {
     m_pWidget = new QQuickWidget(this);
-    m_pWidget->setSource(QUrl("qrc:/ircamera.qml"));
+    m_pWidget->setSource(QUrl(QStringLiteral("qrc:/ircamera.qml")));
     m_pWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
     setFixedWidth(1024);
     setFixedHeight(768);
-    setWindowTitle("Power Control");
+    setWindowTitle(QStringLiteral("Power Control"));
 
-    QQuickItem* pItem = m_pWidget->rootObject();
-    m_pTarget         = pItem->findChild<QQuickItem*>("target");
-    m_pLabelX         = pItem->findChild<QQuickItem*>("posXLabel");
-    m_pLabelY         = pItem->findChild<QQuickItem*>("posYLabel");
-    m_pAzimut         = pItem->findChild<QQuickItem*>("posAzimut");
-    m_pElevation      = pItem->findChild<QQuickItem*>("posElevation");
-    connectToRobot();
+    QQuickItem *pItem = m_pWidget->rootObject();
+    m_pTarget         = pItem->findChild<QQuickItem *>(QStringLiteral("target"));
+    m_pLabelX         = pItem->findChild<QQuickItem *>(QStringLiteral("posXLabel"));
+    m_pLabelY         = pItem->findChild<QQuickItem *>(QStringLiteral("posYLabel"));
+    m_pAzimut         = pItem->findChild<QQuickItem *>(QStringLiteral("posAzimut"));
+    m_pElevation      = pItem->findChild<QQuickItem *>(QStringLiteral("posElevation"));
+
+    m_pSocket = new QTcpSocket(this);
+    connect(m_pSocket, &QAbstractSocket::connected, this, &IRCameraWidget::onConnected);
+    connect(m_pSocket, &QAbstractSocket::disconnected, this, &IRCameraWidget::onDisconnected);
+
+    m_pTimer = new QTimer(this);
+    connect(m_pTimer, &QTimer::timeout, this, &IRCameraWidget::onTimeout);
+    m_pTimer->start(1000);
 }
 
-void IRCameraWidget::connectToRobot()
-{
-    QString connString = QString("tcp:host=%1,port=%2").arg(ROBOT_IP).arg(ROBOT_DBUS_PORT);
-    m_connection       = QDBusConnection::connectToBus(connString, "robot");
-    if (!m_connection.connect("com.robot.rotracking",
-                              "/irtracker",
-                              "com.robot.rotracking",
-                              "positionChanged",
+void IRCameraWidget::connectToRobot() {
+    QString connString = QStringLiteral("tcp:host=%1,port=%2").arg(ROBOT_IP).arg(ROBOT_DBUS_PORT);
+    m_connection       = QDBusConnection::connectToBus(connString, QStringLiteral("robot"));
+    if (!m_connection.connect(QStringLiteral("com.robot.rotracking"),
+                              QStringLiteral("/irtracker"),
+                              QStringLiteral("com.robot.rotracking"),
+                              QStringLiteral("positionChanged"),
                               this,
-                              SLOT(onPositionChanged(QPoint, QPoint, QPoint, QPoint)))) {
+                              SLOT(onPositionChanged(QPoint,QPoint,QPoint,QPoint)))) {
         qDebug() << "Can't connect to rotracking service";
         qDebug() << m_connection.lastError();
     }
 
-    m_connection.connect("com.robot.pwm",
-                         "/servos",
-                         "com.robot.servoscontroller",
-                         "positionChanged",
+    m_connection.connect(QStringLiteral("com.robot.pwm"),
+                         QStringLiteral("/servos"),
+                         QStringLiteral("com.robot.servoscontroller"),
+                         QStringLiteral("positionChanged"),
                          this,
-                         SLOT(onPositionChanged(int, int)));
+                         SLOT(onPositionChanged(int,int)));
 }
 
-void IRCameraWidget::onPositionChanged(QPoint pos1, QPoint pos2, QPoint pos3, QPoint pos4)
-{
+void IRCameraWidget::onPositionChanged(QPoint pos1, QPoint pos2, QPoint pos3, QPoint pos4) {
     Q_UNUSED(pos2);
     Q_UNUSED(pos3);
     Q_UNUSED(pos4);
@@ -56,4 +60,19 @@ void IRCameraWidget::onPositionChanged(QPoint pos1, QPoint pos2, QPoint pos3, QP
         m_pLabelY->setProperty("label", pos1.y());
         m_pLabelX->setProperty("label", pos1.x());
     }
+}
+
+void IRCameraWidget::onConnected() {
+    m_pTimer->stop();
+    connectToRobot();
+}
+
+void IRCameraWidget::onDisconnected() {
+    m_connection.disconnectFromBus(QStringLiteral("robot"));
+    m_pTimer->start();
+}
+
+void IRCameraWidget::onTimeout() {
+    m_pSocket->abort();
+    m_pSocket->connectToHost(QStringLiteral(ROBOT_IP), ROBOT_DBUS_PORT);
 }

@@ -1,3 +1,4 @@
 <ROBOT>
+
         <Plugin name="servos" description="Servos controller" active="true" file="libservoscontroller-plugin.so" />
 </ROBOT>

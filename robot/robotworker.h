@@ -4,10 +4,11 @@
 #include "manualmotorsthrd.h"
 #include "pid.h"
 #include "positionthrd.h"
-#include "walkthread.h"
+#include <motiontasks_defs.h>
 #include <QCoreApplication>
-#include <QtDBus/QtDBus>
-#include <QtDBus/qdbusconnection.h>
+#include <QtDBus>
+#include <qdbusconnection.h>
+#include <QQueue>
 
 #define LOW_SPEED 2
 
@@ -42,10 +43,18 @@ private:
 
 class robotWorker : public QCoreApplication {
     Q_OBJECT
+    Q_ENUM(tasks)
 
 public:
-    enum distances
-    {
+    enum dirs {
+        DIR_STOP,
+        DIR_FORWARD,
+        DIR_BACKWARD,
+        DIR_TURN_RIGHT,
+        DIR_TURN_LEFT
+    };
+
+    enum distances {
         frontCenter,
         frontLeft,
         frontRight,
@@ -53,54 +62,53 @@ public:
         rearLeft,
         rearCenter
     };
+
     robotWorker(int &argc, char **argv);
 
 private: // Functions
     void      initTracker();
     void      initDistSensors();
     void      initGamepad();
+    void      initMotors();
     double    map(double x, double in_min, double in_max, double out_min, double out_max);
     RO3DPoint getCenterDistance();
-    void      setDir(tasks task);
+    void      setDir(dirs dir);
     void      setAutonomous(bool bValue);
     void      setGamepadColor(int red, int blue, int green);
     void      setConnectedStatus(bool value);
-    void      setSpeed();
+    int       getTotalSensors();
+    void      pushTask(tasks task, int tSecs);
 
 private: // Variables
-    QTimer *          m_pTimer;
-    QTimer *          m_pRandomTimer;
-    QTimer *          m_pTurnTimer;
+    QTimer           *m_pTimer;
     QDBusConnection   m_connection;
-    QDBusInterface *  m_pServosIRIface;
-    QDBusInterface *  m_pTrackingIface;
-    QDBusInterface *  m_pDistanceIface;
-    QDBusInterface *  m_pGamepadIface;
+    QDBusInterface   *m_pServosIRIface;
+    QDBusInterface   *m_pTrackingIface;
+    QDBusInterface   *m_pDistanceIface;
+    QDBusInterface   *m_pGamepadIface;
+    QDBusInterface   *m_pMotorsIface;
     int               m_azimut;
     int               m_elev;
     int               m_lastAzimut;
     int               m_lastElev;
     int               m_lastDirElev;
     int               m_lastDirAzim;
-    bool              m_ballLost          = false;
-    int               m_totalCameraRounds = 0;
-    positionThrd *    m_pPositionThrd;
-    walkThread *      m_pWalkThread;
+    positionThrd     *m_pPositionThrd;
     manualCameraThrd *m_pCameraThrd;
     manualMotorsThrd *m_pMotorsThrd;
-    PID *             m_pPid;
     bool              m_bAutonomous;
-    int               m_valL  = 0;
-    int               m_valR  = 0;
-    int               m_speed = 0;
+    bool              m_ballLost          = false;
+    int               m_totalCameraRounds = 0;
+    int               m_speed             = 20;
+    int               m_direction         = DIR_STOP;
+    QList<int>        m_minDistanceSensors;
 
 private slots:
     void onTimeout();
-    void onRandomTimeout();
-    void onPositionChanged(QPoint);
-    void onPositionChanged(QPoint, QPoint, QPoint, QPoint);
+    void onPositionChanged(const QPoint &position);
+    void onPositionChanged(const QPoint &pos1, const QPoint &pos2, const QPoint &pos3, const QPoint &pos4);
     void onBallLost();
-    void onTurnTimeout();
+    // void onDistanceChanged(int sensor, int distance);
     void onCollision(int sensor);
     void onMotorsError(int err);
     void onButtonPS(bool);
