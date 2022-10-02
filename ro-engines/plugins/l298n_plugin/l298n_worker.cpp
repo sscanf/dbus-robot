@@ -25,15 +25,16 @@ int l298nWorker::init() {
     int ret = loadModule();
     if (ret == EXIT_SUCCESS) {
         m_pwm.begin();
-        m_pTimer = new QTimer(this);
-        connect(m_pTimer, SIGNAL(timeout()), this, SLOT(onTimeout()));
+        m_pPIDTimer = new QTimer(this);
+        connect(m_pPIDTimer, SIGNAL(timeout()), this, SLOT(onPIDTimeout()));
 
         m_pMotorController = new QTimer(this);
         connect(m_pMotorController, SIGNAL(timeout()), this, SLOT(onMotorController()));
 
-        m_ellapsedTimer.start();
-        m_pTimer->start(30);
-        m_ellapsedTimer.start();
+        m_pTskDispatcherTimer = new QTimer(this);
+        connect(m_pTskDispatcherTimer, SIGNAL(timeout()), this, SLOT(onTaskDispatcher()));
+
+        m_pPIDTimer->start(30);
     }
     return ret;
 }
@@ -163,7 +164,7 @@ int l298nWorker::getDirection() {
 }
 
 void l298nWorker::setPWMValue(int motorNum, int value) {
-    m_pTimer->stop();
+    m_pPIDTimer->stop();
     if (motorNum == 0) {
         setMotorSpeed(m_motorLeft, value);
     }
@@ -171,6 +172,12 @@ void l298nWorker::setPWMValue(int motorNum, int value) {
     if (motorNum == 1) {
         setMotorSpeed(m_motorRight, value);
     }
+}
+
+void l298nWorker::pushTask(const QByteArray &arr) {
+    stTask task;
+    memcpy(&task, arr.constData(), sizeof(stTask));
+    m_tasks.push(task);
 }
 
 void l298nWorker::PIDControl(st_motor &motor) {
@@ -255,7 +262,7 @@ double l298nWorker::convertSpeed(double speed) {
     return map(speed, 0, 120, 0, 3300);
 }
 
-void l298nWorker::onTimeout() {
+void l298nWorker::onPIDTimeout() {
     int speedLeft  = getSpeed(encoder_left);
     int speedRight = getSpeed(encoder_right);
 
@@ -287,48 +294,38 @@ void l298nWorker::onMotorController() {
     }
 }
 
-// quint8 l298nWorker::getEncoderDir(Motors motor) {
-//     quint8 ret = 0;
-//     if (m_threads.size() <= motor) {
-//         ret = m_threads[motor]->getEncoderDir();
-//     }
-//     return ret;
-// }
+void l298nWorker::onTaskDispatcher() {
+    if (m_tasks.count()) {
+        stTask task = m_tasks.pop();
 
-// void l298nWorker::motorChangeDir(MotorDirection dir, MotorDirection motor) {
-//     if (m_threads.size() <= motor) {
-//         m_threads[motor]->motorChangeDir (dir);
-//     }
-// }
+        switch (task.m_task) {
+            case TSK_STEP_FORWARD:
+                setSpeed(0);
+                setSpeed(task.m_speed);
+                break;
 
-// void l298nWorker::motorSpeed(int speed, Motors motor) {
-//     if (m_threads.size() <= motor) {
-//         m_threads[motor]->motorSpeed (speed);
-//     }
-// }
+            case TSK_STEP_BACKWARD:
+                setSpeed(0);
+                setSpeed(-task.m_speed);
+                break;
 
-// quint8 l298nWorker::motorDir(Motors motor) {
-//     quint8 ret = 0;
-//     switch (motor) {
-//         case MotorLeft:
-//             ret = !m_soc.level("MOTOR_LEFT");
-//             break;
-//         case MotorRight:
-//             ret = m_soc.level("MOTOR_RIGHT");
-//             break;
-//     }
-//     return ret;
-// }
+            case TSK_TURN_LEFT:
+                setSpeed(0);
+                setTurn(task.m_speed);
+                break;
 
-// void l298nWorker::setDirection(int motor, int direction) {
-//    Q_UNUSED (motor)
-//    Q_UNUSED (direction)
-//    //    if (direction == MotorDirection::Forward) {
-//    //        m_gpio1.setValue(imx6io::High);
-//    //        m_gpio2.setValue(imx6io::Low);
-//    //    }
-//    //    if (direction == MotorDirection::Forward) {
-//    //        m_gpio1.setValue(imx6io::Low);
-//    //        m_gpio2.setValue(imx6io::High);
-//    //    }
-//}
+            case TSK_TURN_RIGHT:
+                setSpeed(0);
+                setTurn(-task.m_speed);
+                break;
+
+            case TSK_STOP:
+                setSpeed(0);
+                break;
+
+            default:
+                break;
+        }
+        m_pTskDispatcherTimer->start(task.m_tSecs);
+    }
+}

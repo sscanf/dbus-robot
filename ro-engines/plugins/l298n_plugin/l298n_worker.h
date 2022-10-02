@@ -10,6 +10,7 @@
 #include <Adafruit_PWMServoDriver.h>
 #include <QtGui/QKeyEvent>
 #include <QElapsedTimer>
+#include "motiontasks.h"
 
 #define PLUGIN_TYPE      " Please, define plugin type !!! "
 #define TIMER_RESOLUTION 1
@@ -79,17 +80,12 @@ public Q_SLOTS:
     int     getSpeed(int encoder);
     void    setSpeed(int speed);
     void    setDualSpeed(int left, int right);
-    void    setTurn(int turn);
+    void    setTurn(int turn); //
     int     getDirection();
     void    setPWMValue(int motorNum, int value);
-    //    int     getSpeed();
+    void    pushTask(const QByteArray &task);
 
-    // quint8  getEncoderDir(Motors motor);
-    // void    motorChangeDir(MotorDirection dir, MotorDirection motor);
-    // void    motorSpeed(int speed, Motors motor);
-    // quint8  motorDir(Motors motor);
-
-private:
+private: // Methods
     void   PIDControl(st_motor &motor);
     void   setMotorSpeed(const st_motor &motor, int speed);
     int    loadModule();
@@ -100,19 +96,20 @@ private: // Variables
     QDBusConnection         m_connection;
     Adafruit_PWMServoDriver m_pwm;
 
-    int           m_address;
-    QString       m_strName;
-    QString       m_strAddress;
-    QString       m_strDescription;
-    bool          m_bEnabled;
-    st_motor      m_motorLeft;
-    st_motor      m_motorRight;
-    int           m_lastSpeedLeft    = 0;
-    int           m_lastSpeedRight   = 0;
-    int           m_maxSpeed         = 0;
-    QTimer       *m_pTimer           = nullptr;
-    QTimer       *m_pMotorController = nullptr;
-    QElapsedTimer m_ellapsedTimer;
+    int         m_address;
+    QString     m_strName;
+    QString     m_strAddress;
+    QString     m_strDescription;
+    bool        m_bEnabled;
+    st_motor    m_motorLeft;
+    st_motor    m_motorRight;
+    int         m_lastSpeedLeft       = 0;
+    int         m_lastSpeedRight      = 0;
+    int         m_maxSpeed            = 0;
+    QTimer     *m_pPIDTimer           = nullptr;
+    QTimer     *m_pMotorController    = nullptr;
+    QTimer     *m_pTskDispatcherTimer = nullptr;
+    motionTasks m_tasks;
 
     //   void (l298nWorker::*current_state)(QVariantList *) = NULL;
 
@@ -122,9 +119,9 @@ signals:
     void encoderLeftChange(int val);
 
 private slots:
-    // States
-    void onTimeout();
+    void onPIDTimeout();
     void onMotorController();
+    void onTaskDispatcher();
 };
 
 #endif // l298n_MANAGER_H

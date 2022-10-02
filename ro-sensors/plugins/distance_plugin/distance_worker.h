@@ -12,7 +12,7 @@
 #define PLUGIN_TYPE " Please, define plugin type !!! "
 
 //#define MAX_SENSORS 6
-#define MAX_SENSORS 3
+#define MAX_SENSORS 6
 
 class distanceWorker : public QObject {
     Q_OBJECT
@@ -31,16 +31,17 @@ public:
     explicit distanceWorker(const QString &strName, const QString &strDescription = 0, bool bEnabled = 0, QObject *parent = 0);
 
 public Q_SLOTS:
-    QString         getName();
-    QString         getAddress();
-    QString         getPluginType();
-    QString         getDescription();
-    bool            isEnabled();
-    void            setEnabled(bool bEnabled);
-    int             getDistance(int sensor);
-    void            setMinFront(int center, int right, int left);
-    void            setMinRear(int center, int right, int left);
-    QList<QVariant> getCollisions();
+    QString    getName();
+    QString    getAddress();
+    QString    getPluginType();
+    QString    getDescription();
+    bool       isEnabled();
+    void       setEnabled(bool bEnabled);
+    int        getDistance(int sensor);
+    QList<int> getAllDistances();
+    void       setMinFront(int center, int right, int left);
+    void       setMinRear(int center, int right, int left);
+    int        getSensorsCount();
 
 private: // Functions
 private: // Variables
@@ -55,6 +56,7 @@ private: // Variables
     quint8          m_minDistances[MAX_SENSORS];
     quint8          m_lastSensors[MAX_SENSORS]{0};
     quint8          m_sensors[MAX_SENSORS]{0};
+    bool            m_bFlagCollisions[MAX_SENSORS]{false};
 private slots:
     void onTimeout();
 

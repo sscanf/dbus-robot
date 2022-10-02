@@ -30,16 +30,19 @@ DESTDIR      = plugins
 HEADERS = \
           ../../../common/Adafruit_PWMServoDriver.h \
           ../../../common/zoi2c.h \
+          ../../../common/motiontasks.h \
           l298n_worker_interface.h \
           l298n_factory.h          \
-          l298n_worker.h
+          l298n_worker.h \
+          motiontasks.h
 
 SOURCES  = \
           ../../../common/Adafruit_PWMServoDriver.cpp \
           ../../../common/zoi2c.cpp \
           l298n_worker_interface.cpp \
           l298n_worker.cpp           \
-          l298n_factory.cpp
+          l298n_factory.cpp \
+          motiontasks.cpp
 
 target.path = /usr/lib
 INSTALLS += target

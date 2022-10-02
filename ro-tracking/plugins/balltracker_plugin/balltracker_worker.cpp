@@ -265,7 +265,7 @@ void balltrackerWorker::detectCircles() {
 
     sendFrame(m_data.m_image);
 
-    QTimer::singleShot(42, this, SLOT(on_track()));
+    QTimer::singleShot(60, this, SLOT(on_track()));
 }
 
 void balltrackerWorker::on_newConnection() {

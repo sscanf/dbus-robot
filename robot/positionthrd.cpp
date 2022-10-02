@@ -12,7 +12,7 @@ void positionThrd::run() {
                                         QStringLiteral("com.robot.servoscontroller"),
                                         m_connection);
     setPossition(m_azim, m_elev);
-    setAngle (m_azim, m_elev);
+    setAngle(m_azim, m_elev);
     int antElev = 0;
     int antAzim = 0;
 
@@ -34,7 +34,7 @@ void positionThrd::run() {
             antAzim = m_azim;
             setAngle(m_azim, m_elev);
         }
-        msleep(10);
+        msleep(20);
     }
 }
 

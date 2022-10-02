@@ -7,8 +7,8 @@
 #include <QThread>
 #include <QTimer>
 
-#define MAX_ELEV 60
-#define MIN_ELEV 0
+#define MAX_ELEV 70
+#define MIN_ELEV 50
 
 #define MAX_AZIM 100
 #define MIN_AZIM 0

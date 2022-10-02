@@ -14,31 +14,20 @@ robotWorker::robotWorker(int &argc, char **argv)
     m_lastElev    = 0;
 
     qsrand(QTime::currentTime().msec());
-    // initTracker();
-    initDistSensors();
 
     m_pPositionThrd = new positionThrd(m_connection, m_azimut, m_elev);
+    m_pCameraThrd   = new manualCameraThrd(m_connection);
+    m_pMotorsThrd   = new manualMotorsThrd(m_connection);
 
-    m_pWalkThread = new walkThread(m_connection);
-    connect(m_pWalkThread, SIGNAL(error(int)), this, SLOT(onMotorsError(int)));
-
-    m_pCameraThrd = new manualCameraThrd(m_connection);
-    m_pMotorsThrd = new manualMotorsThrd(m_connection);
-
-    m_pTimer = new QTimer();
+    m_pTimer = new QTimer(this);
     connect(m_pTimer, SIGNAL(timeout()), this, SLOT(onTimeout()));
 
+    //    initTracker();
     initGamepad();
+    initDistSensors();
+    initMotors();
+
     setAutonomous(true);
-    //    m_pTurnTimer->start (1000);
-
-    //    m_pRandomTimer = new QTimer();
-    //    connect (m_pRandomTimer, SIGNAL (timeout()), this, SLOT (on_randomTimeout()));
-    //    m_pRandomTimer->start (qrand()%(10*1000)+1000);
-    //    m_pTimer->start (1000);
-
-    //    m_pServosIRIface->call("setAngle", QVariant::fromValue(uchar(1)), QVariant::fromValue(quint16(45)));
-    //    m_pServosIRIface->call("setAngle", QVariant::fromValue(uchar(0)), QVariant::fromValue(quint16(90)));
 }
 
 void robotWorker::initTracker() {
@@ -81,10 +70,6 @@ void robotWorker::initTracker() {
 void robotWorker::initDistSensors() {
     qDebug() << "Initializing collision sensors ...";
 
-    for (int n = 0; n < 6; n++) {
-        m_collisionSensors[n] = {16, false};
-    }
-
     m_pDistanceIface = new QDBusInterface(QStringLiteral("com.robot.rosensors"), //
                                           QStringLiteral("/rosensors/distance"),
                                           QStringLiteral("com.robot.rosensors"),
@@ -94,11 +79,15 @@ void robotWorker::initDistSensors() {
     bool ret = QDBusConnection::systemBus().connect(QStringLiteral("com.robot.rosensors"), //
                                                     QStringLiteral("/rosensors/distance"),
                                                     QStringLiteral("com.robot.rosensors"),
-                                                    QStringLiteral("distanceChanged"),
+                                                    QStringLiteral("collision"),
                                                     this,
-                                                    SLOT(onDistanceChanged(int, int)));
+                                                    SLOT(onCollision(int)));
     if (!ret) {
         qDebug() << "Can't catch signal Collision";
+    } else {
+        int totalSensors = getTotalSensors();
+        for (int n = 0; n < totalSensors; n++)
+            m_minDistanceSensors.append(20);
     }
 }
 
@@ -140,6 +129,27 @@ void robotWorker::initGamepad() {
     }
 }
 
+void robotWorker::initMotors() {
+    qDebug() << "Initializing engine control system ...";
+    m_pMotorsIface = new QDBusInterface("com.robot.roengines", //
+                                        "/engines",
+                                        "com.robot.roengines",
+                                        m_connection,
+                                        this);
+    if (!m_pMotorsIface->isValid()) {
+        qDebug() << "Motors interface is not valid";
+    } else {
+        QDBusConnection::systemBus().connect("com.robot.roengines", //
+                                             "/engines",
+                                             "com.robot.roengines",
+                                             "error",
+                                             this,
+                                             SLOT(onMotorsError(int)));
+
+        m_pMotorsIface->call("setMaxSpeed", QVariant::fromValue(qint32(50)));
+    }
+}
+
 double robotWorker::map(double x, double in_min, double in_max, double out_min, double out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
@@ -165,15 +175,6 @@ void robotWorker::onTimeout() {
         m_lastDirElev = -1;
         m_totalCameraRounds++;
     }
-    if (m_totalCameraRounds > 1) {
-        m_totalCameraRounds = 0;
-        if (getDir() == walkThread::DIR_FORWARDING || getDir() == walkThread::DIR_STOPPED)
-            m_pWalkThread->pushTask(TSK_STEP_FORWARD);
-        else if (getDir() == walkThread::DIR_BACKWARDING)
-            m_pWalkThread->pushTask(TSK_STEP_BACKWARD);
-
-
-    }
     m_pPositionThrd->setPossition(m_azimut, m_elev);
     m_pTimer->setInterval(60);
 }
@@ -183,7 +184,7 @@ void robotWorker::onPositionChanged(const QPoint &position) {
     //    int speed=0;
     m_ballLost = false;
     m_pTimer->stop();
-    // setDir(TSK_STOP);
+    setDir(DIR_STOP);
     qDebug() << "Ball found or moving";
 
     RO3DPoint pos;
@@ -195,9 +196,9 @@ void robotWorker::onPositionChanged(const QPoint &position) {
     m_pPositionThrd->setPossition(m_azimut, m_elev);
 
     if (pos.z() < 40) {
-        m_pWalkThread->pushTask(TSK_STEP_FORWARD);
+        //        m_pWalkThread->pushTask(TSK_STEP_FORWARD);
     } else if (pos.z() > 60) {
-        m_pWalkThread->pushTask(TSK_STEP_BACKWARD);
+        //       m_pWalkThread->pushTask(TSK_STEP_BACKWARD);
     }
 
     m_lastDirElev = sign(m_elev - m_lastElev);
@@ -263,40 +264,33 @@ RO3DPoint robotWorker::getCenterDistance() {
     return pos;
 }
 
-void robotWorker::setDir(const tasks &task) {
-    QList<QVariant> collisions = m_pWalkThread->getCollisions();
-    switch (task) {
-        case TSK_STEP_FORWARD:
-            if (!collisions.contains(frontCenter)) {
-                m_pWalkThread->pushTask(task);
-            }
+void robotWorker::setDir(dirs dir) {
+    m_direction = dir;
+
+    switch (dir) {
+        case DIR_FORWARD:
+            pushTask(TSK_STEP_FORWARD, 2);
             break;
 
-        case TSK_STEP_BACKWARD:
-            if (!collisions.contains(rearCenter)) {
-                m_pWalkThread->pushTask(task);
-            }
+        case DIR_BACKWARD:
+            pushTask(TSK_STEP_BACKWARD, 2);
             break;
 
-        case TSK_TURN_LEFT:
-            if (!collisions.contains(frontLeft)) {
-                m_pWalkThread->pushTask(task);
-            }
+        case DIR_TURN_LEFT:
+            pushTask(TSK_TURN_LEFT, 2);
             break;
 
-        case TSK_TURN_RIGHT:
-            if (!collisions.contains(frontRight)) {
-                m_pWalkThread->pushTask(task);
-            }
+        case DIR_TURN_RIGHT:
+            pushTask(TSK_TURN_RIGHT, 2);
             break;
+
+        case DIR_STOP:
+            pushTask(TSK_STOP, 2);
+            break;
+
         default:
             break;
     }
-}
-
-walkThread::direction robotWorker::getDir() {
-    walkThread::direction dir = m_pWalkThread->getDirection();
-    return dir;
 }
 
 void robotWorker::setAutonomous(bool bValue) {
@@ -304,16 +298,15 @@ void robotWorker::setAutonomous(bool bValue) {
         qDebug() << "Autonomous On";
         setGamepadColor(255, 0, 0);
         m_pPositionThrd->start();
-        m_pWalkThread->start();
         m_pTimer->start(1000);
         m_pCameraThrd->terminate();
         m_pMotorsThrd->terminate();
         m_bAutonomous = true;
+        setDir(DIR_FORWARD);
     } else {
         qDebug() << "Autonomous Off";
         setGamepadColor(0, 255, 0);
         m_pPositionThrd->terminate();
-        m_pWalkThread->terminate();
         m_pTimer->stop();
         m_pCameraThrd->start();
         m_pMotorsThrd->start();
@@ -341,100 +334,115 @@ void robotWorker::setConnectedStatus(bool value) {
 void robotWorker::onBallLost() {
     if (m_ballLost == false) {
         qDebug() << "Ball lost";
-        // setDir(TSK_STOP);
+        setDir(DIR_FORWARD);
         m_ballLost = true;
         m_pTimer->start(1000);
     }
 }
 
-void robotWorker::onDistanceChanged(int sensor, int distance) {
-    int   speed           = m_pWalkThread->getSpeed();
-    tasks lstTskRight[]   = {TSK_TURN_RIGHT, TSK_STEP_FORWARD, TSK_STOP};
-    tasks lstTskLeft[]    = {TSK_TURN_LEFT, TSK_STEP_FORWARD, TSK_STOP};
-    tasks lstTskFCenter[] = {TSK_STEP_BACKWARD};
-    tasks lstTskRCenter[] = {TSK_STEP_FORWARD};
-    tasks lstTskFLeft[]   = {TSK_TURN_RIGHT, TSK_STEP_FORWARD, TSK_STEP_FORWARD};
-    tasks lstTskFRight[]  = {TSK_TURN_LEFT, TSK_STEP_FORWARD, TSK_STEP_FORWARD};
-    int   rnd;
+void robotWorker::onCollision(int sensor) {
 
-    minDistances *sensorDistance = &m_collisionSensors[sensor];
-
-    speed = 1;
-    if (speed) {
-        if ((distance < sensorDistance->minDistance)) {
-            if (sensorDistance->bAlarm == false) {
-                sensorDistance->bAlarm = true;
-                switch (sensor) {
-                    case frontCenter:
-                        qDebug() << "Collision on Front Center " << distance;
-                        m_pWalkThread->pushTask(TSK_STOP);
-                        if (speed > 0) {
-                            rnd = qrand() % (sizeof(lstTskFCenter) / sizeof(int));
-                            m_pWalkThread->pushTask(lstTskFCenter[rnd]);
-                        }
-                        break;
-
-                    case rearCenter:
-                        m_pWalkThread->pushTask(TSK_STOP);
-                        qDebug() << "Collision on Rear Center " << distance;
-                        if (speed < 0) {
-                            rnd = qrand() % (sizeof(lstTskRCenter) / sizeof(int));
-                            m_pWalkThread->pushTask(lstTskRCenter[rnd]);
-                        }
-                        break;
-
-                    case frontLeft:
-                        m_pWalkThread->pushTask(TSK_STOP);
-                        qDebug() << "Collision on Front Left " << distance;
-                        rnd = qrand() % (sizeof(lstTskFLeft) / sizeof(int));
-                        m_pWalkThread->pushTask(lstTskFLeft[rnd]);
-                        break;
-
-                    case frontRight:
-                        m_pWalkThread->pushTask(TSK_STOP);
-                        qDebug() << "Collision on Front Right " << distance;
-                        rnd = qrand() % (sizeof(lstTskFRight) / sizeof(int));
-                        m_pWalkThread->pushTask(lstTskFRight[rnd]);
-                        break;
-
-                    case rearRight:
-                        m_pWalkThread->pushTask(TSK_STOP);
-                        qDebug() << "Collision on Rear Right " << distance;
-                        rnd = qrand() % (sizeof(lstTskRight) / sizeof(int));
-                        m_pWalkThread->pushTask(lstTskRight[rnd]);
-                        break;
-
-                    case rearLeft:
-                        m_pWalkThread->pushTask(TSK_STOP);
-                        qDebug() << "Rear Left " << distance;
-                        rnd = qrand() % (sizeof(lstTskLeft) / sizeof(int));
-                        m_pWalkThread->pushTask(lstTskLeft[rnd]);
-                        break;
-                }
-            }
-        } else {
-            sensorDistance->bAlarm = false;
-        }
+    qDebug() << "onCollision " << sensor;
+    if (m_direction == TSK_STEP_BACKWARD && (sensor == frontCenter || sensor == frontLeft || sensor == frontRight)) {
+        return;
     }
+
+    if (m_direction == TSK_STEP_FORWARD && (sensor == rearCenter || sensor == rearLeft || sensor == rearRight)) {
+        return;
+    }
+
+    //    int totalSensors = getTotalSensors();
+
+    //    QDBusPendingReply<QList<int>> intRet = m_pDistanceIface->call(QLatin1String("getAllDistances"));
+    //    if (intRet.isValid()) {
+    //        int maxDistance = 0;
+    //        int sensorNum   = 0;
+    //        for (int n = 0; n < totalSensors; n++) {
+    //            if (maxDistance < intRet.value()[n]) {
+    //                maxDistance = intRet.value()[n];
+    //                sensorNum   = n;
+    //            }
+    //        }
+
+    switch (sensor) {
+        case frontCenter:
+            pushTask(TSK_STEP_BACKWARD, 5);
+            pushTask(TSK_TURN_LEFT, 5);
+            pushTask(TSK_STEP_FORWARD, 2);
+            break;
+
+            //            case rearCenter:
+            //                setDir(DIR_BACKWARD);
+            //                break;
+
+            //            case frontLeft:
+            //                setDir(DIR_TURN_LEFT);
+            //                break;
+
+            //            case frontRight:
+            //                setDir(DIR_TURN_RIGHT);
+            //                break;
+
+            //            case rearLeft:
+            //                setDir(DIR_TURN_RIGHT);
+            //                break;
+
+            //            case rearRight:
+            //                setDir(DIR_TURN_LEFT);
+            //                break
+    }
+    //}
 }
 
 void robotWorker::onMotorsError(int err) {
-    m_pWalkThread->pushTask(TSK_STOP);
+    switch (m_direction) {
+        case frontCenter:
+            setDir(DIR_TURN_LEFT);
+            break;
+
+        case rearCenter:
+            setDir(DIR_TURN_RIGHT);
+            break;
+
+        case frontLeft:
+            setDir(DIR_TURN_LEFT);
+            break;
+
+        case frontRight:
+            setDir(DIR_TURN_RIGHT);
+            break;
+
+        case rearLeft:
+            setDir(DIR_TURN_RIGHT);
+            break;
+
+        case rearRight:
+            setDir(DIR_TURN_LEFT);
+            break;
+    }
     qDebug() << "Error in motoros: " << err;
 }
 
-void robotWorker::setSpeed() {
-    int speedL = (m_speed - m_valL) * -1;
-    int speedR = (m_speed - m_valR) * -1;
+int robotWorker::getTotalSensors() {
+    int                    ret    = 0;
+    QDBusPendingReply<int> intRet = m_pDistanceIface->call(QLatin1String("getSensorsCount"));
+    if (intRet.isValid()) {
+        ret = intRet.value();
+    }
+    return ret;
+}
 
-    if (speedL < -150)
-        speedL = -150;
+void robotWorker::pushTask(tasks task, int tSecs) {
+    QByteArray  block;
+    QDataStream sendStream(&block, QIODevice::WriteOnly);
+    stTask      stask;
 
-    if (speedR < -150)
-        speedR = -150;
-
-    qDebug() << m_valL << m_valR << speedL << speedR;
-    m_pWalkThread->setDualSpeed(speedL, speedR);
+    stask.m_task  = task;
+    stask.m_tSecs = tSecs;
+    stask.m_speed = m_speed;
+    sendStream.writeRawData((const char *)&stask, sizeof(stTask));
+    m_pMotorsIface->call("pushTask", block);
+    qDebug() << QDBusMessage::ErrorMessage;
 }
 
 void robotWorker::onButtonPS(bool value) {
