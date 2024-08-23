@@ -7,7 +7,6 @@ system ($$quote(cp -r $${PWD}/proxy/* $$[QT_SYSROOT]/usr/include/robot/$$escape_
 
 QT          += core dbus xml
 QT          -= gui
-#INCLUDEPATH += $$[QT_SYSROOT]/usr/include
 INCLUDEPATH += ../common/
 INCLUDEPATH += ../../common/
 INCLUDEPATH += $$[QT_SYSROOT]/usr/include/
@@ -23,7 +22,7 @@ config_files.files  = $$PWD/robot/
 
 dbus_files.path     = /etc/dbus-1/
 dbus_files.files    = $$PWD/system.d/
- 
+
 dbus_services.path  = /usr/share/dbus-1/
 dbus_services.files = $$PWD/services
 
@@ -41,7 +40,7 @@ HEADERS += pwm_manager.h          \
            ../common/pwm_plugin.h
 
 target.path = /usr/bin/
-INSTALLS += target 
+INSTALLS += target
 INSTALLS += config_files
 INSTALLS += dbus_files
 INSTALLS += dbus_services

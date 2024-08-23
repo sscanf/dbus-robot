@@ -2,11 +2,14 @@
 #include "l298n_worker.h"
 #include "l298n_worker_interface.h"
 
-l298nWorker::l298nWorker(QString strName, QString strDescription, bool bEnabled, QObject *parent)
+l298nWorker::l298nWorker(QString strName, const QString &strDescription, bool bEnabled, QObject *parent)
     : QObject(parent)
     , m_connection(QDBusConnection::systemBus())
     , m_pwm(0x41)
-    , m_strName(strName) {
+    , m_strName(strName)
+    , m_motorLeft(encoder_left, 1000.0, &m_pwm, MotorLeft_Forward, MotorLeft_Backward, this)
+    , m_motorRight(encoder_right, 1000.0, &m_pwm, MotorRight_Backward, MotorRight_Forward, this)
+    , m_PIDController(0.1, 0.01, 0.01) {
 
     m_bEnabled       = bEnabled;
     m_strDescription = strDescription;
@@ -14,13 +17,14 @@ l298nWorker::l298nWorker(QString strName, QString strDescription, bool bEnabled,
 
     new l298n_workerInterface(this);
     QString strAddress = m_strAddress;
-    QString strObject  = "/" + strName;
+    QString strObject  = "/roengines/" + strName;
     m_connection.registerObject(strObject, this);
     m_connection.registerService(strAddress.replace("/", "."));
 
     m_pwm.begin();
-    m_pTimer = new QTimer (this);
-    connect (m_pTimer, SIGNAL (timeout()), this, SLOT (onTimeout()));
+    m_pTimer = new QTimer(this);
+    connect(m_pTimer, &QTimer::timeout, this, &l298nWorker::onTimeout);
+    m_pTimer->start(10);
 }
 
 QString l298nWorker::getName() {
@@ -50,7 +54,7 @@ int l298nWorker::getSpeed() {
     return m_speed;
 }
 
-int l298nWorker::getSpeed(encoders encoder) {
+int l298nWorker::getSpeed(int encoder) {
     int     ret     = 0;
     QString strFile = QString("/proc/driver/%1").arg(encoder_files[encoder]);
     QFile   file(strFile);
@@ -64,114 +68,25 @@ void l298nWorker::setSpeed(int speed) {
     m_speed = speed;
 }
 
-void l298nWorker::PIDControl() {
-    int n;
-    int err1               = 0;
-    int err2               = 0;
-    int realSpeed          = getSpeed();
-    int encoderSpeed_left  = getSpeed(encoder_left);
-    int encoderSpeed_right = getSpeed(encoder_right);
+void l298nWorker::onTimeout() {
+    int encoder_reading_motorLeft  = m_motorLeft.getSpeed();
+    int encoder_reading_motorRight = m_motorRight.getSpeed();
 
-    m_errorsLeft[m_nErrors]  = realSpeed - encoderSpeed_left;
-    m_errorsRight[m_nErrors] = realSpeed - encoderSpeed_right;
-
-    if (++m_nErrors == TOTAL_ERRORS) {
-        m_nErrors = 0;
-        for (n = 0; n < TOTAL_ERRORS; n++) {
-            err1 += m_errorsLeft[n];
-            err2 += m_errorsRight[n];
-        }
-
-        err1 /= TOTAL_ERRORS;
-        err2 /= TOTAL_ERRORS;
-
-        if (err1 < 0 && err1 < -LIMIT)
-            err1 = -LIMIT;
-        if (err2 < 0 && err2 < -LIMIT)
-            err2 = -LIMIT;
-
-        if (err1 > LIMIT)
-            err1 = LIMIT;
-        if (err2 > LIMIT)
-            err2 = LIMIT;
-
-        setEncoderSpeed(encoder_left, m_speed + err1);
-        setEncoderSpeed(encoder_right, m_speed + err2);
-    }
-}
-
-void l298nWorker::setEncoderSpeed(encoders encoder, int speed) {
-
-    if (speed > 0) {
-        if (encoder == encoder_left) {
-            m_pwm.setPWM(MotorLeft_Forward, 0, speed);
-            m_pwm.setPWM(MotorLeft_Backward, 0, 0);
-        }
-        if (encoder == encoder_right) {
-            m_pwm.setPWM(MotorRight_Forward, 0, speed);
-            m_pwm.setPWM(MotorRight_Backward, 0, 0);
-        }
+    if (m_speedRight != encoder_reading_motorRight) {
+        m_speedRight = encoder_reading_motorRight;
+        emit motorSpeedChanged (encoder_right, m_speedRight);
     }
 
-    if (speed < 0) {
-        if (encoder == encoder_left) {
-            m_pwm.setPWM(MotorLeft_Forward, 0, 0);
-            m_pwm.setPWM(MotorLeft_Backward, 0, speed);
-        }
-        if (encoder == encoder_right) {
-            m_pwm.setPWM(MotorRight_Forward, 0, 0);
-            m_pwm.setPWM(MotorRight_Backward, 0, speed);
-        }
+    if (m_speedLeft != encoder_reading_motorLeft) {
+        m_speedLeft= encoder_reading_motorLeft;
+        emit motorSpeedChanged (encoder_left, m_speedLeft);
+    }
+
+    for (int time = 0; time < 100; time++) {
+        int control_effort_motor1 = m_PIDController.Compute(m_speed, encoder_reading_motorLeft);
+        int control_effort_motor2 = m_PIDController.Compute(m_speed, encoder_reading_motorRight);
+
+        m_motorLeft.setSpeed(control_effort_motor1);
+        m_motorRight.setSpeed(control_effort_motor2);
     }
 }
-
-void l298nWorker::onTimeout()
-{
-    PIDControl();
-}
-
-// quint8 l298nWorker::getEncoderDir(Motors motor) {
-//     quint8 ret = 0;
-//     if (m_threads.size() <= motor) {
-//         ret = m_threads[motor]->getEncoderDir();
-//     }
-//     return ret;
-// }
-
-// void l298nWorker::motorChangeDir(MotorDirection dir, MotorDirection motor) {
-//     if (m_threads.size() <= motor) {
-//         m_threads[motor]->motorChangeDir (dir);
-//     }
-// }
-
-// void l298nWorker::motorSpeed(int speed, Motors motor) {
-//     if (m_threads.size() <= motor) {
-//         m_threads[motor]->motorSpeed (speed);
-//     }
-// }
-
-// quint8 l298nWorker::motorDir(Motors motor) {
-//     quint8 ret = 0;
-//     switch (motor) {
-//         case MotorLeft:
-//             ret = !m_soc.level("MOTOR_LEFT");
-//             break;
-//         case MotorRight:
-//             ret = m_soc.level("MOTOR_RIGHT");
-//             break;
-//     }
-//     return ret;
-// }
-
-// void l298nWorker::setDirection(int motor, int direction) {
-//    Q_UNUSED (motor)
-//    Q_UNUSED (direction)
-//    //    if (direction == MotorDirection::Forward) {
-//    //        m_gpio1.setValue(imx6io::High);
-//    //        m_gpio2.setValue(imx6io::Low);
-//    //    }
-//    //    if (direction == MotorDirection::Forward) {
-//    //        m_gpio1.setValue(imx6io::Low);
-//    //        m_gpio2.setValue(imx6io::High);
-//    //    }
-//}

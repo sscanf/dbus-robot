@@ -44,7 +44,7 @@ HEADERS += gamepad_manager.h \
 
 
 target.path = /usr/bin/
-INSTALLS += target 
+INSTALLS += target
 INSTALLS += config_files
 INSTALLS += dbus_files
 INSTALLS += dbus_services

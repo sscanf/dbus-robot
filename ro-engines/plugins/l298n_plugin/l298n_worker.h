@@ -9,6 +9,8 @@
 #include <QtDBus>
 #include <Adafruit_PWMServoDriver.h>
 #include "encodersthrd.h"
+#include "motor.h"
+#include "pidcontroller.h"
 
 #define PLUGIN_TYPE      " Please, define plugin type !!! "
 #define TIMER_RESOLUTION 1
@@ -24,21 +26,8 @@ class l298nWorker : public QObject {
 
     const char *encoder_files[2] = {"robot_encoder_right", "robot_encodre_left"};
 
-    enum PWM
-    {
-        MotorLeft_Forward,
-        MotorLeft_Backward,
-        MotorRight_Forward,
-        MotorRight_Backward
-    };
-    enum encoders
-    {
-        encoder_left,
-        encoder_right
-    };
-
 public:
-    explicit l298nWorker(QString strName, QString strDescription = 0, bool bEnabled = 0, QObject *parent = 0);
+    explicit l298nWorker(QString strName, const QString &strDescription = 0, bool bEnabled = 0, QObject *parent = 0);
 
 public Q_SLOTS:
     QString getName();
@@ -48,38 +37,37 @@ public Q_SLOTS:
     bool    isEnabled();
     void    setEnabled(bool bEnabled);
     int     getSpeed();
-    int     getSpeed(encoders encoder);
+    int     getSpeed(int encoder);
     void    setSpeed(int speed);
-
-    // quint8  getEncoderDir(Motors motor);
-    // void    motorChangeDir(MotorDirection dir, MotorDirection motor);
-    // void    motorSpeed(int speed, Motors motor);
-    // quint8  motorDir(Motors motor);
 
 private:
     void PIDControl(void);
-    void setEncoderSpeed(encoders encoder, int speed);
 
 private: // Variables
-    QDBusConnection          m_connection;
-    Adafruit_PWMServoDriver  m_pwm;
-    Adafruit_PWMServoDriver *m_pPWM;
+    QDBusConnection         m_connection;
+    Adafruit_PWMServoDriver m_pwm;
 
-    int     m_address;
-    QString m_strName;
-    QString m_strAddress;
-    QString m_strDescription;
-    bool    m_bEnabled;
-    int     m_speed = 0;
-    int     m_errorsRight[TOTAL_ERRORS];
-    int     m_errorsLeft[TOTAL_ERRORS];
-    int     m_nErrors = 0;
-    QTimer *m_pTimer;
+    int           m_address;
+    QString       m_strName;
+    QString       m_strAddress;
+    QString       m_strDescription;
+    bool          m_bEnabled;
+    int           m_speed      = 0;
+    int           m_speedLeft  = 0;
+    int           m_speedRight = 0;
+    int           m_errorsRight[TOTAL_ERRORS];
+    int           m_errorsLeft[TOTAL_ERRORS];
+    int           m_nErrors = 0;
+    QTimer       *m_pTimer;
+    Motor         m_motorLeft;
+    Motor         m_motorRight;
+    PIDController m_PIDController;
 
     //   void (l298nWorker::*current_state)(QVariantList *) = NULL;
 
 signals:
     void error(bool bError);
+    void motorSpeedChanged(int, int);
 
 private slots:
     // States

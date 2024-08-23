@@ -8,6 +8,7 @@
 #include <QCoreApplication>
 #include <QtDBus>
 #include <qdbusconnection.h>
+#include <QRandomGenerator>
 
 #define LOW_SPEED 2
 

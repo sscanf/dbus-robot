@@ -1,1 +1,0 @@
-cmd_/usr/src/data/projects/dbus-robot.git/encoder-drv/rtencoder.mod := { echo  /usr/src/data/projects/dbus-robot.git/encoder-drv/rtencoder.o;  echo; } > /usr/src/data/projects/dbus-robot.git/encoder-drv/rtencoder.mod

@@ -19,16 +19,35 @@ TARGET       = $$qtLibraryTarget(balltracker-plugin)
 DESTDIR      = plugins
 #LIBS        += -L$$(OECORE_TARGET_SYSROOT)/usr/lib/arm-linux-gnueabihf/tegra/
 
-LIBS        += -lopencv_core -lopencv_video -lopencv_highgui -lopencv_imgproc -lopencv_videoio  #-lraspicam -lraspicam_cv -lmmal -lmmal_core -lmmal_vc_client -lmmal_util -lmmal_components -lraspicam
+QMAKE_CXXFLAGS += -std=c++11
+
+LIBS        += -lopencv_dnn     \
+               -lopencv_dnn_objdetect     \
+               -lopencv_core    \
+               -lopencv_video   \
+               -lopencv_videoio   \
+               -lopencv_highgui \
+               -lopencv_imgproc \
+               -lopencv_face \
+               -lopencv_cudaimgproc \
+               -lopencv_cudawarping \
+               -lopencv_cudacodec \
+               -lopencv_cudaobjdetect \
+               -lopencv_objdetect \
+               -lnvcuvid
+
+#-lraspicam -lraspicam_cv -lmmal -lmmal_core -lmmal_vc_client -lmmal_util -lmmal_components -lraspicam
 
 HEADERS = balltracker_worker_interface.h \
           balltracker_factory.h          \
           balltracker_worker.h \
+          facetracker.h \
           streamServer.h
 
 SOURCES  = balltracker_worker_interface.cpp\
            balltracker_worker.cpp          \
            balltracker_factory.cpp \
+           facetracker.cpp \
            streamServer.cpp
 
 target.path = /usr/lib/

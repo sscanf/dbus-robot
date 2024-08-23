@@ -12,6 +12,8 @@
 
 # Qt-es
 
+**/.DS_Store
+**/.qtc_clangd
 /.qmake.cache
 /.qmake.stash
 *.pro.user
@@ -24,7 +26,6 @@ qrc_*.cpp
 ui_*.h
 Makefile*
 *build-*
-
 # QtCreator
 
 *.autosave
@@ -44,3 +45,58 @@ com.robot.roengines.xml
 vlc-qt
 firmware
 imx8
+
+# Ignore the default compiled object files and dependency files
+*.o
+*.ko
+*.mod.c
+*.mod.o
+*.mod
+*.cmd
+
+# Ignore temporary files used by the build system
+.*.cmd
+.tmp_versions/
+Module.symvers
+modules.order
+*.order
+
+# Ignore compiled binary files
+*.bin
+*.elf
+*.hex
+
+# Ignore generated documentation files
+*.html
+*.pdf
+*.ps
+*.tex
+
+# Ignore ctags files
+tags
+cscope.*
+
+# Ignore editor and IDE files
+*.swp
+*.swo
+*.swn
+*~
+.idea/
+.vscode/
+*.user
+
+# Ignore patch files
+*.patch
+
+# Ignore kernel logs and debug information
+dmesg
+*.log
+*.out
+
+# Ignore other unnecessary files
+*.bak
+*.backup
+*.orig
+*.rej
+*~
+**/venv/

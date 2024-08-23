@@ -37,7 +37,7 @@ int QlibUsb::open (int vendorId, int productId)
         return 1;
     }
     else
-        qDebug() <<"Device Opened"<<endl;
+        qDebug() <<"Device Opened";
 
     libusb_detach_kernel_driver (m_handle, 0);
 

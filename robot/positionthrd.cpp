@@ -35,7 +35,7 @@ void positionThrd::run() {
             antAzim = m_azim;
             setAngle(m_azim, m_elev);
         } else
-            msleep(100);
+            msleep(1);
     }
 }
 

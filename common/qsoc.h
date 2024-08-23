@@ -1,6 +1,7 @@
 #ifndef QSOC_H
 #define QSOC_H
 
+#include <cstdlib>
 #include <libsoc_gpio.h>
 #include <libsoc_board.h>
 #include <QObject>
@@ -17,8 +18,8 @@ public:
     int        setLevel(QString strName, gpio_level level);
     gpio_level level(QString strName);
     int        enableInterrupt(QString strName, gpio_edge edge, int (*callback_fn)(void *), void *ptr);
-    int        setDirection(QString strName, gpio_direction dir);
-    void       disableInterrupt(QString strName);
+    int        setDirection(const QString &strName, gpio_direction dir);
+    void       disableInterrupt(const QString &strName);
 
 protected:
     QHash<QString, gpio *> m_gpios;

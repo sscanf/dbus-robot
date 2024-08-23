@@ -12,13 +12,11 @@ MXM3_5    //GPIO38
 MXM3_7    //GPIO39
 **/
 
-class imx6io : public QObject
-{
+class imx6io : public QObject {
     Q_OBJECT
     Q_ENUMS(IODirection)
     Q_ENUMS(IOValue)
-//    Q_DISABLE_COPY(imx6io)
-
+    //    Q_DISABLE_COPY(imx6io)
 
 public:
     imx6io(QObject *parent = nullptr);
@@ -36,11 +34,11 @@ public:
     };
 
 public:
-    QString getName     ();
-    void    setName     (QString name);
+    QString getName();
+    void    setName(QString name);
     void    setDirection(IODirection dir);
-    void    setValue    (IOValue val);
-    IOValue getValue    ();
+    void    setValue(IOValue val);
+    IOValue getValue();
 
 signals:
     void pressed();
@@ -48,7 +46,7 @@ signals:
     void valueChanged(IOValue value);
 
 private:
-    void UpdateIO();
+    void       UpdateIO();
     static int callbackButton(void *ptr);
 
 private:
@@ -56,9 +54,5 @@ private:
     QString        m_strName;
     gpio_direction m_direction;
     gpio_level     m_value;
-
-private slots:
-    void onTimeout();
-
 };
 #endif // IMX6IO_H

@@ -1,0 +1,16 @@
+Before compiling this module for the first time:
+
+* Set the envoronments variables using the Yocto SDK script:
+
+  $ cd /opt/robot-imx8-sdk/ 
+  $ source environment-setup-cortexa72-cortexa53-tdx-linux
+
+* Next, you need to run the scripts and prepare the kernel:
+
+  $ cd /opt/robot-imx8-sdk/sysroots/cortexa72-cortexa53-tdx-linux/usr/src/kernel
+	$ make scripts prepare
+
+Now is time to compile the module
+
+
+

@@ -4,11 +4,10 @@
 
 static ssize_t proc_encoder_right_read(struct file *filp, char *buffer, size_t len, loff_t *offset) {
     char buf[950];
-    int  ret;
     int  faltan   = 0;
     int  to_write = 0;
 
-    ret += sprintf(buf, "%3d\n", pEncoderRight->speed);
+    sprintf(buf, "%3d", pEncoderRight->speed);
     to_write = strlen(buf) + 1 - *offset;
     faltan   = raw_copy_to_user(buffer, buf + *offset, to_write);
     *offset += to_write - faltan;
@@ -17,11 +16,10 @@ static ssize_t proc_encoder_right_read(struct file *filp, char *buffer, size_t l
 
 static ssize_t proc_encoder_left_read(struct file *filp, char *buffer, size_t len, loff_t *offset) {
     char buf[950];
-    int  ret;
     int  faltan   = 0;
     int  to_write = 0;
 
-    ret += sprintf(buf, "%3d\n", pEncoderLeft->speed);
+    sprintf(buf, "%3d", pEncoderLeft->speed);
     to_write = strlen(buf) + 1 - *offset;
     faltan   = raw_copy_to_user(buffer, buf + *offset, to_write);
     *offset += to_write - faltan;
@@ -53,6 +51,7 @@ void resetTimer(void) {
 }
 
 void timer_callback(struct timer_list *data) {
+
     pEncoderRight->speed   = pEncoderRight->nPulses;
     pEncoderLeft->speed    = pEncoderLeft->nPulses;
     pEncoderRight->nPulses = 0;
@@ -78,14 +77,11 @@ static void gpioDisablePin(int number) {
     gpio_free(number);
 }
 
-static struct file_operations encoder_right_fops = {
-    .owner = THIS_MODULE,
-    .read  = proc_encoder_right_read,
+static struct proc_ops encoder_right_fops = {
+  .proc_read = proc_encoder_right_read,
 };
-
-static struct file_operations encoder_left_fops= {
-    .owner = THIS_MODULE,
-    .read  = proc_encoder_left_read,
+static const struct proc_ops encoder_left_fops = {
+  .proc_read = proc_encoder_left_read,
 };
 
 static int initializeEncoders(void) {
@@ -106,7 +102,8 @@ static int initializeEncoders(void) {
                            "ENCODER_RIGHT_CHANB",
                            THIS_MODULE->name))
         != 0) {
-        printk(KERN_INFO "Error %d: could not request irq: %d\n", err, PIN_ENCODER_RIGHT_CHANB);
+        printk(KERN_ERR "Error %d: could not request irq: %d\n", err, PIN_ENCODER_RIGHT_CHANB);
+        return false;
     }
 
     if ((err = request_irq(gpio_to_irq(PIN_ENCODER_LEFT_CHANB), //
@@ -115,7 +112,8 @@ static int initializeEncoders(void) {
                            "ENCODER_LEFT_CHANB",
                            THIS_MODULE->name))
         != 0) {
-        printk(KERN_INFO "Error %d: could not request irq: %d\n", err, PIN_ENCODER_LEFT_CHANB);
+        printk(KERN_ERR "Error %d: could not request irq: %d\n", err, PIN_ENCODER_LEFT_CHANB);
+        return false;
     }
 
     pEncoderRight = (encoder *)kmalloc(sizeof(encoder), GFP_ATOMIC);
@@ -150,6 +148,7 @@ static int rtencoder_init_module(void) {
 
     ret = initializeEncoders();
     if (!ret) {
+        printk ("Error initializing encoders");
         rtencoder_exit_module();
         return -1;
     }

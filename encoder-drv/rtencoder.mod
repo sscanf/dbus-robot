@@ -1,2 +1,2 @@
-/usr/src/data/projects/dbus-robot.git/encoder-drv/rtencoder.o
+/media/psf/Documents/projects/dbus-robot/encoder-drv/rtencoder.o
 

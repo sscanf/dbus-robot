@@ -12,13 +12,13 @@
  * @brief
  *
  */
-class rosensorsPlugin: public QObject
-{
+class rosensorsPlugin : public QObject {
 public:
-    virtual     ~rosensorsPlugin (){}
-    virtual int  init   	(QString strName, QString strDescription=QString(), bool bEnabled=true)=0;
-    virtual void release 	()=0;
-    QStringList  getAllObjects  () { return m_listAllObjects; }
+    virtual ~rosensorsPlugin() {}
+    virtual int init(const QString &strName, const QString &strDescription = QString(), bool bEnabled = true) = 0;
+
+    virtual void release() = 0;
+    QStringList  getAllObjects() { return m_listAllObjects; }
 
 protected:
     QStringList m_listAllObjects;

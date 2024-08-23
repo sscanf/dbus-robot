@@ -1,6 +1,7 @@
 #ifndef __MOTORES__
 #define __MOTORES__
 
+#include <linux/pgtable.h>
 #include <asm/uaccess.h>
 #include <linux/device.h>
 #include <linux/fs.h>
@@ -8,6 +9,8 @@
 #include <linux/gpio.h>
 #include <linux/interrupt.h>
 #include <linux/proc_fs.h>
+#include <linux/sched.h>
+
 
 #define ENCODER_RIGHT 0
 #define ENCODER_LEFT  1
@@ -22,10 +25,10 @@
 #define MOD_NAME                "rtencoder"
 #define STR_MODNAME             "rtencoder: "
 #define TIMEOUT                 1000 // milliseconds
-#define PIN_ENCODER_RIGHT_CHANA 492  // "MXM3_5"   GPIO 3
-#define PIN_ENCODER_RIGHT_CHANB 493  // "MXM3_7"   GPIO 4
-#define PIN_ENCODER_LEFT_CHANA  353  // "MXM3_11"  GPIO 5
-#define PIN_ENCODER_LEFT_CHANB  354  // "MXM3_13"  GPIO 6
+#define PIN_ENCODER_RIGHT_CHANA 428  // "MXM3_5"   GPIO 3
+#define PIN_ENCODER_RIGHT_CHANB 429  // "MXM3_7"   GPIO 4
+#define PIN_ENCODER_LEFT_CHANA  289  // "MXM3_11"  GPIO 5
+#define PIN_ENCODER_LEFT_CHANB  290  // "MXM3_13"  GPIO 6
 
 static int ModMajor;
 // static u8 *ModLomem;

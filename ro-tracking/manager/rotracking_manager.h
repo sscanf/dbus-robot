@@ -37,7 +37,7 @@ public Q_SLOTS:
      *
      * Retrieve a string list with DBus address of all plugins that are enabled by type.\n
      */
-    QStringList getObjectsByType (QString strType);
+    QStringList getObjectsByType (const QString &strType);
 
 
     /**
@@ -51,7 +51,7 @@ public Q_SLOTS:
 
 private: //Functions
     QPluginLoader *loadPlugin (const char *pstrPlugin);
-    int            parseConfig(QString strFilePath);
+    int            parseConfig(const QString &strFilePath);
 
 private: //Variables
 

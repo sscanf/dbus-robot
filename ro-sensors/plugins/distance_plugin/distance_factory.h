@@ -6,19 +6,18 @@
 #include <rosensors_plugin.h>
 #include "distance_worker.h"
 
-class distance_factory : public rosensorsPlugin
-{
+class distance_factory : public rosensorsPlugin {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "com.robot.rosensors/1.0")
     Q_INTERFACES(rosensorsPlugin)
 
 public:
-   distance_factory  ();
-   ~distance_factory ();
-   int init              (QString strName, QString strDescription=QString(), bool bEnabled=true);
-   void release          ();
+    distance_factory();
+    ~distance_factory();
+    int  init(const QString &strName, const QString &strDescription = QString(), bool bEnabled = true);
+    void release();
 
 private:
-    QList <distanceWorker *> m_listManagers;
+    QList<distanceWorker *> m_listManagers;
 };
 #endif

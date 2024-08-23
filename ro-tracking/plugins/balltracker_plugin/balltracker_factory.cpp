@@ -15,7 +15,7 @@ balltracker_factory::~balltracker_factory()
 int balltracker_factory::init(QString strName, QString strDescription, bool bEnabled)
 {
    Q_UNUSED(bEnabled);
-   
+
     balltrackerWorker *manager = new  balltrackerWorker (strName,strDescription);
     m_listAllObjects << manager->getAddress ();
     m_listManagers.append (manager);

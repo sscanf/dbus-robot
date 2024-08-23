@@ -1,4 +1,4 @@
-QT += core gui network qml quick quickwidgets dbus
+QT += core gui dbus network qml quick quickwidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

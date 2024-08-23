@@ -26,7 +26,7 @@ QStringList rotrackingManager::getObjects()
   return strObjects;
 }
 
-QStringList rotrackingManager::getObjectsByType(QString strType)
+QStringList rotrackingManager::getObjectsByType(const QString &strType)
 {
   QStringList strAllObjects = getObjects();
   QStringList strObjects;
@@ -104,7 +104,7 @@ QPluginLoader *rotrackingManager::loadPlugin (const char *pstrPlugin)
   return pluginLoader;
 }
 
-int rotrackingManager::parseConfig(QString strFilePath)
+int rotrackingManager::parseConfig(const QString &strFilePath)
 {
   QDomDocument doc ("rotracking");
   QString      errorMsg;

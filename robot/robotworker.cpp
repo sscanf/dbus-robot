@@ -14,7 +14,7 @@ robotWorker::robotWorker(int &argc, char **argv)
     m_lastAzimut  = 0;
     m_lastElev    = 0;
 
-    qsrand(QTime::currentTime().msec());
+    srand(QTime::currentTime().msec());
     initTracker();
     initDistSensors();
 
@@ -38,7 +38,7 @@ robotWorker::robotWorker(int &argc, char **argv)
 
     //    m_pRandomTimer = new QTimer();
     //    connect (m_pRandomTimer, SIGNAL (timeout()), this, SLOT (on_randomTimeout()));
-    //    m_pRandomTimer->start (qrand()%(10*1000)+1000);
+    //    m_pRandomTimer->start (QRandomGenerator()%(10*1000)+1000);
     //    m_pTimer->start (1000);
 
     //    m_pServosIRIface->call("setAngle", QVariant::fromValue(uchar(1)), QVariant::fromValue(quint16(45)));
@@ -336,7 +336,7 @@ void robotWorker::onBallLost() {
 void robotWorker::onTurnTimeout() {
     tasks lstTsk[] = {TSK_TURN_RIGHT, TSK_TURN_LEFT, TSK_STEP_FORWARD, TSK_STOP};
 
-    int rnd = qrand() % (sizeof(lstTsk) / sizeof(int));
+    int rnd = QRandomGenerator::global()->generate() % (sizeof(lstTsk) / sizeof(int));
     if (m_azimut < 90) {
         setDir(lstTsk[rnd]);
     } else if (m_azimut > 90) {
@@ -362,7 +362,7 @@ void robotWorker::onCollision(int sensor) {
             case frontCenter:
                 qDebug() << "Front Center";
                 if (speed > 0) {
-                    rnd = qrand() % (sizeof(lstTskFCenter) / sizeof(int));
+                    rnd = QRandomGenerator::global()->generate() % (sizeof(lstTskFCenter) / sizeof(int));
                     setDir(lstTskFCenter[rnd]);
                 }
                 break;
@@ -370,26 +370,26 @@ void robotWorker::onCollision(int sensor) {
             case rearCenter:
                 qDebug() << "Rear Center";
                 if (speed < 0) {
-                    rnd = qrand() % (sizeof(lstTskRCenter) / sizeof(int));
+                    rnd = QRandomGenerator::global()->generate() % (sizeof(lstTskRCenter) / sizeof(int));
                     setDir(lstTskRCenter[rnd]);
                 }
                 break;
 
             case frontLeft:
                 qDebug() << "Front Left";
-                rnd = qrand() % (sizeof(lstTskFLeft) / sizeof(int));
+                rnd = QRandomGenerator::global()->generate() % (sizeof(lstTskFLeft) / sizeof(int));
                 setDir(lstTskFLeft[rnd]);
                 break;
 
             case frontRight:
                 qDebug() << "Front Right";
-                rnd = qrand() % (sizeof(lstTskFRight) / sizeof(int));
+                rnd = QRandomGenerator::global()->generate() % (sizeof(lstTskFRight) / sizeof(int));
                 setDir(lstTskFRight[rnd]);
                 break;
 
             case rearRight:
                 qDebug() << "Rear Right";
-                rnd = qrand() % (sizeof(lstTskRight) / sizeof(int));
+                rnd = QRandomGenerator::global()->generate() % (sizeof(lstTskRight) / sizeof(int));
                 if (speed < 0)
                     setDir(lstTskRight[rnd]);
                 else if (m_pWalkThread->getDirection() == walkThread::DIR_TURNING_RIGHT)
@@ -398,7 +398,7 @@ void robotWorker::onCollision(int sensor) {
 
             case rearLeft:
                 qDebug() << "Rear Left";
-                rnd = qrand() % (sizeof(lstTskLeft) / sizeof(int));
+                rnd = QRandomGenerator::global()->generate() % (sizeof(lstTskLeft) / sizeof(int));
                 if (speed < 0)
                     setDir(lstTskLeft[rnd]);
                 else if (m_pWalkThread->getDirection() == walkThread::DIR_TURNING_RIGHT)
@@ -410,7 +410,7 @@ void robotWorker::onCollision(int sensor) {
 
 void robotWorker::onMotorsError(int err) {
     setDir(TSK_STOP);
-    qDebug() << "Error on motors: " << err;
+    qDebug() << "Error in motoros: " << err;
 }
 
 void robotWorker::setSpeed() {

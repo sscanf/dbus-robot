@@ -29,7 +29,9 @@ HEADERS = \
           ../../../common/zoi2c.h \
           l298n_worker_interface.h \
           l298n_factory.h          \
-          l298n_worker.h
+          l298n_worker.h \
+          motor.h \
+          pidcontroller.h
 
 
 SOURCES  = \
@@ -37,7 +39,9 @@ SOURCES  = \
           l298n_worker_interface.cpp \
           ../../../common/zoi2c.cpp \
           l298n_worker.cpp           \
-          l298n_factory.cpp
+          l298n_factory.cpp \
+          motor.cpp \
+          pidcontroller.cpp
 
 target.path = /usr/lib
 INSTALLS += target

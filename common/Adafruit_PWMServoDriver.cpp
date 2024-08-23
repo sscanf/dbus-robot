@@ -76,7 +76,7 @@ void Adafruit_PWMServoDriver::setPWM(quint8 num, quint16 on, quint16 off) {
     m_i2c.WriteReg8(LED0_ON_H + 4 * num, on >> 8);
     m_i2c.WriteReg8(LED0_OFF_L + 4 * num, off & 0xff);
     m_i2c.WriteReg8(LED0_OFF_H + 4 * num, off >> 8);
-    qDebug() << num << on << off;
+    //qDebug() << num << on << off;
 }
 /*
 void Adafruit_PWMServoDriver::setPulse(quint8 n, double pulse)

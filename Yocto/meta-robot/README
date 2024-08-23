@@ -1,0 +1,69 @@
+This README file contains information on the contents of the meta-robot layer.
+
+Please see the corresponding sections below for details.
+
+Dependencies
+============
+
+URI: https://github.com/meta-qt5/meta-qt5.git 
+branch: dunfell
+
+URI: https://git.toradex.com/meta-toradex-bsp-common.git 
+branch: dunfell
+
+URI: https://git.toradex.com/meta-toradex-distro.git 
+branch: dunfell
+
+URI: https://git.toradex.com/meta-toradex-nxp.git 
+branch: dunfell
+
+URI: https://git.toradex.com/meta-toradex-demos.git 
+branch: dunfell
+
+URI: https://github.com/Freescale/meta-freescale.git 
+branch: dunfell
+
+URI: https://github.com/Freescale/meta-freescale-3rdparty.git
+branch: dunfell
+
+URI: https://github.com/openembedded/meta-openembedded.git
+Layers:
+   meta-oe
+   meta-filesystems
+   meta-gnome
+   meta-xfce
+   meta-initramfs
+   meta-networking
+   meta-multimedia
+   meta-python
+
+branch: dunfell
+
+URI: https://github.com/Freescale/meta-freescale-distro.git
+branch: dunfell
+
+URI: https://git.toradex.com/meta-toradex-demos.git
+branch: dunfell
+
+URI: https://github.com/meta-qt5/meta-qt5.git
+branch: dunfell
+
+URI: https://git.toradex.com/meta-toradex-distro.git
+branch: dunfell
+
+URI: https://git.yoctoproject.org/git/meta-yocto
+brnach: dunfell
+
+Patches
+=======
+
+This layer is maintained by Oscar Casamitjana Vazquez
+When creating a patch of the last commit, use
+git format-patch -s --subject-prefix='meta-robot][<branch>][PATCH' -1
+
+I. Building the meta-robot Layer
+
+Copy ./buildconf/bblayers.conf and ./buildconf/local.conf into $BBPATH/conf
+
+$ bitbake robot-image
+
