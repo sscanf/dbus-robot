@@ -1,0 +1,58 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="com.robot.rotracking">
+    <signal name="error">
+      <arg name="bError" type="b" direction="out"/>
+    </signal>
+    <signal name="possitionChanged">
+      <arg name="possition" type="" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QPoint"/>
+    </signal>
+    <signal name="ballLost">
+    </signal>
+    <signal name="nextTrack">
+    </signal>
+    <method name="getName">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="getAddress">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="getPluginType">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="getDescription">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="isEnabled">
+      <arg type="b" direction="out"/>
+    </method>
+    <method name="setEnabled">
+      <arg name="bEnabled" type="b" direction="in"/>
+    </method>
+    <method name="startTracking">
+    </method>
+    <method name="stopTracking">
+    </method>
+    <method name="startStream">
+    </method>
+    <method name="stopStream">
+    </method>
+    <method name="xyPossition">
+      <arg type="" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QPoint"/>
+    </method>
+    <method name="zPossition">
+      <arg type="i" direction="out"/>
+    </method>
+    <method name="centerDistance">
+      <arg type="" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QPoint"/>
+    </method>
+    <method name="isBallDetected">
+      <arg type="b" direction="out"/>
+    </method>
+    <method name="detectCircles">
+    </method>
+  </interface>
+</node>
