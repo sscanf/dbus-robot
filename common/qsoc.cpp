@@ -16,7 +16,7 @@ QSoc::~QSoc() {
 int QSoc::addNewGPIO(QString strName, gpio_direction direction) {
     gpio *pGpio = nullptr;
     int   ret;
-    pGpio = libsoc_gpio_request(libsoc_board_gpio_id(m_pConfig, strName.toLocal8Bit().constData()), LS_GPIO_SHARED);
+    pGpio = libsoc_gpio_request(libsoc_board_gpio_id(m_pConfig, strName.toLocal8Bit().constData()), LS_SHARED);
     if (pGpio == nullptr) {
         qDebug() << "gpio request failed";
         ret = EXIT_FAILURE;
@@ -51,7 +51,7 @@ int QSoc::enableInterrupt(QString strName, gpio_edge edge, int (*callback_fn)(vo
     int ret = EXIT_FAILURE;
     if (m_pGpioInterrupts[strName] == NULL) {
 
-        m_pGpioInterrupts[strName] = libsoc_gpio_request(libsoc_board_gpio_id(m_pConfig, strName.toLocal8Bit().constData()), LS_GPIO_SHARED);
+        m_pGpioInterrupts[strName] = libsoc_gpio_request(libsoc_board_gpio_id(m_pConfig, strName.toLocal8Bit().constData()), LS_SHARED);
         if (m_pGpioInterrupts[strName] == NULL) {
             qDebug() << "gpio request failed for interrupt";
         } else {

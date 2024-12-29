@@ -1,6 +1,7 @@
 #ifndef QSOC_H
 #define QSOC_H
 
+#include <stdlib.h>
 #include <libsoc_gpio.h>
 #include <libsoc_board.h>
 #include <QObject>
